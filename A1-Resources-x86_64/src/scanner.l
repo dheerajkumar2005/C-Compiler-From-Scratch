@@ -1,18 +1,12 @@
 %option noyywrap
 %{
+    #include "y.tab.h"
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
 
-    enum Token {
-        VOID = 256, INTEGER, READ, WRITE, STRING, FLOAT, BOOL,
-        NAME,
-        INT_NUM, FLOAT_NUM, STR_CONST,
-        ASSIGN_OP,
-        SEMICOLON, COMMA, 
-        LEFT_ROUND_BRACKET, RIGHT_ROUND_BRACKET,
-        LEFT_CURLY_BRACKET, RIGHT_CURLY_BRACKET
-    };
+    // TODO: Need to handle comments
+    // TODO: Need to add tokens for L2
 %}
 
 /* Definitions */
@@ -29,11 +23,11 @@ LETTER [a-zA-Z_]
 "float" { return FLOAT; }
 "bool" { return BOOL; }
 
-{LETTER}({LETTER}|{DIGIT})* { return NAME; }
+{LETTER}({LETTER}|{DIGIT})* { yylval.sval = strdup(yytext); return NAME; }
 
-{DIGIT}+ { return INT_NUM; }
-({DIGIT}+\.{DIGIT}*)|(\.{DIGIT}*) { return FLOAT_NUM; }
-"\"[^\"\n\r]*\"" { return STR_CONST; }
+{DIGIT}+ { yylval.ival = atoi(yytext); return INT_NUM; }
+({DIGIT}+\.{DIGIT}*)|(\.{DIGIT}+) { yylval.fval = atof(yytext); return FLOAT_NUM; }
+\"[^\"]*\" { yylval.sval = strdup(yytext); return STR_CONST; }
 
 "=" { return ASSIGN_OP; }
 
@@ -44,12 +38,6 @@ LETTER [a-zA-Z_]
 "{" { return LEFT_CURLY_BRACKET; }
 "}" { return RIGHT_CURLY_BRACKET; }
 
-%%
+[ \n]+ ;
 
-int main() {
-    int tok;
-    while((tok = yylex()) != 0) {
-        printf("TOKEN = %d, LEXEME = \"%s\"\n", tok, yytext);
-    }
-    return 0;
-}
+%%
