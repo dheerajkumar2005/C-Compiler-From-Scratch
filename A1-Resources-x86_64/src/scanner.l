@@ -5,11 +5,9 @@
     #include <stdlib.h>
     #include <string.h>
 
-    // TODO: Need to handle comments
     // TODO: Need to add tokens for L2
 %}
 
-/* Definitions */
 DIGIT [0-9]
 LETTER [a-zA-Z_]
 
@@ -37,6 +35,8 @@ LETTER [a-zA-Z_]
 ")" { return RIGHT_ROUND_BRACKET; }
 "{" { return LEFT_CURLY_BRACKET; }
 "}" { return RIGHT_CURLY_BRACKET; }
+
+\/\/[^\n]* ;
 
 [ \n]+ ;
 
