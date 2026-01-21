@@ -29,6 +29,11 @@ LETTER [a-zA-Z_]
 
 "=" { return ASSIGN_OP; }
 
+"+" { return PLUS; }
+"-" { return MINUS; }
+"*" { return MULT; }
+"/" { return DIV; }
+
 ";" { return SEMICOLON; }
 "," { return COMMA; }
 "(" { return LEFT_ROUND_BRACKET; }
