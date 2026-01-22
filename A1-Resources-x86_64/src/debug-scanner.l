@@ -8,6 +8,7 @@
         VOID = 256, INTEGER, READ, WRITE, STRING, FLOAT, BOOL,
         NAME,
         INT_NUM, FLOAT_NUM, STR_CONST,
+        PLUS, MINUS, MULT, DIV,
         ASSIGN_OP,
         SEMICOLON, COMMA, 
         LEFT_ROUND_BRACKET, RIGHT_ROUND_BRACKET,
@@ -33,6 +34,11 @@ LETTER [a-zA-Z_]
 {DIGIT}+ { return INT_NUM; }
 ({DIGIT}+\.{DIGIT}*)|(\.{DIGIT}*) { return FLOAT_NUM; }
 "\"[^\"\n\r]*\"" { return STR_CONST; }
+
+"+" { return PLUS; }
+"-" { return MINUS; }
+"*" { return MULT; }
+"/" { return DIV; }
 
 "=" { return ASSIGN_OP; }
 
