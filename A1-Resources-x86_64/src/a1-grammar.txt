@@ -1,10 +1,27 @@
-program 
-    : global_decl_statement_list func_def
-    | func_def
+// Deviation from L2: Can have a SINGLE function declaration
+
+optional_var_decl_stmt_list
+    : var_decl_stmt_list
+    | %empty
+
+optional_func_decl
+    : func_decl
+    | %empty
+
+program
+    : optional_var_decl_stmt_list optional_func_decl optional_var_decl_stmt_list func_def
+
+// program 
+//     : global_decl_statement_list func_def
+//     | func_def
 
 global_decl_statement_list
     : global_decl_statement_list var_decl_stmt
     | var_decl_stmt
+
+func_decl
+    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON
+    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON
 
 func_header
     // : named_type NAME

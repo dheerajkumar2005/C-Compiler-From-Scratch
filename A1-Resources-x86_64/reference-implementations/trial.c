@@ -1,8 +1,8 @@
-void main() {void main(int a);void main(int a);
+// int x;
+// string a(int y);
+void b();
+// int y;
 
+void main() {
 
-
-
-    float x;
-    x = .;
 }
