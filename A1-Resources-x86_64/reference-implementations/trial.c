@@ -1,8 +1,7 @@
-// int x;
-// string a(int y);
-void b();
-// int y;
+int y;
+void z(int x, int y);
 
-void main() {
-
+int main2(string ref) {
+    y = -5;
+    // int x;
 }

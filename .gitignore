@@ -6,3 +6,5 @@ A1-Resources-x86_64/src/*.h
 A1-Resources-x86_64/src/*.c
 A1-Resources-x86_64/src/*.output
 A1-Resources-x86_64/src/parser
+A1-Resources-x86_64/src/debug-parser
+*.log
