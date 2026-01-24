@@ -35,12 +35,10 @@
 %start program
 
 // Disambiguation
-// NOTE: -2 * 3 is parsed as -(2 * 3) but (-2) * 3 MAY be expected
-// Although the result is mathematically the same, the AST would differ
 // TODO: Need to check reference implementation's AST
-%left PLUS
-%left MINUS
+%left PLUS MINUS
 %left MULT DIV
+%right UMINUS // NOTE: %right so that --x is parsed as (-(-x))
 
 %%
 
@@ -143,7 +141,7 @@ expression
     | expression MINUS expression
     | expression MULT expression
     | expression DIV expression
-    | MINUS expression
+    | MINUS expression %prec UMINUS
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET
     | variable_as_operand
     | constant_as_operand

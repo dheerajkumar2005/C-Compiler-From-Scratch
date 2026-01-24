@@ -36,9 +36,9 @@
 
 %start statement_list
 
-%left PLUS
-%left MINUS
+%left PLUS MINUS
 %left MULT DIV
+%right UMINUS
 
 %%
 
@@ -54,7 +54,7 @@ expression
     | expression MINUS expression { $$ = $1 - $3; printf("Found a MINUS expression with value %d\n", $$); }
     | expression MULT expression { $$ = $1 * $3; printf("Found a MULT expression with value %d\n", $$); }
     | expression DIV expression { $$ = $1 / $3; printf("Found a DIV expression with value %d\n", $$); }
-    | MINUS expression { $$ = -$2; printf("Found a UMINUS expression with value %d\n", $$); }
+    | MINUS expression %prec UMINUS { $$ = -$2; printf("Found a UMINUS expression with value %d\n", $$); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $2; printf("Found an expression with value %d\n", $$); }
     | INT_NUM { $$ = $1; printf("Found an integer with value %d\n", $$); }
 ;
