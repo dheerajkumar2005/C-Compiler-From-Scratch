@@ -1,14 +1,18 @@
 #include <getopt.h>
 #include <fstream>
 #include <iostream>
-#include <cstdio>
 
 // #include "y.tab.h"
 
 extern FILE *yyin;
+extern FILE *yyout;
 extern "C" {
     int yyparse();
     int yylex();
+
+    // Used by the lexer
+    // C++ declarations get name-mangled in the .o file
+    int show_tokens;
 }
 
 enum Option {
@@ -35,26 +39,26 @@ enum Option {
 };
 
 int main(int argc, char * argv[]) {
-    bool sa_scan = false;
-    bool sa_parse = false;
-    bool sa_ast = false;
-    bool sa_tac = false;
-    bool sa_rtl = false;
+    int sa_scan = 0;
+    int sa_parse = 0;
+    int sa_ast = 0;
+    int sa_tac = 0;
+    int sa_rtl = 0;
 
-    bool show_tokens = false;
-    bool show_ast = false;
-    bool show_tac = false;
-    bool show_rtl = false;
-    bool show_symtab = false;
-    bool show_asm = false;
+    show_tokens = 0;
+    int show_ast = 0;
+    int show_tac = 0;
+    int show_rtl = 0;
+    int show_symtab = 0;
+    int show_asm = 0;
     
-    bool gen_temp_symb_table = false;
-    bool single_stmt_bb = false;
-    bool suppress_comments = false;
+    int gen_temp_symb_table = 0;
+    int single_stmt_bb = 0;
+    int suppress_comments = 0;
     
-    bool demo = false;
-    bool usage = false;
-    bool version = false;
+    int demo = 0;
+    int usage = 0;
+    int version = 0;
 
     static struct option long_opts[] = {
         {"sa-scan", no_argument, nullptr, Option::SA_SCAN},
@@ -85,30 +89,30 @@ int main(int argc, char * argv[]) {
     int opt;
     while((opt = getopt_long(argc, argv, "desV", long_opts, nullptr)) != -1) {
         switch(opt) {
-            case Option::SA_SCAN: sa_scan = true; break;
-            case Option::SA_PARSE: sa_parse = true; break;
-            case Option::SA_AST: sa_ast = true; break;
-            case Option::SA_TAC: sa_tac = true; break;
-            case Option::SA_RTL: sa_rtl = true; break;
+            case Option::SA_SCAN: sa_scan = 1; break;
+            case Option::SA_PARSE: sa_parse = 1; break;
+            case Option::SA_AST: sa_ast = 1; break;
+            case Option::SA_TAC: sa_tac = 1; break;
+            case Option::SA_RTL: sa_rtl = 1; break;
 
-            case Option::SHOW_TOKENS: show_tokens = true; break;
-            case Option::SHOW_AST: show_ast = true; break;
-            case Option::SHOW_TAC: show_tac = true; break;
-            case Option::SHOW_RTL: show_rtl = true; break;
-            case Option::SHOW_SYMTAB: show_symtab = true; break;
-            case Option::SHOW_ASM: show_asm = true; break;
+            case Option::SHOW_TOKENS: show_tokens = 1; break;
+            case Option::SHOW_AST: show_ast = 1; break;
+            case Option::SHOW_TAC: show_tac = 1; break;
+            case Option::SHOW_RTL: show_rtl = 1; break;
+            case Option::SHOW_SYMTAB: show_symtab = 1; break;
+            case Option::SHOW_ASM: show_asm = 1; break;
             
-            case Option::GEN_TEMP_SYMB_TABLE: gen_temp_symb_table = true; break;
+            case Option::GEN_TEMP_SYMB_TABLE: gen_temp_symb_table = 1; break;
             case Option::SINGLE_STMT_BB: 
-            case 'e': single_stmt_bb = true; break;
+            case 'e': single_stmt_bb = 1; break;
             case Option::SUPPRESS_COMMENTS: 
-            case 's': suppress_comments = true; break;
+            case 's': suppress_comments = 1; break;
 
             case Option::DEMO: 
-            case 'd': demo = true; break;
-            case Option::USAGE: usage = true; break;
+            case 'd': demo = 1; break;
+            case Option::USAGE: usage = 1; break;
             case Option::VERSION: 
-            case 'V': version = true; break;
+            case 'V': version = 1; break;
 
             default: return 1;
         }
@@ -119,13 +123,19 @@ int main(int argc, char * argv[]) {
         // zero or more than one filename
         return 1;
     }
-    const char *filename = argv[optind];
+    std::string filename = argv[optind];
     std::ifstream file(filename);
     if(!file.is_open()) {
         std::cerr << "Failed to open file: " << filename << std::endl;
         return 1;
     }
+    
+    yyin = std::fopen(filename.c_str(), "r");
+    
+    if(show_tokens) {
+        std::string outfilename = filename + ".toks";
+        yyout = std::fopen(outfilename.c_str(), "w");
+    }
 
-    yyin = std::fopen(filename, "r");
     return yyparse();
 }

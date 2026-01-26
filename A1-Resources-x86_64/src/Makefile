@@ -20,4 +20,4 @@ lex.yy.o : $(SCAN).l y.tab.h
 	gcc -c lex.yy.c -o lex.yy.o
 
 clean:
-	rm -f *.o lex.yy.* *.tab.h *.tab.c y.output exp? *.out *.log $(MAIN) $(PARSE)
+	rm -f *.o lex.yy.* *.tab.h *.tab.c y.output exp? *.out *.log $(MAIN) $(PARSE) *.toks
