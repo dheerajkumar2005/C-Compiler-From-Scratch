@@ -36,8 +36,6 @@ enum Option {
     SUPPRESS_COMMENTS,
 
     DEMO,
-    USAGE,
-    VERSION,
 };
 
 int main(int argc, char * argv[]) {
@@ -59,8 +57,6 @@ int main(int argc, char * argv[]) {
     int suppress_comments = 0;
     
     int demo = 0;
-    int usage = 0;
-    int version = 0;
 
     static struct option long_opts[] = {
         {"sa-scan", no_argument, nullptr, Option::SA_SCAN},
@@ -112,9 +108,19 @@ int main(int argc, char * argv[]) {
 
             case Option::DEMO: 
             case 'd': demo = 1; break;
-            case Option::USAGE: usage = 1; break;
+            case Option::USAGE: {
+                std::cout << R"(Usage: A1-sclp [-des?V] [--sa-scan] [--sa-parse] [--sa-ast] [--sa-tac]
+            [--sa-rtl] [--show-tokens] [--show-ast] [--show-tac] [--show-rtl]
+            [--show-symtab] [--show-asm] [--demo] [--gen-temp-symb-table]
+            [--single-stmt-bb] [--suppress-comments] [--help] [--usage]
+            [--version] [FILE])" << std::endl;
+                return 0;
+            }
             case Option::VERSION: 
-            case 'V': version = 1; break;
+            case 'V': {
+                std::cout << "Sclp version: A6" << std::endl;
+                return 0;
+            }
 
             default: return 1;
         }
