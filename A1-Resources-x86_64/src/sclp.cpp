@@ -36,6 +36,8 @@ enum Option {
     SUPPRESS_COMMENTS,
 
     DEMO,
+    USAGE, 
+    VERSION,
 };
 
 int main(int argc, char * argv[]) {
