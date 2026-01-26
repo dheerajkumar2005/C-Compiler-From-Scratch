@@ -7,6 +7,7 @@
     #include <string.h>
 
     extern int show_tokens;
+    extern int scanner_error;
 %}
 
 DIGIT [0-9]
@@ -158,6 +159,8 @@ LETTER [a-zA-Z_]
 \/\/[^\n]* ;
 
 [ \n]+ ;
-.      ;
+. {
+    scanner_error = 1;
+}
 
 %%

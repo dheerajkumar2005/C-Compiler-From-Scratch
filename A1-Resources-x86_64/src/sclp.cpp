@@ -9,10 +9,12 @@ extern FILE *yyout;
 extern "C" {
     int yyparse();
     int yylex();
+    void yyerror(const char *msg);
 
     // Used by the lexer
     // C++ declarations get name-mangled in the .o file
     int show_tokens;
+    int scanner_error;
 }
 
 enum Option {
@@ -140,6 +142,21 @@ int main(int argc, char * argv[]) {
             std::string outfilename = filename + ".toks";
             yyout = std::fopen(outfilename.c_str(), "w");
         }
+    }
+
+    if(sa_scan) {
+        while(true) {
+            scanner_error = 0;
+            int next_token = yylex();
+            if(scanner_error) {
+                yyerror("syntax error");
+                return 1;
+            }
+            if(!next_token) {
+                return 0;
+            }
+        }
+        return 0;
     }
 
     return yyparse();
