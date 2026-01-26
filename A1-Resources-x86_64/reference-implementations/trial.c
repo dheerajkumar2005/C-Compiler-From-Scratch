@@ -1,4 +1,4 @@
-int global;
+int global; 
 
 void main()
 {   string a;

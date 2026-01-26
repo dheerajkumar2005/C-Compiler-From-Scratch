@@ -131,10 +131,15 @@ int main(int argc, char * argv[]) {
     }
     
     yyin = std::fopen(filename.c_str(), "r");
-    
+    yyout = nullptr;
+
     if(show_tokens) {
-        std::string outfilename = filename + ".toks";
-        yyout = std::fopen(outfilename.c_str(), "w");
+        if(demo) {
+            yyout = stdout;
+        } else {
+            std::string outfilename = filename + ".toks";
+            yyout = std::fopen(outfilename.c_str(), "w");
+        }
     }
 
     return yyparse();
