@@ -133,25 +133,25 @@ LETTER [a-zA-Z_]
 }
 "(" {
     if(show_tokens) {
-        fprintf(yyout, "Token Name: LEFT_ROUND_BRACKET\tLexeme: (\tLineno: %d\n", yylineno); 
+        fprintf(yyout, "Token Name: LEFT_ROUND_BRACKET\tLexeme: \tLineno: %d\n", yylineno); 
     } 
     return LEFT_ROUND_BRACKET; 
 }
 ")" {
     if(show_tokens) {
-        fprintf(yyout, "Token Name: RIGHT_ROUND_BRACKET\tLexeme: )\tLineno: %d\n", yylineno); 
+        fprintf(yyout, "Token Name: RIGHT_ROUND_BRACKET\tLexeme: \tLineno: %d\n", yylineno); 
     }  
     return RIGHT_ROUND_BRACKET; 
 }
 "{" {
     if(show_tokens) {
-        fprintf(yyout, "Token Name: LEFT_CURLY_BRACKET\tLexeme: {\tLineno: %d\n", yylineno); 
+        fprintf(yyout, "Token Name: LEFT_CURLY_BRACKET\tLexeme: \tLineno: %d\n", yylineno); 
     } 
     return LEFT_CURLY_BRACKET; 
 }
 "}" {
     if(show_tokens) {
-        fprintf(yyout, "Token Name: RIGHT_CURLY_BRACKET\tLexeme: }\tLineno: %d\n", yylineno); 
+        fprintf(yyout, "Token Name: RIGHT_CURLY_BRACKET\tLexeme: \tLineno: %d\n", yylineno); 
     } 
     return RIGHT_CURLY_BRACKET; 
 }
