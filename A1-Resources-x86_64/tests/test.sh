@@ -33,3 +33,39 @@ for i in {1..18}; do
 
 done
 
+
+
+for i in {1..18}; do
+    # echo "TC: {$i}"
+    # check 1
+    file="../example-programs/Level-2-test-cases/l2-exmp$i.c"
+    passed=1
+    errors=()
+    # check return value
+    .sclp $file 2>| error1.log
+    ret1=$?
+    ../reference-implementations/A1-sclp $file 2>| error2.log
+    ret2=$?
+    if [[ "$ret1" == "$ret2" && "$ret1" == 1 ]]; then
+        if [ -s error1.log ]; then
+            continue
+        else
+            errors+=("Error log is empty")
+            passed=0
+        fi
+        rm error1.log error2.log
+    
+    elif [[ "$ret1" == "$ret2" && "$ret1" == 0 ]]; then
+        # check --show tokens
+        ./sclp $file --show-tokens > tok1.txt
+        ../reference-implementations/A1-sclp $file --show-tokens > tok2.txt
+        diff -Bw tok1.txt tok2.txt > diff.txt
+        if [ -s diff.txt ]; then
+            # echo "TC: ${i} failed"
+            # cat diff.txt
+            errors+=("show tokens output not matching")
+        rm tok1.txt tok2.txt diff.txt
+        # check --sa-scan
+        .sclp $file --sa-scan 2>| error1.log
+
+done
