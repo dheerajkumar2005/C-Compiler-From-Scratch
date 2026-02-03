@@ -160,7 +160,6 @@ LETTER [a-zA-Z_]
 
 [ \n]+ ;
 . {
-    // fprintf(yyout, yytext);
     scanner_error = 1;
 }
 

@@ -157,7 +157,6 @@ int main(int argc, char * argv[]) {
             scanner_error = 0;
             int next_token = yylex();
             if(scanner_error) {
-                // yyerror("I don't know why");
                 yyerror("syntax error");
                 return 1;
             }
