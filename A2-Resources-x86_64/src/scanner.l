@@ -8,6 +8,12 @@
 
     extern int show_tokens;
     extern int scanner_error;
+
+    void display_token(char *token_name, char *lexeme) {
+        if(show_tokens) {
+            fprintf(yyout, "Token Name: %s\tLexeme: %s\tLineno: %d\n", token_name, lexeme, yylineno);
+        }
+    }
 %}
 
 DIGIT [0-9]
@@ -16,143 +22,146 @@ LETTER [a-zA-Z_]
 %%
 
 "void" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: VOID\tLexeme: void\tLineno: %d\n", yylineno); 
-    }
+    display_token("VOID", "void");
     return VOID; 
 }
 "int" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: INTEGER\tLexeme: int\tLineno: %d\n", yylineno);
-    }
+    display_token("INTEGER", "int");
     return INTEGER; 
 }
 "read" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: READ\tLexeme: read\tLineno: %d\n", yylineno);
-    }
+    display_token("READ", "read");
     return READ; 
 }
 "print" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: WRITE\tLexeme: print\tLineno: %d\n", yylineno); 
-    }
+    display_token("WRITE", "print");
     return WRITE; 
 }
 "string" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: STRING\tLexeme: string\tLineno: %d\n", yylineno);
-    } 
+    display_token("STRING", "string");
     return STRING; 
 }
 "float" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: FLOAT\tLexeme: float\tLineno: %d\n", yylineno); 
-    }
+    display_token("FLOAT", "float");
     return FLOAT; 
 }
 "bool" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: BOOL\tLexeme: bool\tLineno: %d\n", yylineno); 
-    }
+    display_token("BOOL", "bool");
     return BOOL; 
 }
 
 {LETTER}({LETTER}|{DIGIT})* { 
-    yylval.sval = strdup(yytext); 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: NAME\tLexeme: %s\tLineno: %d\n", yylval.sval, yylineno); 
-    }
+    display_token("NAME", yytext); 
+    yylval.sval = strdup(yytext);
     return NAME;
 }
 
 {DIGIT}+ {
+    display_token("INT_NUM", yytext);
     yylval.ival = atoi(yytext); 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: INT_NUM\tLexeme: %d\tLineno: %d\n", yylval.ival, yylineno); 
-    }
     return INT_NUM; 
 }
 ({DIGIT}+\.{DIGIT}*)|(\.{DIGIT}+) { 
+    display_token("FLOAT_NUM", yytext);
     yylval.fval = atof(yytext);
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: FLOAT_NUM\tLexeme: %f\tLineno: %d\n", yylval.fval, yylineno); 
-    }
-    return FLOAT_NUM; }
-\"[^\"]*\" { 
+    return FLOAT_NUM; 
+}
+\"[^\"]*\" {
+    display_token("STR_CONST", yytext); 
     yylval.sval = strdup(yytext);
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: STR_CONST\tLexeme: %s\tLineno: %d\n", yylval.sval, yylineno); 
-    }
     return STR_CONST; 
 }
 
 "=" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: ASSIGN_OP\tLexeme: =\tLineno: %d\n", yylineno); 
-    } 
+    display_token("ASSIGN_OP", "=");
     return ASSIGN_OP; 
 }
 
 "+" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: PLUS\tLexeme: +\tLineno: %d\n", yylineno); 
-    } 
+    display_token("PLUS", "+"); 
     return PLUS; 
 }
 "-" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: MINUS\tLexeme: -\tLineno: %d\n", yylineno); 
-    } 
+    display_token("MINUS", "-");
     return MINUS; 
 }
 "*" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: MULT\tLexeme: *\tLineno: %d\n", yylineno); 
-    } 
+    display_token("MULT", "*");
     return MULT; 
 }
 "/" { 
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: DIV\tLexeme: /\tLineno: %d\n", yylineno); 
-    }
+    display_token("DIV", "/");
     return DIV; 
 }
 
+"!" {
+    display_token("NOT", "!");
+    return NOT;
+}
+"&&" {
+    display_token("AND", "&&");
+    return AND;
+}
+"||" {
+    display_token("OR", "||");
+    return OR;
+}
+
+"?" {
+    display_token("QUESTION_MARK", "?");
+    return QUESTION_MARK;
+}
+":" {
+    display_token("COLON", ":");
+    return COLON;
+}
+"<" {
+    display_token("LESS_THAN", "<");
+    return LESS_THAN;
+}
+"<=" {
+    display_token("LESS_THAN_EQUAL", "<=");
+    return LESS_THAN_EQUAL;
+}
+">" {
+    display_token("GREATER_THAN", ">");
+    return GREATER_THAN;
+}
+">=" {
+    display_token("GREATER_THAN_EQUAL", ">=");
+    return GREATER_THAN_EQUAL;
+}
+"==" {
+    display_token("EQUAL", "==");
+    return EQUAL;
+}
+"!=" {
+    display_token("NOT_EQUAL", "!=");
+    return NOT_EQUAL;
+}
+
 ";" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: SEMICOLON\tLexeme: ;\tLineno: %d\n", yylineno); 
-    } 
+    display_token("SEMICOLON", ";");
     return SEMICOLON; 
 }
 "," {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: COMMA\tLexeme: ,\tLineno: %d\n", yylineno); 
-    } 
+    display_token("COMMA", ",");
     return COMMA; 
 }
 "(" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: LEFT_ROUND_BRACKET\tLexeme: (\tLineno: %d\n", yylineno); 
-    } 
+    display_token("LEFT_ROUND_BRACKET", "(");
     return LEFT_ROUND_BRACKET; 
 }
 ")" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: RIGHT_ROUND_BRACKET\tLexeme: )\tLineno: %d\n", yylineno); 
-    }  
+    display_token("RIGHT_ROUND_BRACKET", ")");  
     return RIGHT_ROUND_BRACKET; 
 }
 "{" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: LEFT_CURLY_BRACKET\tLexeme: {\tLineno: %d\n", yylineno); 
-    } 
+    display_token("LEFT_CURLY_BRACKET", "{");
     return LEFT_CURLY_BRACKET; 
 }
 "}" {
-    if(show_tokens) {
-        fprintf(yyout, "Token Name: RIGHT_CURLY_BRACKET\tLexeme: }\tLineno: %d\n", yylineno); 
-    } 
+    display_token("RIGHT_CURLY_BRACKET", "}");
     return RIGHT_CURLY_BRACKET; 
 }
 

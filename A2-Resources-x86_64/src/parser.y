@@ -25,6 +25,17 @@
 %token MULT
 %token DIV
 %token ASSIGN_OP
+%token NOT
+%token AND
+%token OR
+%token QUESTION_MARK
+%token COLON
+%token LESS_THAN
+%token LESS_THAN_EQUAL
+%token GREATER_THAN
+%token GREATER_THAN_EQUAL
+%token EQUAL
+%token NOT_EQUAL
 %token SEMICOLON
 %token COMMA
 %token LEFT_ROUND_BRACKET
@@ -35,14 +46,20 @@
 %start program
 
 // Disambiguation
-// TODO: Need to check reference implementation's AST
+// Arithmetic operators
 %left PLUS MINUS
 %left MULT DIV
 %right UMINUS // NOTE: %right so that --x is parsed as (-(-x))
 
+// Logical operators
+// Unintentional precendence between arithmetic and logical operators established
+// But it is fine since such expressions are semantically invalid in all interpretations
+%left OR
+%left AND
+%right NOT
+
 %%
 
-// Only for A1: Can have a SINGLE function declaration
 program
     : func_def
     | var_decl_stmt_list func_def
@@ -104,7 +121,7 @@ var_decl_stmt_list
 ;
 
 var_decl_stmt
-    : named_type var_decl_item_list SEMICOLON
+    : param_type var_decl_item_list SEMICOLON
 ;
 
 var_decl_item_list
@@ -143,9 +160,22 @@ expression
     | expression DIV expression
     | MINUS expression %prec UMINUS
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET
+    | expression QUESTION_MARK expression COLON expression
+    | expression AND expression
+    | expression OR expression
+    | NOT expression
+    | rel_expression
     | variable_as_operand
     | constant_as_operand
 ;
+
+rel_expression
+    : expression LESS_THAN expression
+    | expression LESS_THAN_EQUAL expression
+    | expression GREATER_THAN expression
+    | expression GREATER_THAN_EQUAL expression
+    | expression NOT_EQUAL expression
+    | expression EQUAL expression
 
 variable_as_operand
     : variable_name

@@ -1,0 +1,20 @@
+notes on ./A2-sclp
+
+- variable declaration
+-- variables cannot have type void
+-- shadowing is allowed (use the same variable name as in the global namespace, variable type could be same/different)
+-- redeclaration is not allowed (neither of the same type nor different type)
+-- variable usage before/without declaration is not allowed
+-- variable usage before initialization is allowed
+
+- function declaration
+-- only allowed for the main function
+-- return type and parameter types must exactly match the definition
+
+- function definition
+-- no definition allowed except main
+-- main must have type void
+-- main can have parameters of various types
+
+TODO
+- check using testcases the correctness of precedence of logical operators
