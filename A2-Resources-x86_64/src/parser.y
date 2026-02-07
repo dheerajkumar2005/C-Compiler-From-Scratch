@@ -3,18 +3,21 @@
     #include <stdlib.h>
 %}
 
+// TODO: Add types for AST nodes, variables (pointers to symtab entry), ...
 %union {
     int ival;
     float fval;
     char *sval;
 }
 
+
+// Terminals (and optionally their types)
 %token VOID
 %token INTEGER
 %token STRING
 %token FLOAT
 %token BOOL
-%token <sval> NAME
+%token <sval> NAME // TODO: Change this to type: pointer to the SymTab entry
 %token READ
 %token WRITE
 %token <ival> INT_NUM
@@ -42,6 +45,9 @@
 %token RIGHT_ROUND_BRACKET
 %token LEFT_CURLY_BRACKET
 %token RIGHT_CURLY_BRACKET
+
+// Non-terminals and their types
+
 
 %start program
 
@@ -142,53 +148,54 @@ named_type
 ;
 
 assignment_statement
-    : variable_as_operand ASSIGN_OP expression SEMICOLON
+    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = process_assignment($1, $3); }
 ;
 
 print_statement
-    : WRITE expression SEMICOLON
+    : WRITE expression SEMICOLON { $$ = process_write($2); }
 ;
 
 read_statement
-    : READ variable_name SEMICOLON
+    : READ variable_name SEMICOLON { $$ = process_read($2); }
 ;
 
 expression
-    : expression PLUS expression
-    | expression MINUS expression
-    | expression MULT expression
-    | expression DIV expression
-    | MINUS expression %prec UMINUS
-    | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET
-    | expression QUESTION_MARK expression COLON expression
-    | expression AND expression
-    | expression OR expression
-    | NOT expression
-    | rel_expression
-    | variable_as_operand
-    | constant_as_operand
+    : expression PLUS expression { $$ = process_expr(PLUS, $1, $3); }
+    | expression MINUS expression { $$ = process_expr(MINUS, $1, $3); }
+    | expression MULT expression { $$ = process_expr(MULT, $1, $3); }
+    | expression DIV expression { $$ = process_expr(DIV, $1, $3); }
+    | MINUS expression %prec UMINUS { $$ = process_expr(UMINUS, $2); }
+    | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $1; }
+    | expression QUESTION_MARK expression COLON expression { $$ = process_expr(QUESTION_MARK_COLON, $1, $3, $5); }
+    | expression AND expression { $$ = process_expr(AND, $1, $3); } 
+    | expression OR expression { $$ = process_expr(OR, $1, $3); }
+    | NOT expression { $$ = process_expr(NOT, $1, $3); }
+    | rel_expression { $$ = $1; }
+    | variable_as_operand { $$ = $1; }
+    | constant_as_operand { $$ = $1; }
 ;
 
 rel_expression
-    : expression LESS_THAN expression
-    | expression LESS_THAN_EQUAL expression
-    | expression GREATER_THAN expression
-    | expression GREATER_THAN_EQUAL expression
-    | expression NOT_EQUAL expression
-    | expression EQUAL expression
+    : expression LESS_THAN expression { $$ = process_expr($1, LESS_THAN, $3); }
+    | expression LESS_THAN_EQUAL expression { $$ = process_expr($1, LESS_THAN_EQUAL, $3); }
+    | expression GREATER_THAN expression { $$ = process_expr($1, GREATER_THAN, $3); }
+    | expression GREATER_THAN_EQUAL expression { $$ = process_expr($1, GREATER_THAN_EQUAL, $3); }
+    | expression NOT_EQUAL expression { $$ = process_expr($1, NOT_EQUAL, $3); }
+    | expression EQUAL expression { $$ = process_expr($1, EQUAL, $3); }
+;
 
 variable_as_operand
-    : variable_name
+    : variable_name { $$ = $1; }
 ;
 
 variable_name
-    : NAME
+    : NAME { $$ = process_var($1); }
 ;
 
 constant_as_operand
-    : INT_NUM
-    | FLOAT_NUM
-    | STR_CONST
+    : INT_NUM { $$ = process_int_literal($1); }
+    | FLOAT_NUM { $$ = process_float_literal($1); }
+    | STR_CONST { $$ = process_str_literal($1); }
 ;
 
 %%

@@ -1,6 +1,7 @@
 *.ast
 *.spim
 *.toks
+*.sym
 *.out
 *.o
 A1-Resources-x86_64/src/*.h

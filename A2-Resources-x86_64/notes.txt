@@ -18,3 +18,10 @@ notes on ./A2-sclp
 
 TODO
 - check using testcases the correctness of precedence of logical operators
+
+- Constructing ASTs during parsing
+-- Have an abstract base class AbstractSyntaxTree with a field 'type'
+-- Extend this class for every terminal/non-terminal:
+    IntLiteralAST
+    FloatLiteralAST
+    StrLiteralAST
