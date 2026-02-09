@@ -1,15 +1,22 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
+
+    #include "AST.hpp"
+    #include "support.hpp"
 %}
 
 // TODO: Add types for AST nodes, variables (pointers to symtab entry), ...
 %union {
-    int ival;
-    float fval;
-    char *sval;
+    AssignAST *asgn;
+    ReadAST *read;
+    WriteAST *write;
+    ExprAST *expr;
+    IntLiteralAST *ival;
+    FloatLiteralAST *fval;
+    StrLiteralAST *sval;
+    VarAST *var;
 }
-
 
 // Terminals (and optionally their types)
 %token VOID
@@ -17,7 +24,7 @@
 %token STRING
 %token FLOAT
 %token BOOL
-%token <sval> NAME // TODO: Change this to type: pointer to the SymTab entry
+%token <var> NAME
 %token READ
 %token WRITE
 %token <ival> INT_NUM
@@ -47,7 +54,13 @@
 %token RIGHT_CURLY_BRACKET
 
 // Non-terminals and their types
-
+%type <write> print_statement
+%type <read> read_statement
+%type <expr> expression
+%type <expr> rel_expression
+%type <var> variable_as_operand
+%type <var> variable_name
+%type <expr> constant_as_operand
 
 %start program
 
@@ -160,28 +173,28 @@ read_statement
 ;
 
 expression
-    : expression PLUS expression { $$ = process_expr(PLUS, $1, $3); }
-    | expression MINUS expression { $$ = process_expr(MINUS, $1, $3); }
-    | expression MULT expression { $$ = process_expr(MULT, $1, $3); }
-    | expression DIV expression { $$ = process_expr(DIV, $1, $3); }
-    | MINUS expression %prec UMINUS { $$ = process_expr(UMINUS, $2); }
+    : expression PLUS expression { $$ = process_expr(Operator::PLUS, $1, $3); }
+    | expression MINUS expression { $$ = process_expr(Operator::MINUS, $1, $3); }
+    | expression MULT expression { $$ = process_expr(Operator::MULT, $1, $3); }
+    | expression DIV expression { $$ = process_expr(Operator::DIV, $1, $3); }
+    | MINUS expression %prec UMINUS { $$ = process_expr(Operator::UMINUS, $2); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $1; }
-    | expression QUESTION_MARK expression COLON expression { $$ = process_expr(QUESTION_MARK_COLON, $1, $3, $5); }
-    | expression AND expression { $$ = process_expr(AND, $1, $3); } 
-    | expression OR expression { $$ = process_expr(OR, $1, $3); }
-    | NOT expression { $$ = process_expr(NOT, $1, $3); }
+    | expression QUESTION_MARK expression COLON expression { $$ = process_expr(Operator::QUESTION_MARK_COLON, $1, $3, $5); }
+    | expression AND expression { $$ = process_expr(Operator::AND, $1, $3); } 
+    | expression OR expression { $$ = process_expr(Operator::OR, $1, $3); }
+    | NOT expression { $$ = process_expr(Operator::NOT, $1, $3); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }
 ;
 
 rel_expression
-    : expression LESS_THAN expression { $$ = process_expr($1, LESS_THAN, $3); }
-    | expression LESS_THAN_EQUAL expression { $$ = process_expr($1, LESS_THAN_EQUAL, $3); }
-    | expression GREATER_THAN expression { $$ = process_expr($1, GREATER_THAN, $3); }
-    | expression GREATER_THAN_EQUAL expression { $$ = process_expr($1, GREATER_THAN_EQUAL, $3); }
-    | expression NOT_EQUAL expression { $$ = process_expr($1, NOT_EQUAL, $3); }
-    | expression EQUAL expression { $$ = process_expr($1, EQUAL, $3); }
+    : expression LESS_THAN expression { $$ = process_expr(Operator::LESS_THAN, $1, $3); }
+    | expression LESS_THAN_EQUAL expression { $$ = process_expr(Operator::LESS_THAN_EQUAL, $1, $3); }
+    | expression GREATER_THAN expression { $$ = process_expr(Operator::GREATER_THAN, $1, $3); }
+    | expression GREATER_THAN_EQUAL expression { $$ = process_expr(Operator::GREATER_THAN_EQUAL, $1, $3); }
+    | expression NOT_EQUAL expression { $$ = process_expr(Operator::NOT_EQUAL, $1, $3); }
+    | expression EQUAL expression { $$ = process_expr(Operator::EQUAL, $1, $3); }
 ;
 
 variable_as_operand
@@ -189,13 +202,13 @@ variable_as_operand
 ;
 
 variable_name
-    : NAME { $$ = process_var($1); }
+    : NAME { $$ = $1; }
 ;
 
 constant_as_operand
-    : INT_NUM { $$ = process_int_literal($1); }
-    | FLOAT_NUM { $$ = process_float_literal($1); }
-    | STR_CONST { $$ = process_str_literal($1); }
+    : INT_NUM { $$ = $1; }
+    | FLOAT_NUM { $$ = $1; }
+    | STR_CONST { $$ = $1; }
 ;
 
 %%

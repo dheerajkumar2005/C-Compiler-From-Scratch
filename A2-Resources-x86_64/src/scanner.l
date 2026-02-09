@@ -52,23 +52,23 @@ LETTER [a-zA-Z_]
 
 {LETTER}({LETTER}|{DIGIT})* { 
     display_token("NAME", yytext); 
-    yylval.sval = strdup(yytext);
+    yylval.var = new VarAST(yytext);
     return NAME;
 }
 
 {DIGIT}+ {
     display_token("INT_NUM", yytext);
-    yylval.ival = atoi(yytext); 
+    yylval.ival = new IntLiteralAST(atoi(yytext));
     return INT_NUM; 
 }
 ({DIGIT}+\.{DIGIT}*)|(\.{DIGIT}+) { 
     display_token("FLOAT_NUM", yytext);
-    yylval.fval = atof(yytext);
+    yylval.fval = new FloatLiteralAST(atof(yytext));
     return FLOAT_NUM; 
 }
 \"[^\"]*\" {
     display_token("STR_CONST", yytext); 
-    yylval.sval = strdup(yytext);
+    yylval.sval = new StrLiteralAST(yytext);
     return STR_CONST; 
 }
 
