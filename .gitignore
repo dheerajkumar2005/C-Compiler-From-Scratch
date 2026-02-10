@@ -11,3 +11,4 @@ A1-Resources-x86_64/src/sclp
 *.log
 */notes
 **/test.c
+*.tgz

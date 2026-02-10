@@ -1,3 +1,4 @@
+# TODO: Update the makefile
 MAIN = sclp
 PARSE = parser
 SCAN = scanner

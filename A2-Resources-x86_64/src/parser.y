@@ -3,11 +3,10 @@
     #include <stdlib.h>
 
     #include "AST.hpp"
-    #include "support.hpp"
 %}
 
-// TODO: Add types for AST nodes, variables (pointers to symtab entry), ...
 %union {
+    AST *stmt;
     AssignAST *asgn;
     ReadAST *read;
     WriteAST *write;
@@ -54,6 +53,8 @@
 %token RIGHT_CURLY_BRACKET
 
 // Non-terminals and their types
+%type <stmt> statement
+%type <asgn> assignment_statement
 %type <write> print_statement
 %type <read> read_statement
 %type <expr> expression
@@ -118,15 +119,16 @@ param_type
     | STRING
 ;
 
+// TODO: I think we need a new class to collect ASTs together
 statement_list
     : statement_list statement
     | 
 ;
 
 statement
-    : assignment_statement
-    | print_statement
-    | read_statement
+    : assignment_statement { $$ = $1; }
+    | print_statement { $$ = $1; }
+    | read_statement { $$ = $1; }
 ;
 
 optional_local_var_decl_stmt_list
@@ -161,40 +163,40 @@ named_type
 ;
 
 assignment_statement
-    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = process_assignment($1, $3); }
+    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = new AssignAST($1, $3); }
 ;
 
 print_statement
-    : WRITE expression SEMICOLON { $$ = process_write($2); }
+    : WRITE expression SEMICOLON { $$ = new WriteAST($2); }
 ;
 
 read_statement
-    : READ variable_name SEMICOLON { $$ = process_read($2); }
+    : READ variable_name SEMICOLON { $$ = new ReadAST($2); }
 ;
 
 expression
-    : expression PLUS expression { $$ = process_expr(Operator::PLUS, $1, $3); }
-    | expression MINUS expression { $$ = process_expr(Operator::MINUS, $1, $3); }
-    | expression MULT expression { $$ = process_expr(Operator::MULT, $1, $3); }
-    | expression DIV expression { $$ = process_expr(Operator::DIV, $1, $3); }
-    | MINUS expression %prec UMINUS { $$ = process_expr(Operator::UMINUS, $2); }
+    : expression PLUS expression { $$ = new ExprAST(Operator::PLUS, $1, $3); }
+    | expression MINUS expression { $$ = new ExprAST(Operator::MINUS, $1, $3); }
+    | expression MULT expression { $$ = new ExprAST(Operator::MULT, $1, $3); }
+    | expression DIV expression { $$ = new ExprAST(Operator::DIV, $1, $3); }
+    | MINUS expression %prec UMINUS { $$ = new ExprAST(Operator::UMINUS, $2); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $1; }
-    | expression QUESTION_MARK expression COLON expression { $$ = process_expr(Operator::QUESTION_MARK_COLON, $1, $3, $5); }
-    | expression AND expression { $$ = process_expr(Operator::AND, $1, $3); } 
-    | expression OR expression { $$ = process_expr(Operator::OR, $1, $3); }
-    | NOT expression { $$ = process_expr(Operator::NOT, $1, $3); }
+    | expression QUESTION_MARK expression COLON expression { $$ = new ExprAST(Operator::QUESTION_MARK_COLON, $1, $3, $5); }
+    | expression AND expression { $$ = new ExprAST(Operator::AND, $1, $3); } 
+    | expression OR expression { $$ = new ExprAST(Operator::OR, $1, $3); }
+    | NOT expression { $$ = new ExprAST(Operator::NOT, $1, $3); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }
 ;
 
 rel_expression
-    : expression LESS_THAN expression { $$ = process_expr(Operator::LESS_THAN, $1, $3); }
-    | expression LESS_THAN_EQUAL expression { $$ = process_expr(Operator::LESS_THAN_EQUAL, $1, $3); }
-    | expression GREATER_THAN expression { $$ = process_expr(Operator::GREATER_THAN, $1, $3); }
-    | expression GREATER_THAN_EQUAL expression { $$ = process_expr(Operator::GREATER_THAN_EQUAL, $1, $3); }
-    | expression NOT_EQUAL expression { $$ = process_expr(Operator::NOT_EQUAL, $1, $3); }
-    | expression EQUAL expression { $$ = process_expr(Operator::EQUAL, $1, $3); }
+    : expression LESS_THAN expression { $$ = new ExprAST(Operator::LESS_THAN, $1, $3); }
+    | expression LESS_THAN_EQUAL expression { $$ = new ExprAST(Operator::LESS_THAN_EQUAL, $1, $3); }
+    | expression GREATER_THAN expression { $$ = new ExprAST(Operator::GREATER_THAN, $1, $3); }
+    | expression GREATER_THAN_EQUAL expression { $$ = new ExprAST(Operator::GREATER_THAN_EQUAL, $1, $3); }
+    | expression NOT_EQUAL expression { $$ = new ExprAST(Operator::NOT_EQUAL, $1, $3); }
+    | expression EQUAL expression { $$ = new ExprAST(Operator::EQUAL, $1, $3); }
 ;
 
 variable_as_operand

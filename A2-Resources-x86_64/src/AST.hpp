@@ -27,69 +27,77 @@ enum class Operator {
     EQUAL,
 };
 
-struct AST {
+class AST {
 
 };
 
-struct AssignAST : public AST {
+class AssignAST : public AST {
     VarAST *lhs;
     ExprAST *rhs;
 
+public:
     AssignAST(VarAST *lhs, ExprAST *rhs) : AST(), lhs(lhs), rhs(rhs) {}
 };
 
-struct ReadAST : public AST {
+class ReadAST : public AST final {
     VarAST *var;
 
+public:
     ReadAST(VarAST *var) : AST(), var(var) {}
 };
 
-struct WriteAST : public AST {
+class WriteAST : public AST final {
     ExprAST *expr;
 
+public:
     WriteAST(ExprAST *expr);
 };
 
 // LValueAST comes later
 
-struct RValueAST : public AST {
-    // TODO: Add fields/methods as required
-    // TODO: Add atleast one pure virtual function
+class RValueAST : public AST {
+protected:
     Type type;
-    
+
+public:
     RValueAST(Type type) : type(type) {}
     RValueAST() : RValueAST(Type::UNKNOWN) {}
-    virtual ~RValueAST() = default;
 };
 
-struct IntLiteralAST : public RValueAST {
+class IntLiteralAST : public RValueAST final {
     int ival;
 
+public:
     IntLiteralAST(int ival): RValueAST(Type::INT), ival(ival) {}
 };
 
-struct FloatLiteralAST : public RValueAST {
+class FloatLiteralAST : public RValueAST final {
     float fval;
 
     FloatLiteralAST(float fval): RValueAST(Type::FLOAT), fval(fval) {}
 };
 
-struct StrLiteralAST : public RValueAST {
+class StrLiteralAST : public RValueAST final {
     std::string sval;
 
+public:
     StrLiteralAST(char *_sval) : RValueAST(Type::STR), sval(_sval)
 };
 
-struct VarAST : public RValueAST {
+class VarAST : public RValueAST final {
     SymTabEntry *sym_tab_entry_ptr;
 
+    set_sym_tab_entry_ptr(SymTabEntry *ste_ptr);
+
+public:
     VarAST(char *var_name);
 };
 
-struct ExprAST : public RValueAST {
+class ExprAST : public RValueAST final {
     Operator op;
     RValueAST *operand1, operand2, operand3;
 
+public:
     ExprAST(Operator op, RValueAST *operand1, RValueAST *operand2, RValueAST *operand3) : RValueAST(), op(op), operand1(operand1), operand2(operand2), operand3(operand3) {}
     ExprAST(Operator op, RValueAST *operand1, RValueAST *operand2) : ExprAST(op, operand1, operand2, nullptr) {}
     ExprAST(Operator op, RValueAST *operand1) : ExprAST(op, operand1, nullptr) {}
