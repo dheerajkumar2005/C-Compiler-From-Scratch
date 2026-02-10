@@ -116,12 +116,12 @@ param_type
     | STRING
 ;
 
-// TODO: I think we need a new class to collect ASTs together
 statement_list
     : statement_list statement
     | 
 ;
 
+// TODO: Add print to the action routines here
 statement
     : assignment_statement { $$ = $1; }
     | print_statement { $$ = $1; }

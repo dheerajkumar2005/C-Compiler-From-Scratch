@@ -1,0 +1,2091 @@
+Rules useless in parser due to conflicts
+
+   32 named_type: INTEGER
+   33           | FLOAT
+   35           | STRING
+   36           | BOOL
+
+
+State 2 conflicts: 1 reduce/reduce
+State 3 conflicts: 1 reduce/reduce
+State 4 conflicts: 1 reduce/reduce
+State 5 conflicts: 1 reduce/reduce
+State 82 conflicts: 7 shift/reduce
+State 83 conflicts: 7 shift/reduce
+State 101 conflicts: 7 shift/reduce
+State 102 conflicts: 7 shift/reduce
+State 103 conflicts: 7 shift/reduce
+State 104 conflicts: 7 shift/reduce
+State 105 conflicts: 7 shift/reduce
+State 106 conflicts: 7 shift/reduce
+State 108 conflicts: 13 shift/reduce
+State 109 conflicts: 13 shift/reduce
+State 110 conflicts: 13 shift/reduce
+State 111 conflicts: 13 shift/reduce
+State 112 conflicts: 13 shift/reduce
+State 113 conflicts: 13 shift/reduce
+State 116 conflicts: 13 shift/reduce
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: func_def
+    2        | var_decl_stmt_list func_def
+    3        | func_decl func_def
+    4        | var_decl_stmt_list func_decl func_def
+    5        | func_decl var_decl_stmt_list func_def
+    6        | var_decl_stmt_list func_decl var_decl_stmt_list func_def
+
+    7 func_decl: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON
+    8          | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON
+
+    9 func_header: named_type NAME
+
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+   11         | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+   12 formal_param_list: formal_param_list COMMA formal_param
+   13                  | formal_param
+
+   14 formal_param: param_type NAME
+
+   15 param_type: INTEGER
+   16           | FLOAT
+   17           | BOOL
+   18           | STRING
+
+   19 statement_list: statement_list statement
+   20               | ε
+
+   21 statement: assignment_statement
+   22          | print_statement
+   23          | read_statement
+
+   24 optional_local_var_decl_stmt_list: ε
+   25                                  | var_decl_stmt_list
+
+   26 var_decl_stmt_list: var_decl_stmt
+   27                   | var_decl_stmt_list var_decl_stmt
+
+   28 var_decl_stmt: param_type var_decl_item_list SEMICOLON
+
+   29 var_decl_item_list: var_decl_item_list COMMA var_decl_item
+   30                   | var_decl_item
+
+   31 var_decl_item: NAME
+
+   32 named_type: INTEGER
+   33           | FLOAT
+   34           | VOID
+   35           | STRING
+   36           | BOOL
+
+   37 assignment_statement: variable_as_operand ASSIGN_OP expression SEMICOLON
+
+   38 print_statement: WRITE expression SEMICOLON
+
+   39 read_statement: READ variable_name SEMICOLON
+
+   40 expression: expression PLUS expression
+   41           | expression MINUS expression
+   42           | expression MULT expression
+   43           | expression DIV expression
+   44           | MINUS expression
+   45           | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET
+   46           | expression QUESTION_MARK expression COLON expression
+   47           | expression AND expression
+   48           | expression OR expression
+   49           | NOT expression
+   50           | rel_expression
+   51           | variable_as_operand
+   52           | constant_as_operand
+
+   53 rel_expression: expression LESS_THAN expression
+   54               | expression LESS_THAN_EQUAL expression
+   55               | expression GREATER_THAN expression
+   56               | expression GREATER_THAN_EQUAL expression
+   57               | expression NOT_EQUAL expression
+   58               | expression EQUAL expression
+
+   59 variable_as_operand: variable_name
+
+   60 variable_name: NAME
+
+   61 constant_as_operand: INT_NUM
+   62                    | FLOAT_NUM
+   63                    | STR_CONST
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    VOID (258) 34
+    INTEGER (259) 15 32
+    STRING (260) 18 35
+    FLOAT (261) 16 33
+    BOOL (262) 17 36
+    NAME <var> (263) 9 14 31 60
+    READ (264) 39
+    WRITE (265) 38
+    INT_NUM <iptr> (266) 61
+    FLOAT_NUM <fptr> (267) 62
+    STR_CONST <sptr> (268) 63
+    PLUS (269) 40
+    MINUS (270) 41 44
+    MULT (271) 42
+    DIV (272) 43
+    ASSIGN_OP (273) 37
+    NOT (274) 49
+    AND (275) 47
+    OR (276) 48
+    QUESTION_MARK (277) 46
+    COLON (278) 46
+    LESS_THAN (279) 53
+    LESS_THAN_EQUAL (280) 54
+    GREATER_THAN (281) 55
+    GREATER_THAN_EQUAL (282) 56
+    EQUAL (283) 58
+    NOT_EQUAL (284) 57
+    SEMICOLON (285) 7 8 28 37 38 39
+    COMMA (286) 12 29
+    LEFT_ROUND_BRACKET (287) 7 8 10 11 45
+    RIGHT_ROUND_BRACKET (288) 7 8 10 11 45
+    LEFT_CURLY_BRACKET (289) 10 11
+    RIGHT_CURLY_BRACKET (290) 10 11
+    UMINUS (291)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (37)
+        on left: 0
+    program (38)
+        on left: 1 2 3 4 5 6
+        on right: 0
+    func_decl (39)
+        on left: 7 8
+        on right: 3 4 5 6
+    func_header (40)
+        on left: 9
+        on right: 7 8 10 11
+    func_def (41)
+        on left: 10 11
+        on right: 1 2 3 4 5 6
+    formal_param_list (42)
+        on left: 12 13
+        on right: 7 10 12
+    formal_param (43)
+        on left: 14
+        on right: 12 13
+    param_type (44)
+        on left: 15 16 17 18
+        on right: 14 28
+    statement_list (45)
+        on left: 19 20
+        on right: 10 11 19
+    statement <stmt> (46)
+        on left: 21 22 23
+        on right: 19
+    optional_local_var_decl_stmt_list (47)
+        on left: 24 25
+        on right: 10 11
+    var_decl_stmt_list (48)
+        on left: 26 27
+        on right: 2 4 5 6 25 27
+    var_decl_stmt (49)
+        on left: 28
+        on right: 26 27
+    var_decl_item_list (50)
+        on left: 29 30
+        on right: 28 29
+    var_decl_item (51)
+        on left: 31
+        on right: 29 30
+    named_type (52)
+        on left: 32 33 34 35 36
+        on right: 9
+    assignment_statement <asgn> (53)
+        on left: 37
+        on right: 21
+    print_statement <write> (54)
+        on left: 38
+        on right: 22
+    read_statement <read> (55)
+        on left: 39
+        on right: 23
+    expression <expr> (56)
+        on left: 40 41 42 43 44 45 46 47 48 49 50 51 52
+        on right: 37 38 40 41 42 43 44 45 46 47 48 49 53 54 55 56 57 58
+    rel_expression <expr> (57)
+        on left: 53 54 55 56 57 58
+        on right: 50
+    variable_as_operand <var> (58)
+        on left: 59
+        on right: 37 51
+    variable_name <var> (59)
+        on left: 60
+        on right: 39 59
+    constant_as_operand <expr> (60)
+        on left: 61 62 63
+        on right: 52
+
+
+State 0
+
+    0 $accept: • program $end
+
+    VOID     shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    STRING   shift, and go to state 3
+    FLOAT    shift, and go to state 4
+    BOOL     shift, and go to state 5
+
+    program             go to state 6
+    func_decl           go to state 7
+    func_header         go to state 8
+    func_def            go to state 9
+    param_type          go to state 10
+    var_decl_stmt_list  go to state 11
+    var_decl_stmt       go to state 12
+    named_type          go to state 13
+
+
+State 1
+
+   34 named_type: VOID •
+
+    $default  reduce using rule 34 (named_type)
+
+
+State 2
+
+   15 param_type: INTEGER •
+   32 named_type: INTEGER •
+
+    NAME      reduce using rule 15 (param_type)
+    NAME      [reduce using rule 32 (named_type)]
+    $default  reduce using rule 15 (param_type)
+
+
+State 3
+
+   18 param_type: STRING •
+   35 named_type: STRING •
+
+    NAME      reduce using rule 18 (param_type)
+    NAME      [reduce using rule 35 (named_type)]
+    $default  reduce using rule 18 (param_type)
+
+
+State 4
+
+   16 param_type: FLOAT •
+   33 named_type: FLOAT •
+
+    NAME      reduce using rule 16 (param_type)
+    NAME      [reduce using rule 33 (named_type)]
+    $default  reduce using rule 16 (param_type)
+
+
+State 5
+
+   17 param_type: BOOL •
+   36 named_type: BOOL •
+
+    NAME      reduce using rule 17 (param_type)
+    NAME      [reduce using rule 36 (named_type)]
+    $default  reduce using rule 17 (param_type)
+
+
+State 6
+
+    0 $accept: program • $end
+
+    $end  shift, and go to state 14
+
+
+State 7
+
+    3 program: func_decl • func_def
+    5        | func_decl • var_decl_stmt_list func_def
+
+    VOID     shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    STRING   shift, and go to state 3
+    FLOAT    shift, and go to state 4
+    BOOL     shift, and go to state 5
+
+    func_header         go to state 15
+    func_def            go to state 16
+    param_type          go to state 10
+    var_decl_stmt_list  go to state 17
+    var_decl_stmt       go to state 12
+    named_type          go to state 13
+
+
+State 8
+
+    7 func_decl: func_header • LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON
+    8          | func_header • LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON
+   10 func_def: func_header • LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+   11         | func_header • LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    LEFT_ROUND_BRACKET  shift, and go to state 18
+
+
+State 9
+
+    1 program: func_def •
+
+    $default  reduce using rule 1 (program)
+
+
+State 10
+
+   28 var_decl_stmt: param_type • var_decl_item_list SEMICOLON
+
+    NAME  shift, and go to state 19
+
+    var_decl_item_list  go to state 20
+    var_decl_item       go to state 21
+
+
+State 11
+
+    2 program: var_decl_stmt_list • func_def
+    4        | var_decl_stmt_list • func_decl func_def
+    6        | var_decl_stmt_list • func_decl var_decl_stmt_list func_def
+   27 var_decl_stmt_list: var_decl_stmt_list • var_decl_stmt
+
+    VOID     shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    STRING   shift, and go to state 3
+    FLOAT    shift, and go to state 4
+    BOOL     shift, and go to state 5
+
+    func_decl      go to state 22
+    func_header    go to state 8
+    func_def       go to state 23
+    param_type     go to state 10
+    var_decl_stmt  go to state 24
+    named_type     go to state 13
+
+
+State 12
+
+   26 var_decl_stmt_list: var_decl_stmt •
+
+    $default  reduce using rule 26 (var_decl_stmt_list)
+
+
+State 13
+
+    9 func_header: named_type • NAME
+
+    NAME  shift, and go to state 25
+
+
+State 14
+
+    0 $accept: program $end •
+
+    $default  accept
+
+
+State 15
+
+   10 func_def: func_header • LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+   11         | func_header • LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    LEFT_ROUND_BRACKET  shift, and go to state 26
+
+
+State 16
+
+    3 program: func_decl func_def •
+
+    $default  reduce using rule 3 (program)
+
+
+State 17
+
+    5 program: func_decl var_decl_stmt_list • func_def
+   27 var_decl_stmt_list: var_decl_stmt_list • var_decl_stmt
+
+    VOID     shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    STRING   shift, and go to state 3
+    FLOAT    shift, and go to state 4
+    BOOL     shift, and go to state 5
+
+    func_header    go to state 15
+    func_def       go to state 27
+    param_type     go to state 10
+    var_decl_stmt  go to state 24
+    named_type     go to state 13
+
+
+State 18
+
+    7 func_decl: func_header LEFT_ROUND_BRACKET • formal_param_list RIGHT_ROUND_BRACKET SEMICOLON
+    8          | func_header LEFT_ROUND_BRACKET • RIGHT_ROUND_BRACKET SEMICOLON
+   10 func_def: func_header LEFT_ROUND_BRACKET • formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+   11         | func_header LEFT_ROUND_BRACKET • RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    INTEGER              shift, and go to state 28
+    STRING               shift, and go to state 29
+    FLOAT                shift, and go to state 30
+    BOOL                 shift, and go to state 31
+    RIGHT_ROUND_BRACKET  shift, and go to state 32
+
+    formal_param_list  go to state 33
+    formal_param       go to state 34
+    param_type         go to state 35
+
+
+State 19
+
+   31 var_decl_item: NAME •
+
+    $default  reduce using rule 31 (var_decl_item)
+
+
+State 20
+
+   28 var_decl_stmt: param_type var_decl_item_list • SEMICOLON
+   29 var_decl_item_list: var_decl_item_list • COMMA var_decl_item
+
+    SEMICOLON  shift, and go to state 36
+    COMMA      shift, and go to state 37
+
+
+State 21
+
+   30 var_decl_item_list: var_decl_item •
+
+    $default  reduce using rule 30 (var_decl_item_list)
+
+
+State 22
+
+    4 program: var_decl_stmt_list func_decl • func_def
+    6        | var_decl_stmt_list func_decl • var_decl_stmt_list func_def
+
+    VOID     shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    STRING   shift, and go to state 3
+    FLOAT    shift, and go to state 4
+    BOOL     shift, and go to state 5
+
+    func_header         go to state 15
+    func_def            go to state 38
+    param_type          go to state 10
+    var_decl_stmt_list  go to state 39
+    var_decl_stmt       go to state 12
+    named_type          go to state 13
+
+
+State 23
+
+    2 program: var_decl_stmt_list func_def •
+
+    $default  reduce using rule 2 (program)
+
+
+State 24
+
+   27 var_decl_stmt_list: var_decl_stmt_list var_decl_stmt •
+
+    $default  reduce using rule 27 (var_decl_stmt_list)
+
+
+State 25
+
+    9 func_header: named_type NAME •
+
+    $default  reduce using rule 9 (func_header)
+
+
+State 26
+
+   10 func_def: func_header LEFT_ROUND_BRACKET • formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+   11         | func_header LEFT_ROUND_BRACKET • RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    INTEGER              shift, and go to state 28
+    STRING               shift, and go to state 29
+    FLOAT                shift, and go to state 30
+    BOOL                 shift, and go to state 31
+    RIGHT_ROUND_BRACKET  shift, and go to state 40
+
+    formal_param_list  go to state 41
+    formal_param       go to state 34
+    param_type         go to state 35
+
+
+State 27
+
+    5 program: func_decl var_decl_stmt_list func_def •
+
+    $default  reduce using rule 5 (program)
+
+
+State 28
+
+   15 param_type: INTEGER •
+
+    $default  reduce using rule 15 (param_type)
+
+
+State 29
+
+   18 param_type: STRING •
+
+    $default  reduce using rule 18 (param_type)
+
+
+State 30
+
+   16 param_type: FLOAT •
+
+    $default  reduce using rule 16 (param_type)
+
+
+State 31
+
+   17 param_type: BOOL •
+
+    $default  reduce using rule 17 (param_type)
+
+
+State 32
+
+    8 func_decl: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET • SEMICOLON
+   11 func_def: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET • LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    SEMICOLON           shift, and go to state 42
+    LEFT_CURLY_BRACKET  shift, and go to state 43
+
+
+State 33
+
+    7 func_decl: func_header LEFT_ROUND_BRACKET formal_param_list • RIGHT_ROUND_BRACKET SEMICOLON
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list • RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+   12 formal_param_list: formal_param_list • COMMA formal_param
+
+    COMMA                shift, and go to state 44
+    RIGHT_ROUND_BRACKET  shift, and go to state 45
+
+
+State 34
+
+   13 formal_param_list: formal_param •
+
+    $default  reduce using rule 13 (formal_param_list)
+
+
+State 35
+
+   14 formal_param: param_type • NAME
+
+    NAME  shift, and go to state 46
+
+
+State 36
+
+   28 var_decl_stmt: param_type var_decl_item_list SEMICOLON •
+
+    $default  reduce using rule 28 (var_decl_stmt)
+
+
+State 37
+
+   29 var_decl_item_list: var_decl_item_list COMMA • var_decl_item
+
+    NAME  shift, and go to state 19
+
+    var_decl_item  go to state 47
+
+
+State 38
+
+    4 program: var_decl_stmt_list func_decl func_def •
+
+    $default  reduce using rule 4 (program)
+
+
+State 39
+
+    6 program: var_decl_stmt_list func_decl var_decl_stmt_list • func_def
+   27 var_decl_stmt_list: var_decl_stmt_list • var_decl_stmt
+
+    VOID     shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    STRING   shift, and go to state 3
+    FLOAT    shift, and go to state 4
+    BOOL     shift, and go to state 5
+
+    func_header    go to state 15
+    func_def       go to state 48
+    param_type     go to state 10
+    var_decl_stmt  go to state 24
+    named_type     go to state 13
+
+
+State 40
+
+   11 func_def: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET • LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    LEFT_CURLY_BRACKET  shift, and go to state 43
+
+
+State 41
+
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list • RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+   12 formal_param_list: formal_param_list • COMMA formal_param
+
+    COMMA                shift, and go to state 44
+    RIGHT_ROUND_BRACKET  shift, and go to state 49
+
+
+State 42
+
+    8 func_decl: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON •
+
+    $default  reduce using rule 8 (func_decl)
+
+
+State 43
+
+   11 func_def: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET • optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    INTEGER  shift, and go to state 28
+    STRING   shift, and go to state 29
+    FLOAT    shift, and go to state 30
+    BOOL     shift, and go to state 31
+
+    $default  reduce using rule 24 (optional_local_var_decl_stmt_list)
+
+    param_type                         go to state 10
+    optional_local_var_decl_stmt_list  go to state 50
+    var_decl_stmt_list                 go to state 51
+    var_decl_stmt                      go to state 12
+
+
+State 44
+
+   12 formal_param_list: formal_param_list COMMA • formal_param
+
+    INTEGER  shift, and go to state 28
+    STRING   shift, and go to state 29
+    FLOAT    shift, and go to state 30
+    BOOL     shift, and go to state 31
+
+    formal_param  go to state 52
+    param_type    go to state 35
+
+
+State 45
+
+    7 func_decl: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET • SEMICOLON
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET • LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    SEMICOLON           shift, and go to state 53
+    LEFT_CURLY_BRACKET  shift, and go to state 54
+
+
+State 46
+
+   14 formal_param: param_type NAME •
+
+    $default  reduce using rule 14 (formal_param)
+
+
+State 47
+
+   29 var_decl_item_list: var_decl_item_list COMMA var_decl_item •
+
+    $default  reduce using rule 29 (var_decl_item_list)
+
+
+State 48
+
+    6 program: var_decl_stmt_list func_decl var_decl_stmt_list func_def •
+
+    $default  reduce using rule 6 (program)
+
+
+State 49
+
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET • LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    LEFT_CURLY_BRACKET  shift, and go to state 54
+
+
+State 50
+
+   11 func_def: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list • statement_list RIGHT_CURLY_BRACKET
+
+    $default  reduce using rule 20 (statement_list)
+
+    statement_list  go to state 55
+
+
+State 51
+
+   25 optional_local_var_decl_stmt_list: var_decl_stmt_list •
+   27 var_decl_stmt_list: var_decl_stmt_list • var_decl_stmt
+
+    INTEGER  shift, and go to state 28
+    STRING   shift, and go to state 29
+    FLOAT    shift, and go to state 30
+    BOOL     shift, and go to state 31
+
+    $default  reduce using rule 25 (optional_local_var_decl_stmt_list)
+
+    param_type     go to state 10
+    var_decl_stmt  go to state 24
+
+
+State 52
+
+   12 formal_param_list: formal_param_list COMMA formal_param •
+
+    $default  reduce using rule 12 (formal_param_list)
+
+
+State 53
+
+    7 func_decl: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON •
+
+    $default  reduce using rule 7 (func_decl)
+
+
+State 54
+
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET • optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET
+
+    INTEGER  shift, and go to state 28
+    STRING   shift, and go to state 29
+    FLOAT    shift, and go to state 30
+    BOOL     shift, and go to state 31
+
+    $default  reduce using rule 24 (optional_local_var_decl_stmt_list)
+
+    param_type                         go to state 10
+    optional_local_var_decl_stmt_list  go to state 56
+    var_decl_stmt_list                 go to state 51
+    var_decl_stmt                      go to state 12
+
+
+State 55
+
+   11 func_def: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list • RIGHT_CURLY_BRACKET
+   19 statement_list: statement_list • statement
+
+    NAME                 shift, and go to state 57
+    READ                 shift, and go to state 58
+    WRITE                shift, and go to state 59
+    RIGHT_CURLY_BRACKET  shift, and go to state 60
+
+    statement             go to state 61
+    assignment_statement  go to state 62
+    print_statement       go to state 63
+    read_statement        go to state 64
+    variable_as_operand   go to state 65
+    variable_name         go to state 66
+
+
+State 56
+
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list • statement_list RIGHT_CURLY_BRACKET
+
+    $default  reduce using rule 20 (statement_list)
+
+    statement_list  go to state 67
+
+
+State 57
+
+   60 variable_name: NAME •
+
+    $default  reduce using rule 60 (variable_name)
+
+
+State 58
+
+   39 read_statement: READ • variable_name SEMICOLON
+
+    NAME  shift, and go to state 57
+
+    variable_name  go to state 68
+
+
+State 59
+
+   38 print_statement: WRITE • expression SEMICOLON
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 75
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 60
+
+   11 func_def: func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET •
+
+    $default  reduce using rule 11 (func_def)
+
+
+State 61
+
+   19 statement_list: statement_list statement •
+
+    $default  reduce using rule 19 (statement_list)
+
+
+State 62
+
+   21 statement: assignment_statement •
+
+    $default  reduce using rule 21 (statement)
+
+
+State 63
+
+   22 statement: print_statement •
+
+    $default  reduce using rule 22 (statement)
+
+
+State 64
+
+   23 statement: read_statement •
+
+    $default  reduce using rule 23 (statement)
+
+
+State 65
+
+   37 assignment_statement: variable_as_operand • ASSIGN_OP expression SEMICOLON
+
+    ASSIGN_OP  shift, and go to state 79
+
+
+State 66
+
+   59 variable_as_operand: variable_name •
+
+    $default  reduce using rule 59 (variable_as_operand)
+
+
+State 67
+
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list • RIGHT_CURLY_BRACKET
+   19 statement_list: statement_list • statement
+
+    NAME                 shift, and go to state 57
+    READ                 shift, and go to state 58
+    WRITE                shift, and go to state 59
+    RIGHT_CURLY_BRACKET  shift, and go to state 80
+
+    statement             go to state 61
+    assignment_statement  go to state 62
+    print_statement       go to state 63
+    read_statement        go to state 64
+    variable_as_operand   go to state 65
+    variable_name         go to state 66
+
+
+State 68
+
+   39 read_statement: READ variable_name • SEMICOLON
+
+    SEMICOLON  shift, and go to state 81
+
+
+State 69
+
+   61 constant_as_operand: INT_NUM •
+
+    $default  reduce using rule 61 (constant_as_operand)
+
+
+State 70
+
+   62 constant_as_operand: FLOAT_NUM •
+
+    $default  reduce using rule 62 (constant_as_operand)
+
+
+State 71
+
+   63 constant_as_operand: STR_CONST •
+
+    $default  reduce using rule 63 (constant_as_operand)
+
+
+State 72
+
+   44 expression: MINUS • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 82
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 73
+
+   49 expression: NOT • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 83
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 74
+
+   45 expression: LEFT_ROUND_BRACKET • expression RIGHT_ROUND_BRACKET
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 84
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 75
+
+   38 print_statement: WRITE expression • SEMICOLON
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+    SEMICOLON           shift, and go to state 98
+
+
+State 76
+
+   50 expression: rel_expression •
+
+    $default  reduce using rule 50 (expression)
+
+
+State 77
+
+   51 expression: variable_as_operand •
+
+    $default  reduce using rule 51 (expression)
+
+
+State 78
+
+   52 expression: constant_as_operand •
+
+    $default  reduce using rule 52 (expression)
+
+
+State 79
+
+   37 assignment_statement: variable_as_operand ASSIGN_OP • expression SEMICOLON
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 99
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 80
+
+   10 func_def: func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET •
+
+    $default  reduce using rule 10 (func_def)
+
+
+State 81
+
+   39 read_statement: READ variable_name SEMICOLON •
+
+    $default  reduce using rule 39 (read_statement)
+
+
+State 82
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   44           | MINUS expression •
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 44 (expression)]
+    LESS_THAN           [reduce using rule 44 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 44 (expression)]
+    GREATER_THAN        [reduce using rule 44 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 44 (expression)]
+    EQUAL               [reduce using rule 44 (expression)]
+    NOT_EQUAL           [reduce using rule 44 (expression)]
+    $default            reduce using rule 44 (expression)
+
+
+State 83
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   49           | NOT expression •
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 49 (expression)]
+    LESS_THAN           [reduce using rule 49 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 49 (expression)]
+    GREATER_THAN        [reduce using rule 49 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 49 (expression)]
+    EQUAL               [reduce using rule 49 (expression)]
+    NOT_EQUAL           [reduce using rule 49 (expression)]
+    $default            reduce using rule 49 (expression)
+
+
+State 84
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   45           | LEFT_ROUND_BRACKET expression • RIGHT_ROUND_BRACKET
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                 shift, and go to state 85
+    MINUS                shift, and go to state 86
+    MULT                 shift, and go to state 87
+    DIV                  shift, and go to state 88
+    AND                  shift, and go to state 89
+    OR                   shift, and go to state 90
+    QUESTION_MARK        shift, and go to state 91
+    LESS_THAN            shift, and go to state 92
+    LESS_THAN_EQUAL      shift, and go to state 93
+    GREATER_THAN         shift, and go to state 94
+    GREATER_THAN_EQUAL   shift, and go to state 95
+    EQUAL                shift, and go to state 96
+    NOT_EQUAL            shift, and go to state 97
+    RIGHT_ROUND_BRACKET  shift, and go to state 100
+
+
+State 85
+
+   40 expression: expression PLUS • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 101
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 86
+
+   41 expression: expression MINUS • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 102
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 87
+
+   42 expression: expression MULT • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 103
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 88
+
+   43 expression: expression DIV • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 104
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 89
+
+   47 expression: expression AND • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 105
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 90
+
+   48 expression: expression OR • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 106
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 91
+
+   46 expression: expression QUESTION_MARK • expression COLON expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 107
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 92
+
+   53 rel_expression: expression LESS_THAN • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 108
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 93
+
+   54 rel_expression: expression LESS_THAN_EQUAL • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 109
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 94
+
+   55 rel_expression: expression GREATER_THAN • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 110
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 95
+
+   56 rel_expression: expression GREATER_THAN_EQUAL • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 111
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 96
+
+   58 rel_expression: expression EQUAL • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 112
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 97
+
+   57 rel_expression: expression NOT_EQUAL • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 113
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 98
+
+   38 print_statement: WRITE expression SEMICOLON •
+
+    $default  reduce using rule 38 (print_statement)
+
+
+State 99
+
+   37 assignment_statement: variable_as_operand ASSIGN_OP expression • SEMICOLON
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+    SEMICOLON           shift, and go to state 114
+
+
+State 100
+
+   45 expression: LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET •
+
+    $default  reduce using rule 45 (expression)
+
+
+State 101
+
+   40 expression: expression • PLUS expression
+   40           | expression PLUS expression •
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 40 (expression)]
+    LESS_THAN           [reduce using rule 40 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 40 (expression)]
+    GREATER_THAN        [reduce using rule 40 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 40 (expression)]
+    EQUAL               [reduce using rule 40 (expression)]
+    NOT_EQUAL           [reduce using rule 40 (expression)]
+    $default            reduce using rule 40 (expression)
+
+
+State 102
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   41           | expression MINUS expression •
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 41 (expression)]
+    LESS_THAN           [reduce using rule 41 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 41 (expression)]
+    GREATER_THAN        [reduce using rule 41 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 41 (expression)]
+    EQUAL               [reduce using rule 41 (expression)]
+    NOT_EQUAL           [reduce using rule 41 (expression)]
+    $default            reduce using rule 41 (expression)
+
+
+State 103
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   42           | expression MULT expression •
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 42 (expression)]
+    LESS_THAN           [reduce using rule 42 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 42 (expression)]
+    GREATER_THAN        [reduce using rule 42 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 42 (expression)]
+    EQUAL               [reduce using rule 42 (expression)]
+    NOT_EQUAL           [reduce using rule 42 (expression)]
+    $default            reduce using rule 42 (expression)
+
+
+State 104
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   43           | expression DIV expression •
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 43 (expression)]
+    LESS_THAN           [reduce using rule 43 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 43 (expression)]
+    GREATER_THAN        [reduce using rule 43 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 43 (expression)]
+    EQUAL               [reduce using rule 43 (expression)]
+    NOT_EQUAL           [reduce using rule 43 (expression)]
+    $default            reduce using rule 43 (expression)
+
+
+State 105
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   47           | expression AND expression •
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 47 (expression)]
+    LESS_THAN           [reduce using rule 47 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 47 (expression)]
+    GREATER_THAN        [reduce using rule 47 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 47 (expression)]
+    EQUAL               [reduce using rule 47 (expression)]
+    NOT_EQUAL           [reduce using rule 47 (expression)]
+    $default            reduce using rule 47 (expression)
+
+
+State 106
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   48           | expression OR expression •
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    AND                 shift, and go to state 89
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    QUESTION_MARK       [reduce using rule 48 (expression)]
+    LESS_THAN           [reduce using rule 48 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 48 (expression)]
+    GREATER_THAN        [reduce using rule 48 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 48 (expression)]
+    EQUAL               [reduce using rule 48 (expression)]
+    NOT_EQUAL           [reduce using rule 48 (expression)]
+    $default            reduce using rule 48 (expression)
+
+
+State 107
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   46           | expression QUESTION_MARK expression • COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    COLON               shift, and go to state 115
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+
+State 108
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   53               | expression LESS_THAN expression •
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    PLUS                [reduce using rule 53 (rel_expression)]
+    MINUS               [reduce using rule 53 (rel_expression)]
+    MULT                [reduce using rule 53 (rel_expression)]
+    DIV                 [reduce using rule 53 (rel_expression)]
+    AND                 [reduce using rule 53 (rel_expression)]
+    OR                  [reduce using rule 53 (rel_expression)]
+    QUESTION_MARK       [reduce using rule 53 (rel_expression)]
+    LESS_THAN           [reduce using rule 53 (rel_expression)]
+    LESS_THAN_EQUAL     [reduce using rule 53 (rel_expression)]
+    GREATER_THAN        [reduce using rule 53 (rel_expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 53 (rel_expression)]
+    EQUAL               [reduce using rule 53 (rel_expression)]
+    NOT_EQUAL           [reduce using rule 53 (rel_expression)]
+    $default            reduce using rule 53 (rel_expression)
+
+
+State 109
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   54               | expression LESS_THAN_EQUAL expression •
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    PLUS                [reduce using rule 54 (rel_expression)]
+    MINUS               [reduce using rule 54 (rel_expression)]
+    MULT                [reduce using rule 54 (rel_expression)]
+    DIV                 [reduce using rule 54 (rel_expression)]
+    AND                 [reduce using rule 54 (rel_expression)]
+    OR                  [reduce using rule 54 (rel_expression)]
+    QUESTION_MARK       [reduce using rule 54 (rel_expression)]
+    LESS_THAN           [reduce using rule 54 (rel_expression)]
+    LESS_THAN_EQUAL     [reduce using rule 54 (rel_expression)]
+    GREATER_THAN        [reduce using rule 54 (rel_expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 54 (rel_expression)]
+    EQUAL               [reduce using rule 54 (rel_expression)]
+    NOT_EQUAL           [reduce using rule 54 (rel_expression)]
+    $default            reduce using rule 54 (rel_expression)
+
+
+State 110
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   55               | expression GREATER_THAN expression •
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    PLUS                [reduce using rule 55 (rel_expression)]
+    MINUS               [reduce using rule 55 (rel_expression)]
+    MULT                [reduce using rule 55 (rel_expression)]
+    DIV                 [reduce using rule 55 (rel_expression)]
+    AND                 [reduce using rule 55 (rel_expression)]
+    OR                  [reduce using rule 55 (rel_expression)]
+    QUESTION_MARK       [reduce using rule 55 (rel_expression)]
+    LESS_THAN           [reduce using rule 55 (rel_expression)]
+    LESS_THAN_EQUAL     [reduce using rule 55 (rel_expression)]
+    GREATER_THAN        [reduce using rule 55 (rel_expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 55 (rel_expression)]
+    EQUAL               [reduce using rule 55 (rel_expression)]
+    NOT_EQUAL           [reduce using rule 55 (rel_expression)]
+    $default            reduce using rule 55 (rel_expression)
+
+
+State 111
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   56               | expression GREATER_THAN_EQUAL expression •
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    PLUS                [reduce using rule 56 (rel_expression)]
+    MINUS               [reduce using rule 56 (rel_expression)]
+    MULT                [reduce using rule 56 (rel_expression)]
+    DIV                 [reduce using rule 56 (rel_expression)]
+    AND                 [reduce using rule 56 (rel_expression)]
+    OR                  [reduce using rule 56 (rel_expression)]
+    QUESTION_MARK       [reduce using rule 56 (rel_expression)]
+    LESS_THAN           [reduce using rule 56 (rel_expression)]
+    LESS_THAN_EQUAL     [reduce using rule 56 (rel_expression)]
+    GREATER_THAN        [reduce using rule 56 (rel_expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 56 (rel_expression)]
+    EQUAL               [reduce using rule 56 (rel_expression)]
+    NOT_EQUAL           [reduce using rule 56 (rel_expression)]
+    $default            reduce using rule 56 (rel_expression)
+
+
+State 112
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+   58               | expression EQUAL expression •
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    PLUS                [reduce using rule 58 (rel_expression)]
+    MINUS               [reduce using rule 58 (rel_expression)]
+    MULT                [reduce using rule 58 (rel_expression)]
+    DIV                 [reduce using rule 58 (rel_expression)]
+    AND                 [reduce using rule 58 (rel_expression)]
+    OR                  [reduce using rule 58 (rel_expression)]
+    QUESTION_MARK       [reduce using rule 58 (rel_expression)]
+    LESS_THAN           [reduce using rule 58 (rel_expression)]
+    LESS_THAN_EQUAL     [reduce using rule 58 (rel_expression)]
+    GREATER_THAN        [reduce using rule 58 (rel_expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 58 (rel_expression)]
+    EQUAL               [reduce using rule 58 (rel_expression)]
+    NOT_EQUAL           [reduce using rule 58 (rel_expression)]
+    $default            reduce using rule 58 (rel_expression)
+
+
+State 113
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   57               | expression NOT_EQUAL expression •
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    PLUS                [reduce using rule 57 (rel_expression)]
+    MINUS               [reduce using rule 57 (rel_expression)]
+    MULT                [reduce using rule 57 (rel_expression)]
+    DIV                 [reduce using rule 57 (rel_expression)]
+    AND                 [reduce using rule 57 (rel_expression)]
+    OR                  [reduce using rule 57 (rel_expression)]
+    QUESTION_MARK       [reduce using rule 57 (rel_expression)]
+    LESS_THAN           [reduce using rule 57 (rel_expression)]
+    LESS_THAN_EQUAL     [reduce using rule 57 (rel_expression)]
+    GREATER_THAN        [reduce using rule 57 (rel_expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 57 (rel_expression)]
+    EQUAL               [reduce using rule 57 (rel_expression)]
+    NOT_EQUAL           [reduce using rule 57 (rel_expression)]
+    $default            reduce using rule 57 (rel_expression)
+
+
+State 114
+
+   37 assignment_statement: variable_as_operand ASSIGN_OP expression SEMICOLON •
+
+    $default  reduce using rule 37 (assignment_statement)
+
+
+State 115
+
+   46 expression: expression QUESTION_MARK expression COLON • expression
+
+    NAME                shift, and go to state 57
+    INT_NUM             shift, and go to state 69
+    FLOAT_NUM           shift, and go to state 70
+    STR_CONST           shift, and go to state 71
+    MINUS               shift, and go to state 72
+    NOT                 shift, and go to state 73
+    LEFT_ROUND_BRACKET  shift, and go to state 74
+
+    expression           go to state 116
+    rel_expression       go to state 76
+    variable_as_operand  go to state 77
+    variable_name        go to state 66
+    constant_as_operand  go to state 78
+
+
+State 116
+
+   40 expression: expression • PLUS expression
+   41           | expression • MINUS expression
+   42           | expression • MULT expression
+   43           | expression • DIV expression
+   46           | expression • QUESTION_MARK expression COLON expression
+   46           | expression QUESTION_MARK expression COLON expression •
+   47           | expression • AND expression
+   48           | expression • OR expression
+   53 rel_expression: expression • LESS_THAN expression
+   54               | expression • LESS_THAN_EQUAL expression
+   55               | expression • GREATER_THAN expression
+   56               | expression • GREATER_THAN_EQUAL expression
+   57               | expression • NOT_EQUAL expression
+   58               | expression • EQUAL expression
+
+    PLUS                shift, and go to state 85
+    MINUS               shift, and go to state 86
+    MULT                shift, and go to state 87
+    DIV                 shift, and go to state 88
+    AND                 shift, and go to state 89
+    OR                  shift, and go to state 90
+    QUESTION_MARK       shift, and go to state 91
+    LESS_THAN           shift, and go to state 92
+    LESS_THAN_EQUAL     shift, and go to state 93
+    GREATER_THAN        shift, and go to state 94
+    GREATER_THAN_EQUAL  shift, and go to state 95
+    EQUAL               shift, and go to state 96
+    NOT_EQUAL           shift, and go to state 97
+
+    PLUS                [reduce using rule 46 (expression)]
+    MINUS               [reduce using rule 46 (expression)]
+    MULT                [reduce using rule 46 (expression)]
+    DIV                 [reduce using rule 46 (expression)]
+    AND                 [reduce using rule 46 (expression)]
+    OR                  [reduce using rule 46 (expression)]
+    QUESTION_MARK       [reduce using rule 46 (expression)]
+    LESS_THAN           [reduce using rule 46 (expression)]
+    LESS_THAN_EQUAL     [reduce using rule 46 (expression)]
+    GREATER_THAN        [reduce using rule 46 (expression)]
+    GREATER_THAN_EQUAL  [reduce using rule 46 (expression)]
+    EQUAL               [reduce using rule 46 (expression)]
+    NOT_EQUAL           [reduce using rule 46 (expression)]
+    $default            reduce using rule 46 (expression)
