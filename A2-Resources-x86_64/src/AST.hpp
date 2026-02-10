@@ -1,15 +1,12 @@
 #ifndef AST_HPP
 #define AST_HPP
 
-enum class Type {
-    UNKNOWN, // default type
-	INT,
-	FLOAT,
-	STR,
-    BOOL,
-};
+#include <string>
+
+#include "SymTabEntry.hpp"
 
 enum class Operator {
+    NOP, // for literals/variables
     PLUS,
     MINUS,
     MULT,
@@ -31,6 +28,48 @@ class AST {
 
 };
 
+// LValueAST comes later
+
+class ExprAST : public AST  {
+    Type type;
+    Operator op;
+    ExprAST *operand1;
+    ExprAST *operand2;
+    ExprAST *operand3;
+
+public:
+    ExprAST(Type type, Operator op, ExprAST *operand1, ExprAST *operand2, ExprAST *operand3);
+};
+
+class IntLiteralAST : public ExprAST  {
+    int ival;
+
+public:
+    IntLiteralAST(int ival): ExprAST(Type::INT), ival(ival) {}
+};
+
+class FloatLiteralAST : public ExprAST  {
+    float fval;
+
+    FloatLiteralAST(float fval): RValueAST(Type::FLOAT), fval(fval) {}
+};
+
+class StrLiteralAST : public ExprAST  {
+    std::string sval;
+
+public:
+    StrLiteralAST(char *_sval) : RValueAST(Type::STR), sval(_sval) {}
+};
+
+class VarAST : public ExprAST  {
+    SymTabEntry *sym_tab_entry_ptr;
+
+    void set_sym_tab_entry_ptr(SymTabEntry *ste_ptr);
+
+public:
+    VarAST(char *var_name);
+};
+
 class AssignAST : public AST {
     VarAST *lhs;
     ExprAST *rhs;
@@ -39,68 +78,18 @@ public:
     AssignAST(VarAST *lhs, ExprAST *rhs) : AST(), lhs(lhs), rhs(rhs) {}
 };
 
-class ReadAST : public AST final {
+class ReadAST : public AST  {
     VarAST *var;
 
 public:
     ReadAST(VarAST *var) : AST(), var(var) {}
 };
 
-class WriteAST : public AST final {
+class WriteAST : public AST  {
     ExprAST *expr;
 
 public:
     WriteAST(ExprAST *expr);
-};
-
-// LValueAST comes later
-
-class RValueAST : public AST {
-protected:
-    Type type;
-
-public:
-    RValueAST(Type type) : type(type) {}
-    RValueAST() : RValueAST(Type::UNKNOWN) {}
-};
-
-class IntLiteralAST : public RValueAST final {
-    int ival;
-
-public:
-    IntLiteralAST(int ival): RValueAST(Type::INT), ival(ival) {}
-};
-
-class FloatLiteralAST : public RValueAST final {
-    float fval;
-
-    FloatLiteralAST(float fval): RValueAST(Type::FLOAT), fval(fval) {}
-};
-
-class StrLiteralAST : public RValueAST final {
-    std::string sval;
-
-public:
-    StrLiteralAST(char *_sval) : RValueAST(Type::STR), sval(_sval)
-};
-
-class VarAST : public RValueAST final {
-    SymTabEntry *sym_tab_entry_ptr;
-
-    set_sym_tab_entry_ptr(SymTabEntry *ste_ptr);
-
-public:
-    VarAST(char *var_name);
-};
-
-class ExprAST : public RValueAST final {
-    Operator op;
-    RValueAST *operand1, operand2, operand3;
-
-public:
-    ExprAST(Operator op, RValueAST *operand1, RValueAST *operand2, RValueAST *operand3) : RValueAST(), op(op), operand1(operand1), operand2(operand2), operand3(operand3) {}
-    ExprAST(Operator op, RValueAST *operand1, RValueAST *operand2) : ExprAST(op, operand1, operand2, nullptr) {}
-    ExprAST(Operator op, RValueAST *operand1) : ExprAST(op, operand1, nullptr) {}
 };
 
 #endif

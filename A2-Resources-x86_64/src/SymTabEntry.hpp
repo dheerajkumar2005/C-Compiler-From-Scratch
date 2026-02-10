@@ -4,6 +4,15 @@
 #include <string>
 #include <map>
 
+enum class Type {
+    UNKNOWN, // default type
+    VOID,
+	INT,
+	FLOAT,
+	STR,
+    BOOL,
+};
+
 struct SymTabEntry {
     // NOTE: This won't work when we have more than one scope
     // Whenever we introduce multiple functions, compound statements, etc.

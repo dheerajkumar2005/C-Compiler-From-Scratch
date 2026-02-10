@@ -1,9 +1,6 @@
-%{
-    #include <stdio.h>
-    #include <stdlib.h>
-
+%code requires {
     #include "AST.hpp"
-%}
+}
 
 %union {
     AST *stmt;
@@ -142,7 +139,7 @@ var_decl_stmt_list
 ;
 
 var_decl_stmt
-    : param_type var_decl_item_list SEMICOLON
+    : param_type var_decl_item_list SEMICOLON { /* TODO: Make SymTabEntry here */ }
 ;
 
 var_decl_item_list
@@ -180,11 +177,11 @@ expression
     | expression MULT expression { $$ = new ExprAST(Operator::MULT, $1, $3); }
     | expression DIV expression { $$ = new ExprAST(Operator::DIV, $1, $3); }
     | MINUS expression %prec UMINUS { $$ = new ExprAST(Operator::UMINUS, $2); }
-    | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $1; }
+    | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $2; }
     | expression QUESTION_MARK expression COLON expression { $$ = new ExprAST(Operator::QUESTION_MARK_COLON, $1, $3, $5); }
     | expression AND expression { $$ = new ExprAST(Operator::AND, $1, $3); } 
     | expression OR expression { $$ = new ExprAST(Operator::OR, $1, $3); }
-    | NOT expression { $$ = new ExprAST(Operator::NOT, $1, $3); }
+    | NOT expression { $$ = new ExprAST(Operator::NOT, $2); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }

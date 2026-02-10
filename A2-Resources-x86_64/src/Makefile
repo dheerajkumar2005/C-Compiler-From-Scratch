@@ -3,8 +3,8 @@ MAIN = sclp
 PARSE = parser
 SCAN = scanner
 
-$(MAIN): $(MAIN).o lex.yy.o y.tab.o
-	g++ -o $(MAIN) $(MAIN).o lex.yy.o y.tab.o -ly -ll
+$(MAIN): $(MAIN).o lex.yy.o y.tab.o AST.o
+	g++ -o $(MAIN) $(MAIN).o lex.yy.o y.tab.o AST.o -ly -ll
 
 $(PARSE): lex.yy.o y.tab.o
 	gcc -o $(PARSE) lex.yy.o y.tab.o -ly -ll
@@ -19,6 +19,9 @@ y.tab.o y.tab.h: $(PARSE).y
 lex.yy.o : $(SCAN).l y.tab.h
 	lex $(SCAN).l
 	gcc -c lex.yy.c -o lex.yy.o
+
+AST.o: AST.cpp
+	g++ -c AST.cpp -o AST.o
 
 clean:
 	rm -f *.o lex.yy.* *.tab.h *.tab.c y.output exp? *.out *.log $(MAIN) $(PARSE) *.toks
