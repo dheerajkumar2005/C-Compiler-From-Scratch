@@ -8,9 +8,9 @@
     ReadAST *read;
     WriteAST *write;
     ExprAST *expr;
-    IntLiteralAST *ival;
-    FloatLiteralAST *fval;
-    StrLiteralAST *sval;
+    IntLiteralAST *iptr;
+    FloatLiteralAST *fptr;
+    StrLiteralAST *sptr;
     VarAST *var;
 }
 
@@ -23,9 +23,9 @@
 %token <var> NAME
 %token READ
 %token WRITE
-%token <ival> INT_NUM
-%token <fval> FLOAT_NUM
-%token <sval> STR_CONST
+%token <iptr> INT_NUM
+%token <fptr> FLOAT_NUM
+%token <sptr> STR_CONST
 %token PLUS
 %token MINUS
 %token MULT
