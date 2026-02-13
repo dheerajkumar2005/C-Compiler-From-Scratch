@@ -1,6 +1,11 @@
-%code requires {
+%{
+    #include "support.hpp"
     #include "AST.hpp"
-}
+    
+    extern "C" int yylex(void);
+    extern "C" int yyparse(void);
+    extern "C" void yyerror(const char *s);
+%}
 
 %union {
     AST *stmt;
@@ -63,17 +68,14 @@
 %start program
 
 // Disambiguation
-// Arithmetic operators
-%left PLUS MINUS
-%left MULT DIV
-%right UMINUS // NOTE: %right so that --x is parsed as (-(-x))
-
-// Logical operators
-// Unintentional precendence between arithmetic and logical operators established
-// But it is fine since such expressions are semantically invalid in all interpretations
+%right QUESTION_MARK COLON
 %left OR
 %left AND
-%right NOT
+%left EQUAL NOT_EQUAL
+%left LESS_THAN LESS_THAN_EQUAL GREATER_THAN GREATER_THAN_EQUAL
+%left PLUS MINUS
+%left MULT DIV
+%right NOT UMINUS
 
 %%
 
@@ -139,7 +141,7 @@ var_decl_stmt_list
 ;
 
 var_decl_stmt
-    : param_type var_decl_item_list SEMICOLON { /* TODO: Make SymTabEntry here */ }
+    : named_type var_decl_item_list SEMICOLON { /* TODO: Make SymTabEntry here */ }
 ;
 
 var_decl_item_list
@@ -172,28 +174,28 @@ read_statement
 ;
 
 expression
-    : expression PLUS expression { $$ = new ExprAST(Operator::PLUS, $1, $3); }
-    | expression MINUS expression { $$ = new ExprAST(Operator::MINUS, $1, $3); }
-    | expression MULT expression { $$ = new ExprAST(Operator::MULT, $1, $3); }
-    | expression DIV expression { $$ = new ExprAST(Operator::DIV, $1, $3); }
-    | MINUS expression %prec UMINUS { $$ = new ExprAST(Operator::UMINUS, $2); }
+    : expression PLUS expression { $$ = process_expr(Operator::ADD, $1, $3); }
+    | expression MINUS expression { $$ = process_expr(Operator::SUBTRACT, $1, $3); }
+    | expression MULT expression { $$ = process_expr(Operator::MULTIPLY, $1, $3); }
+    | expression DIV expression { $$ = process_expr(Operator::DIVIDE, $1, $3); }
+    | MINUS expression %prec UMINUS { $$ = process_expr(Operator::NEGATE, $2); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $2; }
-    | expression QUESTION_MARK expression COLON expression { $$ = new ExprAST(Operator::QUESTION_MARK_COLON, $1, $3, $5); }
-    | expression AND expression { $$ = new ExprAST(Operator::AND, $1, $3); } 
-    | expression OR expression { $$ = new ExprAST(Operator::OR, $1, $3); }
-    | NOT expression { $$ = new ExprAST(Operator::NOT, $2); }
+    | expression QUESTION_MARK expression COLON expression { $$ = process_expr(Operator::QUESTION_MARK_COLON, $1, $3, $5); }
+    | expression AND expression { $$ = process_expr(Operator::LOGICAL_AND, $1, $3); } 
+    | expression OR expression { $$ = process_expr(Operator::LOGICAL_OR, $1, $3); }
+    | NOT expression { $$ = process_expr(Operator::LOGICAL_NOT, $2); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }
 ;
 
 rel_expression
-    : expression LESS_THAN expression { $$ = new ExprAST(Operator::LESS_THAN, $1, $3); }
-    | expression LESS_THAN_EQUAL expression { $$ = new ExprAST(Operator::LESS_THAN_EQUAL, $1, $3); }
-    | expression GREATER_THAN expression { $$ = new ExprAST(Operator::GREATER_THAN, $1, $3); }
-    | expression GREATER_THAN_EQUAL expression { $$ = new ExprAST(Operator::GREATER_THAN_EQUAL, $1, $3); }
-    | expression NOT_EQUAL expression { $$ = new ExprAST(Operator::NOT_EQUAL, $1, $3); }
-    | expression EQUAL expression { $$ = new ExprAST(Operator::EQUAL, $1, $3); }
+    : expression LESS_THAN expression { $$ = process_expr(Operator::LT, $1, $3); }
+    | expression LESS_THAN_EQUAL expression { $$ = process_expr(Operator::LE, $1, $3); }
+    | expression GREATER_THAN expression { $$ = process_expr(Operator::GT, $1, $3); }
+    | expression GREATER_THAN_EQUAL expression { $$ = process_expr(Operator::GE, $1, $3); }
+    | expression NOT_EQUAL expression { $$ = process_expr(Operator::NE, $1, $3); }
+    | expression EQUAL expression { $$ = process_expr(Operator::EQ, $1, $3); }
 ;
 
 variable_as_operand

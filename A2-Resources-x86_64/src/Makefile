@@ -1,27 +1,37 @@
-# TODO: Update the makefile
-MAIN = sclp
-PARSE = parser
-SCAN = scanner
+CPP = g++
+BISON = bison
+FLEX = flex
+TGT = sclp
+SCAN = scanner.l
+PARSE = parser.y
 
-$(MAIN): $(MAIN).o lex.yy.o y.tab.o AST.o
-	g++ -o $(MAIN) $(MAIN).o lex.yy.o y.tab.o AST.o -ly -ll
+OBJ = scan.o parse.tab.o $(TGT).o support.o AST.o SymTabEntry.o
 
-$(PARSE): lex.yy.o y.tab.o
-	gcc -o $(PARSE) lex.yy.o y.tab.o -ly -ll
+CPPSTD = --std=c++0x
+CFLAGS = -g -fpermissive
 
-$(MAIN).o: $(MAIN).cpp y.tab.h
-	g++ -c $(MAIN).cpp -o $(MAIN).o
+HEADERS = AST.hpp SymTabEntry.hpp support.hpp
 
-y.tab.o y.tab.h: $(PARSE).y
-	yacc -dv $(PARSE).y
-	gcc -c y.tab.c -o y.tab.o
+$(TGT): $(OBJ)
+	$(CPP) $(CPPSTD)  $(OBJ) -o $(TGT) -ly 
 
-lex.yy.o : $(SCAN).l y.tab.h
-	lex $(SCAN).l
-	gcc -c lex.yy.c -o lex.yy.o
+scan.o: scan.c $(HEADERS)
+	$(CPP) $(CPPSTD)  $(CFLAGS) -c $<
 
-AST.o: AST.cpp
-	g++ -c AST.cpp -o AST.o
+parse.tab.o: parse.tab.c $(HEADERS)
+	$(CPP) $(CPPSTD)  $(CFLAGS) -c  $<
 
-clean:
-	rm -f *.o lex.yy.* *.tab.h *.tab.c y.output exp? *.out *.log $(MAIN) $(PARSE) *.toks
+%.o: %.cpp $(HEADERS)
+	$(CPP) $(CPPSTD)  $(CFLAGS) -c $<
+
+scan.c : $(SCAN) parse.tab.h
+	$(FLEX) -l --yylineno -o scan.c $(SCAN)
+
+parse.tab.c parse.tab.h : $(PARSE)
+	$(BISON) -b parse -dv  $(PARSE)
+
+clean :
+	rm -f *.o *.output
+	rm -f $(TGT) 
+	rm -rf parse.tab.c parse.tab.h scan.c 
+	rm -rf *.out *.log *.toks exp?

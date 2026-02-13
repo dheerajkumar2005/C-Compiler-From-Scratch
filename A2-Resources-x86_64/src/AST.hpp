@@ -5,63 +5,72 @@
 
 #include "SymTabEntry.hpp"
 
-enum class Operator {
+enum class Operator
+{
     NOP, // for literals/variables
-    PLUS,
-    MINUS,
-    MULT,
-    DIV,
-    UMINUS,
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
+    NEGATE,
     QUESTION_MARK_COLON,
-    AND,
-    OR,
-    NOT,
-    LESS_THAN,
-    LESS_THAN_EQUAL,
-    GREATER_THAN,
-    GREATER_THAN_EQUAL,
-    NOT_EQUAL,
-    EQUAL,
+    LOGICAL_AND,
+    LOGICAL_OR,
+    LOGICAL_NOT,
+    LT,
+    LE,
+    GT,
+    GE,
+    NE,
+    EQ,
 };
 
-class AST {
-
+class AST
+{
 };
 
 // LValueAST comes later
 
-class ExprAST : public AST  {
-    Type type;
+class ExprAST : public AST
+{
     Operator op;
     ExprAST *operand1;
     ExprAST *operand2;
     ExprAST *operand3;
 
+protected:
+    Type type;
+
 public:
-    ExprAST(Type type, Operator op, ExprAST *operand1, ExprAST *operand2, ExprAST *operand3);
+    ExprAST(Type type = Type::UNKNOWN, Operator op = Operator::NOP, ExprAST *operand1 = nullptr, ExprAST *operand2 = nullptr, ExprAST *operand3 = nullptr);
 };
 
-class IntLiteralAST : public ExprAST  {
+class IntLiteralAST : public ExprAST
+{
     int ival;
 
 public:
-    IntLiteralAST(int ival): ExprAST(Type::INT), ival(ival) {}
+    IntLiteralAST(int ival);
 };
 
-class FloatLiteralAST : public ExprAST  {
+class FloatLiteralAST : public ExprAST
+{
     float fval;
 
-    FloatLiteralAST(float fval): RValueAST(Type::FLOAT), fval(fval) {}
+public:
+    FloatLiteralAST(float fval);
 };
 
-class StrLiteralAST : public ExprAST  {
+class StrLiteralAST : public ExprAST
+{
     std::string sval;
 
 public:
-    StrLiteralAST(char *_sval) : RValueAST(Type::STR), sval(_sval) {}
+    StrLiteralAST(char *_sval);
 };
 
-class VarAST : public ExprAST  {
+class VarAST : public ExprAST
+{
     SymTabEntry *sym_tab_entry_ptr;
 
     void set_sym_tab_entry_ptr(SymTabEntry *ste_ptr);
@@ -70,22 +79,25 @@ public:
     VarAST(char *var_name);
 };
 
-class AssignAST : public AST {
+class AssignAST : public AST
+{
     VarAST *lhs;
     ExprAST *rhs;
 
 public:
-    AssignAST(VarAST *lhs, ExprAST *rhs) : AST(), lhs(lhs), rhs(rhs) {}
+    AssignAST(VarAST *lhs, ExprAST *rhs);
 };
 
-class ReadAST : public AST  {
+class ReadAST : public AST
+{
     VarAST *var;
 
 public:
-    ReadAST(VarAST *var) : AST(), var(var) {}
+    ReadAST(VarAST *var);
 };
 
-class WriteAST : public AST  {
+class WriteAST : public AST
+{
     ExprAST *expr;
 
 public:

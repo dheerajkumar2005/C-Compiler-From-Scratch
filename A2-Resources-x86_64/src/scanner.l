@@ -1,20 +1,20 @@
-%option noyywrap
-%option yylineno
 %{
-    #include "y.tab.h"
     #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
+    #include "AST.hpp"
+    #include "parse.tab.h"
 
     extern int show_tokens;
     extern int scanner_error;
 
-    void display_token(char *token_name, char *lexeme) {
+    extern "C" int yylex(void);
+
+    void display_token(const char *token_name, const char *lexeme) {
         if(show_tokens) {
             fprintf(yyout, "Token Name: %s\tLexeme: %s\tLineno: %d\n", token_name, lexeme, yylineno);
         }
     }
 %}
+%option noyywrap
 
 DIGIT [0-9]
 LETTER [a-zA-Z_]
@@ -58,17 +58,17 @@ LETTER [a-zA-Z_]
 
 {DIGIT}+ {
     display_token("INT_NUM", yytext);
-    yylval.ival = new IntLiteralAST(atoi(yytext));
+    yylval.iptr = new IntLiteralAST(atoi(yytext));
     return INT_NUM; 
 }
 ({DIGIT}+\.{DIGIT}*)|(\.{DIGIT}+) { 
     display_token("FLOAT_NUM", yytext);
-    yylval.fval = new FloatLiteralAST(atof(yytext));
+    yylval.fptr = new FloatLiteralAST(atof(yytext));
     return FLOAT_NUM; 
 }
 \"[^\"]*\" {
     display_token("STR_CONST", yytext); 
-    yylval.sval = new StrLiteralAST(yytext);
+    yylval.sptr = new StrLiteralAST(yytext);
     return STR_CONST; 
 }
 
