@@ -12,3 +12,10 @@ A1-Resources-x86_64/src/sclp
 */notes
 **/test.c
 *.tgz
+*.output
+*.tab.h
+*.tab.c
+*.yy.c
+**/scan.c
+**/sclp
+
