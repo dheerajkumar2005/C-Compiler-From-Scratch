@@ -4,6 +4,7 @@
 #include <string>
 
 #include "SymTabEntry.hpp"
+#include "SemanticError.hpp"
 
 enum class Operator
 {
@@ -34,15 +35,15 @@ class AST
 class ExprAST : public AST
 {
     Operator op;
-    ExprAST *operand1;
-    ExprAST *operand2;
-    ExprAST *operand3;
+    ExprAST *opd1;
+    ExprAST *opd2;
+    ExprAST *opd3;
 
 protected:
     Type type;
 
 public:
-    ExprAST(Type type = Type::UNKNOWN, Operator op = Operator::NOP, ExprAST *operand1 = nullptr, ExprAST *operand2 = nullptr, ExprAST *operand3 = nullptr);
+    ExprAST(Type type = Type::UNKNOWN, Operator op = Operator::NOP, ExprAST *opd1 = nullptr, ExprAST *opd2 = nullptr, ExprAST *opd3 = nullptr);
 };
 
 class IntLiteralAST : public ExprAST

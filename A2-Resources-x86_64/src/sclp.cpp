@@ -2,6 +2,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "SemanticError.hpp"
+
 extern FILE *yyin;
 extern FILE *yyout;
 extern "C"
@@ -213,5 +215,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    return yyparse();
+    try
+    {
+        return yyparse();
+    }
+    catch (const SemanticError &e)
+    {
+        std::cerr << "Semantic error: " << e.what() << std::endl;
+    }
 }

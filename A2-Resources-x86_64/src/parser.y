@@ -1,6 +1,7 @@
 %{
     #include "support.hpp"
     #include "AST.hpp"
+    #include "SemanticError.hpp"
     
     extern "C" int yylex(void);
     extern "C" int yyparse(void);
@@ -17,6 +18,8 @@
     FloatLiteralAST *fptr;
     StrLiteralAST *sptr;
     VarAST *var;
+
+    // TODO: Add fields for parameter and return types
 }
 
 // Terminals (and optionally their types)

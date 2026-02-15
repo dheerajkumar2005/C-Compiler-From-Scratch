@@ -5,7 +5,7 @@ TGT = sclp
 SCAN = scanner.l
 PARSE = parser.y
 
-OBJ = scan.o parse.tab.o $(TGT).o support.o AST.o SymTabEntry.o
+OBJ = scan.o parse.tab.o $(TGT).o support.o AST.o SymTabEntry.o SemanticError.o
 
 CPPSTD = --std=c++0x
 CFLAGS = -g -fpermissive
