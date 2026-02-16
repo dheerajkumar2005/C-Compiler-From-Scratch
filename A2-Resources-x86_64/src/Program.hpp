@@ -1,4 +1,4 @@
-// TODO: Finish this file
+// TODO: Write constructors
 
 #ifndef PROGRAM_H
 #define PROGRAM_H
@@ -15,6 +15,18 @@ class Symbol_Table
     std::unordered_map<std::string, Type> m;
 };
 
+class Func_Signature
+{
+    std::string name;
+    Type return_type;
+    std::vector<Type> param_types;
+};
+
+class Func_Table
+{
+    std::unordered_map<std::string, Func_Signature *> m;
+};
+
 class Scope
 {
 protected:
@@ -22,26 +34,22 @@ protected:
     Scope *parent_scope;
 
 public:
-    // Scope(Symbol_Table symbol_table, Scope *parent_scope = nullptr);
     virtual ~Scope() = 0;
 };
 
 class Procedure : public Scope
 {
 protected:
-    Type return_type;
+    Func_Signature *func_signature;
     std::vector<Ast *> body;
-
-    // For printing ONLY
-    std::vector<std::pair<std::string, Type>> params;
 
 public:
 };
 
 class Program : public Scope
 {
-    // std::map<std::string, Type> global_symbol_table;
-    // std::map<std::string, Procedure *> procedures;
+protected:
+    Func_Table func_table;
 };
 
 #endif
