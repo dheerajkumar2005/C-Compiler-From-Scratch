@@ -1,3 +1,4 @@
+// TODO: Fix this file based on the changes in AST.hpp and Program.hpp
 %{
     #include "support.hpp"
     #include "AST.hpp"
@@ -9,15 +10,17 @@
 %}
 
 %union {
-    AST *stmt;
-    AssignAST *asgn;
-    ReadAST *read;
-    WriteAST *write;
-    ExprAST *expr;
-    IntLiteralAST *iptr;
-    FloatLiteralAST *fptr;
-    StrLiteralAST *sptr;
-    VarAST *var;
+    Stmt_AST *stmt;
+    Assign_AST *asgn;
+    Read_AST *read;
+    Write_AST *write;
+    Expr_AST *expr;
+    Int_Num_Expr_AST *iptr;
+    Float_Num_Expr_AST *fptr;
+    String_Expr_AST *sptr;
+    Var_AST *var;
+    Binary_Expr_AST *rel;
+    Base_Expr_AST *constant;
 
     // TODO: Add fields for parameter and return types
 }
@@ -63,10 +66,10 @@
 %type <write> print_statement
 %type <read> read_statement
 %type <expr> expression
-%type <expr> rel_expression
+%type <rel> rel_expression
 %type <var> variable_as_operand
 %type <var> variable_name
-%type <expr> constant_as_operand
+%type <constant> constant_as_operand
 
 %start program
 
