@@ -1,6 +1,6 @@
 %{
     #include <stdio.h>
-    #include "AST.hpp"
+    #include "Ast.hpp"
     #include "parse.tab.h"
 
     extern int show_tokens;

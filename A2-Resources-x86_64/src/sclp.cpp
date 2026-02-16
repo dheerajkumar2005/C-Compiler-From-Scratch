@@ -2,13 +2,14 @@
 #include <fstream>
 #include <iostream>
 
+#include "ParserContext.hpp"
 #include "SemanticError.hpp"
 
 extern FILE *yyin;
 extern FILE *yyout;
 extern "C"
 {
-    int yyparse();
+    int yyparse(ParserContext *);
     int yylex();
     void yyerror(const char *msg);
 
@@ -217,7 +218,9 @@ int main(int argc, char *argv[])
 
     try
     {
-        return yyparse();
+        ParserContext context;
+        context.program_ptr = new Program();
+        return yyparse(&context);
     }
     catch (const SemanticError &e)
     {

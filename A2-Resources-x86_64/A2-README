@@ -2,7 +2,7 @@ A Description of the Resources and Expected Deliverables of Assignment A2
 =========================================================================
 
 Assignment A2 requires enhancing the implementation of A1 by supporting the 
-features of Level 3 and by additionally producing the AST of the input program. 
+features of Level 3 and by additionally producing the Ast of the input program. 
 
 A. Resources
 ------------
@@ -24,15 +24,15 @@ This directory contains the following :
       finer points.
 
     - L1-sclp. This is the reference implementation of the full compiler
-      for language Level  1. You can observe the AST,  TAC, RTL, ASM for
+      for language Level  1. You can observe the Ast,  TAC, RTL, ASM for
       your input programs by giving appropriate command line switches.
 
     - L2-sclp. This is the reference implementation of the full compiler
-      for language Level  2. You can observe the AST,  TAC, RTL, ASM for
+      for language Level  2. You can observe the Ast,  TAC, RTL, ASM for
       your input programs by giving appropriate command line switches.
 
     - L3-sclp. This is the reference implementation of the full compiler
-      for language Level  3. You can observe the AST,  TAC, RTL, ASM for
+      for language Level  3. You can observe the Ast,  TAC, RTL, ASM for
       your input programs by giving appropriate command line switches.
 
  3. A subdirectory called A2-example-programs. It contains the following
@@ -60,7 +60,7 @@ B. Expected Deliverables
 -------------------------
 
 As  explained in  the  class  and the  sclp  web  page, this  assignment
-requires you to generate AST for  Level 3 of the language. A description
+requires you to generate Ast for  Level 3 of the language. A description
 of the level can be found on the sclp web page.
 
 You need to submit a tarred gzipped version of your directory (file name

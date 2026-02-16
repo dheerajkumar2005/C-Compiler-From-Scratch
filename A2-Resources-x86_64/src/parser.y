@@ -1,13 +1,16 @@
-// TODO: Fix this file based on the changes in AST.hpp and Program.hpp
+// TODO: Fix this file based on the changes in Ast.hpp and Program.hpp
 %{
     #include "support.hpp"
-    #include "AST.hpp"
-    #include "SemanticError.hpp"
+    #include "Ast.hpp"
+    #include "ParserContext.hpp"
     
     extern "C" int yylex(void);
-    extern "C" int yyparse(void);
+    extern "C" int yyparse(ParserContext *);
     extern "C" void yyerror(const char *s);
 %}
+
+%parse-param { ParserContext *context }
+%lex-param { ParserContext *context }
 
 %union {
     Stmt_AST *stmt;
@@ -15,12 +18,19 @@
     Read_AST *read;
     Write_AST *write;
     Expr_AST *expr;
-    Int_Num_Expr_AST *iptr;
-    Float_Num_Expr_AST *fptr;
-    String_Expr_AST *sptr;
     Var_AST *var;
     Binary_Expr_AST *rel;
+
+    Type type;
+    std::string *identifier;
+    IdentifierList *identifier_list;
+    DeclStmt decl_stmt;
+    DeclStmtList *decl_stmt_list;
+
     Base_Expr_AST *constant;
+    Int_Expr_AST *iptr;
+    Float_Expr_AST *fptr;
+    String_Expr_AST *sptr;
 
     // TODO: Add fields for parameter and return types
 }
@@ -31,12 +41,8 @@
 %token STRING
 %token FLOAT
 %token BOOL
-%token <var> NAME
 %token READ
 %token WRITE
-%token <iptr> INT_NUM
-%token <fptr> FLOAT_NUM
-%token <sptr> STR_CONST
 %token PLUS
 %token MINUS
 %token MULT
@@ -60,6 +66,18 @@
 %token LEFT_CURLY_BRACKET
 %token RIGHT_CURLY_BRACKET
 
+%type <decl_stmt_list> var_decl_stmt_list
+%type <decl_stmt> var_decl_stmt
+%type <type> named_type
+%type <identifier> var_decl_item
+%type <identifier_list> var_decl_item_list
+
+%token <identifier> NAME
+%type <constant> constant_as_operand
+%token <iptr> INT_NUM
+%token <fptr> FLOAT_NUM
+%token <sptr> STR_CONST
+
 // Non-terminals and their types
 %type <stmt> statement
 %type <asgn> assignment_statement
@@ -69,7 +87,6 @@
 %type <rel> rel_expression
 %type <var> variable_as_operand
 %type <var> variable_name
-%type <constant> constant_as_operand
 
 %start program
 
@@ -86,12 +103,15 @@
 %%
 
 program
-    : func_def
-    | var_decl_stmt_list func_def
-    | func_decl func_def
-    | var_decl_stmt_list func_decl func_def
-    | func_decl var_decl_stmt_list func_def
-    | var_decl_stmt_list func_decl var_decl_stmt_list func_def
+    : global_decl_stmt_list func_def_list
+    | func_def_list
+;
+
+global_decl_stmt_list
+    : global_decl_stmt_list func_decl
+    | global_decl_stmt_list var_decl_stmt
+    | var_decl_stmt
+    | func_decl
 ;
 
 func_decl
@@ -99,8 +119,12 @@ func_decl
     | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON
 ;
 
+func_def_list
+    : func_def_list func_def
+    | func_def
+
 func_header
-    : named_type NAME
+    : named_type NAME { set_context_to_main(context, $1, $2); }
 ;
 
 func_def
@@ -129,7 +153,6 @@ statement_list
     | 
 ;
 
-// TODO: Add print to the action routines here
 statement
     : assignment_statement { $$ = $1; }
     | print_statement { $$ = $1; }
@@ -138,33 +161,37 @@ statement
 
 optional_local_var_decl_stmt_list
     : 
-    | var_decl_stmt_list
+    | var_decl_stmt_list { add_to_local_sym_tab(context->main_func_ptr, $1); }
 ;
 
+/* DONE */
 var_decl_stmt_list
-    : var_decl_stmt
-    | var_decl_stmt_list var_decl_stmt
+    : var_decl_stmt { $$ = process_var_decl_stmt_list($1); }
+    | var_decl_stmt_list var_decl_stmt { $$ = process_var_decl_stmt_list($1, $2); }
 ;
 
+/* DONE */
 var_decl_stmt
-    : named_type var_decl_item_list SEMICOLON { /* TODO: Make SymTabEntry here */ }
+    : named_type var_decl_item_list SEMICOLON { $$ = process_var_decl_stmt($1, $2); }
 ;
 
+/* DONE */
 var_decl_item_list
-    : var_decl_item_list COMMA var_decl_item
-    | var_decl_item
+    : var_decl_item_list COMMA var_decl_item { $$ = process_var_decl_item_list($1, $3); }
+    | var_decl_item { $$ = process_var_decl_item_list($1); }
 ;
 
+/* DONE */
 var_decl_item
-    : NAME
+    : NAME { $$ = $1; }
 ;
 
 named_type
-    : INTEGER
-    | FLOAT
-    | VOID
-    | STRING
-    | BOOL
+    : INTEGER { $$ = Type::INT; }
+    | FLOAT { $$ = Type::FLOAT; }
+    | VOID { $$ = Type::VOID; }
+    | STRING { $$ = Type::STR; }
+    | BOOL { $$ = Type::BOOL; }
 ;
 
 assignment_statement
