@@ -421,7 +421,7 @@ std::string Logical_Not_Expr_Ast::to_string() const
 
 std::string Boolean_Expr_Ast::to_string() const
 {  
-    return "Condition: "+ op_to_string(op) +"<bool>\nL_Opd ("+ opd1->to_string()+")"; 
+    return "Condition: "+ op_to_string(op) +"<bool>\nL_Opd ("+ opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")"; 
 }
 
 std::string Div_Expr_Ast::to_string() const
