@@ -10,7 +10,7 @@ extern FILE *yyout;
 extern "C"
 {
     int yyparse(ParserContext *);
-    int yylex();
+    int yylex(ParserContext *);
     void yyerror(const char *msg);
 
     // Used by the lexer
@@ -197,12 +197,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    ParserContext context;
+    context.program_ptr = new Program();
+
     if (sa_scan)
     {
         while (true)
         {
             scanner_error = 0;
-            int next_token = yylex();
+            int next_token = yylex(&context);
             if (scanner_error)
             {
                 yyerror("syntax error");
@@ -218,8 +221,6 @@ int main(int argc, char *argv[])
 
     try
     {
-        ParserContext context;
-        context.program_ptr = new Program();
         return yyparse(&context);
     }
     catch (const SemanticError &e)

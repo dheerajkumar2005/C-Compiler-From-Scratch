@@ -29,13 +29,6 @@ public:
     bool operator!=(const Func_Signature &other) const;
 };
 
-class Func_Table
-{
-public:
-    std::unordered_map<std::string, Procedure *> func_tab;
-    // void insert_decl(const std::string &id, Func_Signature *func_sig);
-};
-
 class Scope
 {
 public:
@@ -51,7 +44,15 @@ class Procedure : public Scope
 public:
     Func_Signature *func_signature;
     std::vector<Ast *> body;
+
     Procedure(Scope *parent_scope = nullptr, Func_Signature *func_signature = nullptr);
+};
+
+class Func_Table
+{
+public:
+    std::unordered_map<std::string, Procedure *> func_tab;
+    // void insert_decl(const std::string &id, Func_Signature *func_sig);
 };
 
 class Program : public Scope

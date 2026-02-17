@@ -11,17 +11,17 @@ IdentifierList *process_var_decl_item_list(IdentifierList *identifiers, std::str
     return identifiers;
 }
 
-DeclStmt process_var_decl_stmt(Type type, IdentifierList *identifiers)
+DeclStmt *process_var_decl_stmt(Type type, IdentifierList *identifiers)
 {
-    return {type, identifiers};
+    return new std::pair<Type, IdentifierList *>(type, identifiers);
 }
 
-DeclStmtList *process_var_decl_stmt_list(DeclStmt var_decl_stmt)
+DeclStmtList *process_var_decl_stmt_list(DeclStmt *var_decl_stmt)
 {
-    return new std::vector<DeclStmt>{var_decl_stmt};
+    return new std::vector<DeclStmt *>{var_decl_stmt};
 }
 
-DeclStmtList *process_var_decl_stmt_list(DeclStmtList *var_decl_stmts, DeclStmt var_decl_stmt)
+DeclStmtList *process_var_decl_stmt_list(DeclStmtList *var_decl_stmts, DeclStmt *var_decl_stmt)
 {
     var_decl_stmts->push_back(var_decl_stmt);
     return var_decl_stmts;
@@ -49,9 +49,9 @@ void set_procedure_context(ParserContext *context, Type type, std::string *ident
 
 void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list)
 {
-    for (const auto &[type, idListPtr] : *decl_stmt_list)
+    for (const auto &decl_stmt_ptr : *decl_stmt_list)
     {
-        for (const auto &id : *idListPtr)
+        for (const auto &id : *(decl_stmt_ptr->second))
         {
             // Function has a different name
             if (*id == procedure->func_signature->name)
@@ -65,14 +65,14 @@ void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list)
                 throw new SemanticError("Local varibale name matches previously declared variable: " + *id);
             }
 
-            procedure->symbol_table.sym_tab[*id] = type;
+            procedure->symbol_table.sym_tab[*id] = decl_stmt_ptr->first;
         }
     }
 }
 
-void add_to_global_sym_tab(Program *program, DeclStmt decl_stmt)
+void add_to_global_sym_tab(Program *program, DeclStmt *decl_stmt)
 {
-    for (const auto &id : *decl_stmt.second)
+    for (const auto &id : *(decl_stmt->second))
     {
         // No global variable with the same name
         if (program->symbol_table.sym_tab.find(*id) != program->symbol_table.sym_tab.end())
@@ -86,39 +86,40 @@ void add_to_global_sym_tab(Program *program, DeclStmt decl_stmt)
             throw new SemanticError("Cannot declare a variable with the same name as a function: " + *id);
         }
 
-        program->symbol_table.sym_tab[*id] = decl_stmt.first;
+        program->symbol_table.sym_tab[*id] = decl_stmt->first;
     }
 }
 
 Name_Expr_Ast *process_variable_name(Procedure *func_ptr, std::string *id)
 {
-    if (func_ptr->symbol_table.sym_tab.find(*id) == func_ptr->symbol_table.sym_tab.end())
+    auto &local_sym_tab = func_ptr->symbol_table.sym_tab;
+    if (local_sym_tab.find(*id) == local_sym_tab.end())
     {
         throw new SemanticError("Expected variable declaration before usage: " + *id);
     }
-    return new Name_Expr_Ast(id, func_ptr->symbol_table.sym_tab[*id]);
+    return new Name_Expr_Ast(id, local_sym_tab[*id]);
 }
 
-FormalParam process_formal_param(Type type, std::string *id)
+FormalParam *process_formal_param(Type type, std::string *id)
 {
-    return {type, id};
+    return new std::pair<Type, std::string *>(type, id);
 }
 
-FormalParamList *process_formal_param_list(FormalParam formal_param)
+FormalParamList *process_formal_param_list(FormalParam *formal_param)
 {
-    return new std::vector<FormalParam>{formal_param};
+    return new std::vector<FormalParam *>{formal_param};
 }
 
-FormalParamList *process_formal_param_list(FormalParamList *formal_param_list, FormalParam formal_param)
+FormalParamList *process_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param)
 {
     formal_param_list->push_back(formal_param);
     return formal_param_list;
 }
 
-void process_func_decl(ParserContext *context, FuncHeader func_header, FormalParamList *formal_param_list)
+void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list)
 {
-    Type return_type = func_header.first;
-    std::string func_name = *(func_header.second);
+    Type return_type = func_header->first;
+    std::string func_name = *(func_header->second);
     Func_Signature *func_sig = new Func_Signature(func_name, return_type);
 
     if (formal_param_list)
@@ -158,12 +159,12 @@ void process_func_decl(ParserContext *context, FuncHeader func_header, FormalPar
     }
 }
 
-void process_func_def(ParserContext *context, FuncHeader func_header, FormalParamList *formal_param_list)
+void process_func_def(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list)
 {
     // TODO: DRY
 
-    Type return_type = func_header.first;
-    std::string func_name = *(func_header.second);
+    Type return_type = func_header->first;
+    std::string func_name = *(func_header->second);
     Func_Signature *func_sig = new Func_Signature(func_name, return_type);
 
     if (formal_param_list)

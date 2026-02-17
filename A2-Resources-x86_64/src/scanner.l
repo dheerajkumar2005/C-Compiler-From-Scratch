@@ -6,7 +6,7 @@
     extern int show_tokens;
     extern int scanner_error;
 
-    extern "C" int yylex(void);
+    extern "C" int yylex(ParserContext *);
 
     void display_token(const char *token_name, const char *lexeme) {
         if(show_tokens) {

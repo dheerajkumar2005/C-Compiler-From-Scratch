@@ -1,10 +1,9 @@
-// TODO: Fix this file based on the changes in Ast.hpp and Program.hpp
 %{
     #include "support.hpp"
     #include "Ast.hpp"
     #include "ParserContext.hpp"
     
-    extern "C" int yylex(void);
+    extern "C" int yylex(ParserContext *);
     extern "C" int yyparse(ParserContext *);
     extern "C" void yyerror(const char *s);
 %}
@@ -19,18 +18,18 @@
     Write_Stmt_Ast *write;
     Expression_Ast *expr;
     Name_Expr_Ast *var;
-    // Binary_Expr_AST *rel;
+    Relational_Expr_Ast *rel;
 
     Type type;
     std::string *identifier;
     IdentifierList *identifier_list;
-    DeclStmt decl_stmt;
+    DeclStmt *decl_stmt;
     DeclStmtList *decl_stmt_list;
 
-    FormalParam formal_param;
+    FormalParam *formal_param;
     FormalParamList *formal_param_list;
 
-    FuncHeader func_header;
+    FuncHeader *func_header;
 
     Base_Expr_Ast *constant;
     Int_Expr_Ast *iptr;
@@ -92,7 +91,7 @@
 %type <write> print_statement
 %type <read> read_statement
 %type <expr> expression
-/* %type <rel> rel_expression */
+%type <rel> rel_expression
 %type <var> variable_as_operand
 %type <var> variable_name
 
@@ -119,7 +118,7 @@ program
 /* DONE */
 global_decl_stmt_list
     : global_decl_stmt_list func_decl
-    | global_decl_stmt_list var_decl_stmt { add_to_global_sym_tab(context->program_ptr, $1); }
+    | global_decl_stmt_list var_decl_stmt { add_to_global_sym_tab(context->program_ptr, $2); }
     | var_decl_stmt { add_to_global_sym_tab(context->program_ptr, $1); }
     | func_decl
 ;
@@ -141,7 +140,7 @@ func_header
     : named_type NAME { set_procedure_context(context, $1, $2); $$ = process_formal_param($1, $2); } 
 ;
 
-/* DONE */
+/* TODO: Handle body of the function */
 func_def
     : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET { process_func_def(context, $1, $3); }
     | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET { process_func_def(context, $1); }
@@ -180,7 +179,7 @@ statement
 /* DONE */
 optional_local_var_decl_stmt_list
     : 
-    | var_decl_stmt_list { add_to_local_sym_tab(context->main_func_ptr, $1); }
+    | var_decl_stmt_list { add_to_local_sym_tab(context->func_ptr, $1); }
 ;
 
 /* DONE */
@@ -205,6 +204,7 @@ var_decl_item
     : NAME { $$ = $1; }
 ;
 
+/* FIXED */
 named_type
     : INTEGER { $$ = Type::INT; }
     | FLOAT { $$ = Type::FLOAT; }
@@ -214,7 +214,7 @@ named_type
 ;
 
 assignment_statement
-    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = new AssignAST($1, $3); }
+    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = new Assignment_Stmt_Ast($1, $3); }
 ;
 
 /* FIXED */
@@ -227,29 +227,31 @@ read_statement
     : READ variable_name SEMICOLON { $$ = new Read_Stmt_Ast($2); }
 ;
 
+/* FIXED */
 expression
-    : expression PLUS expression { $$ = process_expr(Operator::ADD, $1, $3); }
-    | expression MINUS expression { $$ = process_expr(Operator::SUBTRACT, $1, $3); }
-    | expression MULT expression { $$ = process_expr(Operator::MULTIPLY, $1, $3); }
-    | expression DIV expression { $$ = process_expr(Operator::DIVIDE, $1, $3); }
-    | MINUS expression %prec UMINUS { $$ = process_expr(Operator::NEGATE, $2); }
+    : expression PLUS expression { $$ = new Plus_Expr_Ast($1, $3); }
+    | expression MINUS expression { $$ = new Minus_Expr_Ast($1, $3); }
+    | expression MULT expression { $$ = new Mult_Expr_Ast($1, $3); }
+    | expression DIV expression { $$ = new Div_Expr_Ast($1, $3); }
+    | MINUS expression %prec UMINUS { $$ = new UMinus_Expr_Ast($2); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $2; }
-    | expression QUESTION_MARK expression COLON expression { $$ = process_expr(Operator::QUESTION_MARK_COLON, $1, $3, $5); }
-    | expression AND expression { $$ = process_expr(Operator::LOGICAL_AND, $1, $3); } 
-    | expression OR expression { $$ = process_expr(Operator::LOGICAL_OR, $1, $3); }
-    | NOT expression { $$ = process_expr(Operator::LOGICAL_NOT, $2); }
+    | expression QUESTION_MARK expression COLON expression { $$ = new Conditional_Expr_Ast($1, $3, $5); }
+    | expression AND expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_AND, $1, $3); } 
+    | expression OR expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_OR, $1, $3); }
+    | NOT expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_NOT, $2); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }
 ;
 
+/* FIXED */
 rel_expression
-    : expression LESS_THAN expression { $$ = process_expr(Operator::LT, $1, $3); }
-    | expression LESS_THAN_EQUAL expression { $$ = process_expr(Operator::LE, $1, $3); }
-    | expression GREATER_THAN expression { $$ = process_expr(Operator::GT, $1, $3); }
-    | expression GREATER_THAN_EQUAL expression { $$ = process_expr(Operator::GE, $1, $3); }
-    | expression NOT_EQUAL expression { $$ = process_expr(Operator::NE, $1, $3); }
-    | expression EQUAL expression { $$ = process_expr(Operator::EQ, $1, $3); }
+    : expression LESS_THAN expression { $$ = new Relational_Expr_Ast(Binary_Operator::LT, $1, $3); }
+    | expression LESS_THAN_EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::LE, $1, $3); }
+    | expression GREATER_THAN expression { $$ = new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); }
+    | expression GREATER_THAN_EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::GE, $1, $3); }
+    | expression NOT_EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::NE, $1, $3); }
+    | expression EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3); }
 ;
 
 /* FIXED */
@@ -259,7 +261,7 @@ variable_as_operand
 
 /* FIXED */
 variable_name
-    : NAME { $$ = process_variable_name(context->main_func_ptr, $1); }
+    : NAME { $$ = process_variable_name(context->func_ptr, $1); }
 ;
 
 /* FIXED */
