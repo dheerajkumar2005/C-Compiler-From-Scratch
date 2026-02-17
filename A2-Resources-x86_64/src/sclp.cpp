@@ -241,7 +241,8 @@ int main(int argc, char *argv[])
     }
     else if (sa_parse)
     {
-        yyparse(&context);
+        // TODO: Figure out why the error printing got messed up
+        return yyparse(&context);
     }
     else
     {
