@@ -411,33 +411,40 @@ std::string String_Expr_Ast::to_string() const
 
 std::string UMinus_Expr_Ast::to_string() const
 {
-    return "Arith: Uminus<"+type_to_string(get_type())+">\nL_Opd ("+opd1->to_string()+")";
+    return "\nArith: Uminus<"+type_to_string(get_type())+">\nL_Opd ("+opd1->to_string()+")";
 }
 
 std::string Logical_Not_Expr_Ast::to_string() const
 {
-    return "Condition: NOT<bool>\nL_Opd ("+ opd1->to_string()+")";   
+    return "\nCondition: NOT<bool>\nL_Opd ("+ opd1->to_string()+")";   
 }
 
 std::string Boolean_Expr_Ast::to_string() const
 {  
-    return "Condition: "+ op_to_string(op) +"<bool>\nL_Opd ("+ opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")"; 
+    return "\nCondition: "+ op_to_string(op) +"<bool>\nL_Opd ("+ opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")"; 
 }
 
 std::string Div_Expr_Ast::to_string() const
 {
+    return "\nArith: Div<"+type_to_string(get_type())+">\nL_Opd ("+opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")";
 }
 
 std::string Minus_Expr_Ast::to_string() const
 {
+    return "\nArith: Minus<"+type_to_string(get_type())+">\nL_Opd ("+opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")";
+
 }
 
 std::string Mult_Expr_Ast::to_string() const
 {
+    return "\nArith: Mult<"+type_to_string(get_type())+">\nL_Opd ("+opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")";
+
 }
 
 std::string Plus_Expr_Ast::to_string() const
 {
+    return "\nArith: Plus<"+type_to_string(get_type())+">\nL_Opd ("+opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")";
+
 }
 
 std::string Relational_Expr_Ast::to_string() const
