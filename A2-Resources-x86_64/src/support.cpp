@@ -126,7 +126,7 @@ void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalPa
     {
         for (const auto &formal_param : *formal_param_list)
         {
-            func_sig->add_param(formal_param.first);
+            func_sig->add_param(formal_param->first);
         }
     }
 
@@ -154,7 +154,7 @@ void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalPa
     {
         for (const auto &formal_param : *formal_param_list)
         {
-            local_sym_tab[*formal_param.second] = formal_param.first;
+            local_sym_tab[*(formal_param->second)] = formal_param->first;
         }
     }
 }
@@ -171,7 +171,7 @@ void process_func_def(ParserContext *context, FuncHeader *func_header, FormalPar
     {
         for (const auto &formal_param : *formal_param_list)
         {
-            func_sig->add_param(formal_param.first);
+            func_sig->add_param(formal_param->first);
         }
     }
 
