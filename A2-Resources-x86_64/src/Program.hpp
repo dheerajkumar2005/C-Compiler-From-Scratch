@@ -61,4 +61,13 @@ public:
     Func_Table func_table;
 };
 
+class ParserContext
+{
+public:
+    Program *program_ptr;
+    Procedure *func_ptr;
+
+    ParserContext();
+};
+
 #endif

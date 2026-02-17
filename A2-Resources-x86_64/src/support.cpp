@@ -36,9 +36,10 @@ void set_procedure_context(ParserContext *context, Type type, std::string *ident
     }
 
     // Setting context: If already created this procedure object, don't create it again
-    if (context->program_ptr->func_table.func_tab.find(*identifier) != context->program_ptr->func_table.func_tab.end())
+    auto &func_tab = context->program_ptr->func_table.func_tab;
+    if (func_tab.find(*identifier) != func_tab.end())
     {
-        context->func_ptr = context->program_ptr->func_table.func_tab[*identifier];
+        context->func_ptr = func_tab[*identifier];
     }
     else
     {

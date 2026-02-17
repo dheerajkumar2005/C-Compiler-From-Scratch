@@ -5,7 +5,7 @@ Scope::Scope(Scope *parent_scope)
 {
 }
 
-Procedure::Procedure(Scope *parent_scope, Func_Signature *func_signature = nullptr)
+Procedure::Procedure(Scope *parent_scope, Func_Signature *func_signature)
     : Scope(parent_scope), func_signature(func_signature), body()
 {
 }
@@ -28,4 +28,9 @@ bool Func_Signature::operator==(const Func_Signature &other) const
 bool Func_Signature::operator!=(const Func_Signature &other) const
 {
     return !(*this == other);
+}
+
+ParserContext::ParserContext()
+    : program_ptr(nullptr), func_ptr(nullptr)
+{
 }

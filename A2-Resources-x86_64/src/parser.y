@@ -1,11 +1,13 @@
-%{
+%code requires {
     #include "support.hpp"
     #include "Ast.hpp"
-    #include "ParserContext.hpp"
-    
+    #include "Program.hpp"
     extern "C" int yylex(ParserContext *);
     extern "C" int yyparse(ParserContext *);
-    extern "C" void yyerror(const char *s);
+    extern "C" void yyerror(ParserContext *, const char *);
+}
+%{
+    #include "Program.hpp" 
 %}
 
 %parse-param { ParserContext *context }
@@ -238,7 +240,7 @@ expression
     | expression QUESTION_MARK expression COLON expression { $$ = new Conditional_Expr_Ast($1, $3, $5); }
     | expression AND expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_AND, $1, $3); } 
     | expression OR expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_OR, $1, $3); }
-    | NOT expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_NOT, $2); }
+    | NOT expression { $$ = new Logical_Not_Expr_Ast($2); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }

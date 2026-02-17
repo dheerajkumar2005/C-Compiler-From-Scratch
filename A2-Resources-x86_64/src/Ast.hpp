@@ -15,6 +15,7 @@ enum class Type
 enum class Unary_Operator
 {
     NEGATE,
+    LOGICAL_NOT,
 };
 
 enum class Binary_Operator
@@ -25,7 +26,6 @@ enum class Binary_Operator
     DIVIDE,
     LOGICAL_AND,
     LOGICAL_OR,
-    LOGICAL_NOT,
     LT,
     LE,
     GT,
@@ -48,7 +48,6 @@ public:
 
 class Expression_Ast : public Ast
 {
-protected:
     Type type;
 
 public:
@@ -119,7 +118,7 @@ protected:
     Expression_Ast *opd1;
 
 public:
-    Unary_Expr_AST(Unary_Operator op, Expression_Ast *opd1);
+    Unary_Expr_AST(Type type, Unary_Operator op, Expression_Ast *opd1);
     virtual ~Unary_Expr_AST() = 0;
 };
 
@@ -132,6 +131,15 @@ public:
     virtual const void print_ast() override final;
 };
 
+class Logical_Not_Expr_Ast : public Unary_Expr_AST
+{
+public:
+    Logical_Not_Expr_Ast(Expression_Ast *opd1);
+    ~Logical_Not_Expr_Ast() = default;
+
+    virtual const void print_ast() override final;
+};
+
 class Binary_Expr_Ast : public Expression_Ast
 {
 protected:
@@ -140,7 +148,7 @@ protected:
     Expression_Ast *opd2;
 
 public:
-    Binary_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2);
+    Binary_Expr_Ast(Type type, Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2);
     virtual ~Binary_Expr_Ast() = 0;
 };
 
@@ -207,7 +215,7 @@ protected:
     Expression_Ast *opd3;
 
 public:
-    Ternary_Expr_Ast(Ternary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3);
+    Ternary_Expr_Ast(Type type, Ternary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3);
     virtual ~Ternary_Expr_Ast() = 0;
 };
 

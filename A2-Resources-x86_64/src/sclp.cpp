@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "ParserContext.hpp"
+#include "Program.hpp"
 #include "SemanticError.hpp"
 
 extern FILE *yyin;
@@ -11,7 +11,7 @@ extern "C"
 {
     int yyparse(ParserContext *);
     int yylex(ParserContext *);
-    void yyerror(const char *msg);
+    void yyerror(ParserContext *, const char *);
 
     // Used by the lexer
     // C++ declarations get name-mangled in the .o file
@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
             int next_token = yylex(&context);
             if (scanner_error)
             {
-                yyerror("syntax error");
+                yyerror(&context, "syntax error");
                 return 1;
             }
             if (!next_token)
