@@ -166,3 +166,50 @@ void String_Expr_Ast::print_ast() const
     std::cout << "String : \"" << sval << "\"<" << get_type() << ">";
 }
 
+void UMinus_Expr_Ast::print_ast() const
+{
+}
+
+void Logical_Not_Expr_Ast::print_ast() const
+{
+}
+
+void Boolean_Expr_Ast::print_ast() const
+{
+}
+
+void Div_Expr_Ast::print_ast() const
+{
+}
+
+void Minus_Expr_Ast::print_ast() const
+{
+}
+
+void Mult_Expr_Ast::print_ast() const
+{
+}
+
+void Plus_Expr_Ast::print_ast() const
+{
+}
+
+void Relational_Expr_Ast::print_ast() const
+{
+}
+
+void Conditional_Expr_Ast::print_ast() const
+{
+}
+
+void Assignment_Stmt_Ast::print_ast() const
+{
+}
+
+void Read_Stmt_Ast::print_ast() const
+{
+}
+
+void Write_Stmt_Ast::print_ast() const
+{
+}
