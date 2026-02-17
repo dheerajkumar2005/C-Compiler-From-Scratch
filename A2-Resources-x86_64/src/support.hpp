@@ -9,6 +9,7 @@
 
 #include "SemanticError.hpp"
 #include "Program.hpp"
+#include "Errors.hpp"
 
 using IdentifierList = std::vector<std::string *>;
 using DeclStmt = std::pair<Type, IdentifierList *>;
