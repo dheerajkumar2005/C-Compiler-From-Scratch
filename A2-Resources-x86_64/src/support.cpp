@@ -91,14 +91,19 @@ void add_to_global_sym_tab(Program *program, DeclStmt *decl_stmt)
     }
 }
 
-Name_Expr_Ast *process_variable_name(Procedure *func_ptr, std::string *id)
+Name_Expr_Ast *process_variable_name(ParserContext *context, std::string *id)
 {
-    auto &local_sym_tab = func_ptr->symbol_table.sym_tab;
-    if (local_sym_tab.find(*id) == local_sym_tab.end())
+    auto &local_sym_tab = context->func_ptr->symbol_table.sym_tab;
+    if (local_sym_tab.find(*id) != local_sym_tab.end())
+    {
+        return new Name_Expr_Ast(id, local_sym_tab[*id]);
+    }
+    auto &global_sym_tab = context->program_ptr->symbol_table.sym_tab;
+    if (global_sym_tab.find(*id) == global_sym_tab.end())
     {
         throw_SemanticError("Expected variable declaration before usage: " + *id);
     }
-    return new Name_Expr_Ast(id, local_sym_tab[*id]);
+    return new Name_Expr_Ast(id, global_sym_tab[*id]);
 }
 
 FormalParam *process_formal_param(Type type, std::string *id)

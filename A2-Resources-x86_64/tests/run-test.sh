@@ -1,7 +1,9 @@
 #! /bin/bash
 
 output1=$(../reference-implementations/A2-sclp test.c --show-ast -d)
+echo $?
 output2=$(../src/sclp test.c --show-ast -d )
+echo $?
 
 tmp1=$(mktemp)
 tmp2=$(mktemp)

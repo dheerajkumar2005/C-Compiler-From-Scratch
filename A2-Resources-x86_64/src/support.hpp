@@ -35,7 +35,7 @@ void set_procedure_context(ParserContext *context, Type type, std::string *ident
 void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list);
 void add_to_global_sym_tab(Program *program, DeclStmt *decl_stmt);
 
-Name_Expr_Ast *process_variable_name(Procedure *func_ptr, std::string *identifier);
+Name_Expr_Ast *process_variable_name(ParserContext *context, std::string *identifier);
 
 FormalParam *process_formal_param(Type type, std::string *id);
 
