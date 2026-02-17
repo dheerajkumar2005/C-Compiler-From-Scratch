@@ -18,23 +18,35 @@ Base_Expr_Ast::Base_Expr_Ast(Type type) : Expression_Ast(type)
 Name_Expr_Ast::Name_Expr_Ast(std::string *id, Type type)
     : Base_Expr_Ast(type), var_name(*id)
 {
+    if(type == Type::VOID){
+        throw_SemanticError("can't have void types in variable declarations");
+    }
 }
 
 Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var)
     : var(var)
 {
     // TODO: Semantic checks
+    if(var->get_type() != Type::INT && var->get_type() != Type::FLOAT){
+        throw_SemanticError("can read only int or float");
+    }
 }
 
 Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr)
     : expr(expr)
 {
     // TODO: Semantic checks
+    Type type = expr->get_type();
+    if(type == Type::VOID || type == Type::BOOL){
+        throw_SemanticError("can't print bool or void");
+    }
+
 }
 
 Int_Expr_Ast::Int_Expr_Ast(int ival)
     : Base_Expr_Ast(Type::INT), ival(ival)
 {
+
 }
 
 Float_Expr_Ast::Float_Expr_Ast(float fval)
