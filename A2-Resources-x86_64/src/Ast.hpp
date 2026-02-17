@@ -2,9 +2,9 @@
 #define AST_HPP
 
 #include <string>
-#include <iostream>
+#include <ostream>
 #include <iomanip>
-#include <cstdio>
+#include <sstream>
 
 #include "Errors.hpp"
 
@@ -53,6 +53,8 @@ public:
     virtual ~Ast() = 0;
     virtual std::string to_string() const = 0;
 };
+
+std::ostream &operator<<(std::ostream &os, Type t);
 
 class Expression_Ast : public Ast
 {

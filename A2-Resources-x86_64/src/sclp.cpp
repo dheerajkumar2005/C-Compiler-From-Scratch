@@ -7,6 +7,8 @@
 
 extern FILE *yyin;
 extern FILE *yyout;
+
+int show_ast;
 std::ostream *astout = nullptr;
 std::ofstream astfile;
 
@@ -57,7 +59,7 @@ int main(int argc, char *argv[])
     int sa_rtl = 0;
 
     show_tokens = 0;
-    int show_ast = 0;
+    show_ast = 0;
     int show_tac = 0;
     int show_rtl = 0;
     int show_symtab = 0;

@@ -2,19 +2,22 @@
     #include "support.hpp"
     #include "Ast.hpp"
     #include "Program.hpp"
+    
     extern "C" int yylex(ParserContext *);
     extern "C" int yyparse(ParserContext *);
     extern "C" void yyerror(ParserContext *, const char *);
 }
 %{
-    
     #include "Program.hpp" 
+    
+    extern int show_ast;
 %}
 
 %parse-param { ParserContext *context }
 %lex-param { ParserContext *context }
 
 %union {
+    StatementList *stmt_list;
     Statement_Ast *stmt;
     Assignment_Stmt_Ast *asgn;
     Read_Stmt_Ast *read;
@@ -89,6 +92,7 @@
 %token <sptr> STR_CONST
 
 // Non-terminals and their types
+%type <stmt_list> statement_list
 %type <stmt> statement
 %type <asgn> assignment_statement
 %type <write> print_statement
@@ -145,8 +149,20 @@ func_header
 
 /* TODO: Handle body of the function */
 func_def
-    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET { process_func_def(context, $1, $3); }
-    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET { process_func_def(context, $1); }
+    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET {
+        process_func_def(context, $1, $3);
+        if(show_ast) {
+            print_func_sig(context->func_ptr);
+            print_stmt_ast_list($7);      
+        }
+    }
+    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET {
+        process_func_def(context, $1);
+        if(show_ast) {
+            print_func_sig(context->func_ptr);
+            print_stmt_ast_list($6);
+        }
+    }
 ;
 
 /* DONE */
@@ -169,8 +185,8 @@ param_type
 ;
 
 statement_list
-    : statement_list statement
-    | 
+    : statement_list statement { $$ = process_stmt_list($1, $2); }
+    | { $$ = process_stmt_list(); }
 ;
 
 statement

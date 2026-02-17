@@ -11,13 +11,14 @@ Procedure::Procedure(Scope *parent_scope, Func_Signature *func_signature)
 }
 
 Func_Signature::Func_Signature(const std::string &name, Type return_type)
-    : name(name), return_type(return_type), param_types()
+    : name(name), return_type(return_type), param_types(), param_names()
 {
 }
 
-void Func_Signature::add_param(Type type)
+void Func_Signature::add_param(const std::string &param_name, Type type)
 {
     param_types.push_back(type);
+    param_names.push_back(param_name);
 }
 
 bool Func_Signature::operator==(const Func_Signature &other) const

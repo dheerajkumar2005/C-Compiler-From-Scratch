@@ -22,8 +22,11 @@ public:
     Type return_type;
     std::vector<Type> param_types;
 
+    // ONLY for printing the AST
+    std::vector<std::string> param_names;
+
     Func_Signature(const std::string &name, Type return_type);
-    void add_param(Type type);
+    void add_param(const std::string &param_name, Type type);
 
     bool operator==(const Func_Signature &other) const;
     bool operator!=(const Func_Signature &other) const;

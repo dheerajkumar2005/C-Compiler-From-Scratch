@@ -228,27 +228,40 @@ std::ostream &operator<<(std::ostream &os, Type t)
     {
         os << "bool";
     }
+    else
+    {
+        throw new SemanticError("Unexpected type");
+    }
     return os;
+}
+
+std::string type_to_string(Type type)
+{
+    std::ostringstream oss;
+    oss << type;
+    return oss.str();
 }
 
 std::string Name_Expr_Ast::to_string() const
 {
-    std::cout << var_name << "_<" << get_type() << ">";
+    return "Name : " + var_name + "_<" + type_to_string(get_type()) + ">";
 }
 
 std::string Int_Expr_Ast::to_string() const
 {
-    std::cout << "Num : " << ival << "<" << get_type() << ">";
+    return "Num : " + std::to_string(ival) + "<" + type_to_string(get_type()) + ">";
 }
 
 std::string Float_Expr_Ast::to_string() const
 {
-    std::cout << "Num : " << std::fixed << std::setprecision(2) << fval << "<" << get_type() << ">";
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(2) << fval;
+    return "Num : " + out.str() + "<" + type_to_string(get_type()) + ">";
 }
 
 std::string String_Expr_Ast::to_string() const
 {
-    std::cout << "String : \"" << sval << "\"<" << get_type() << ">";
+    return "String : \"" + sval + "\"<" + type_to_string(get_type()) + ">";
 }
 
 std::string UMinus_Expr_Ast::to_string() const

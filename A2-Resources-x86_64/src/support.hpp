@@ -18,6 +18,8 @@ using FormalParamList = std::vector<FormalParam *>;
 
 using FuncHeader = std::pair<Type, std::string *>;
 
+using StatementList = std::vector<Statement_Ast *>;
+
 IdentifierList *process_var_decl_item_list(std::string *identifier);
 IdentifierList *process_var_decl_item_list(IdentifierList *identifiers, std::string *identifier);
 
@@ -40,5 +42,11 @@ FormalParamList *process_formal_param_list(FormalParamList *formal_param_list, F
 
 void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 void process_func_def(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
+
+StatementList *process_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
+StatementList *process_stmt_list();
+
+void print_func_sig(Procedure *program_ptr);
+void print_stmt_ast_list(StatementList *stmt_list);
 
 #endif

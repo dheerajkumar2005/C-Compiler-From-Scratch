@@ -137,7 +137,7 @@ void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalPa
     {
         for (const auto &formal_param : *formal_param_list)
         {
-            func_sig->add_param(formal_param->first);
+            func_sig->add_param(*(formal_param->second), formal_param->first);
         }
     }
 
@@ -182,7 +182,7 @@ void process_func_def(ParserContext *context, FuncHeader *func_header, FormalPar
     {
         for (const auto &formal_param : *formal_param_list)
         {
-            func_sig->add_param(formal_param->first);
+            func_sig->add_param(*(formal_param->second), formal_param->first);
         }
     }
 
@@ -206,4 +206,43 @@ void process_func_def(ParserContext *context, FuncHeader *func_header, FormalPar
     {
         process_func_decl(context, func_header, formal_param_list);
     }
+}
+
+StatementList *process_stmt_list(StatementList *stmt_list, Statement_Ast *stmt)
+{
+    stmt_list->push_back(stmt);
+    return stmt_list;
+}
+
+StatementList *process_stmt_list()
+{
+    return new std::vector<Statement_Ast *>();
+}
+
+// NOTE: IDGAF about tab accumulation and stuff now
+void print_func_sig(Procedure *func_ptr)
+{
+    Func_Signature *func_signature = func_ptr->func_signature;
+    std::string func_name = func_signature->name;
+    Type return_type = func_signature->return_type;
+    std::vector<std::string> param_names = func_signature->param_names;
+    std::vector<Type> param_types = func_signature->param_types;
+
+    *astout << "**PROCEDURE: " << func_name << std::endl;
+    *astout << "Return Type: <" << return_type << ">" << std::endl;
+    *astout << "Formal Parameters: " << std::endl;
+    for (int i = 0; i < param_names.size(); i++)
+    {
+        *astout << param_names[i] << "_ Type:<" << param_types[i] << ">" << std::endl;
+    }
+}
+
+void print_stmt_ast_list(StatementList *stmt_list)
+{
+    *astout << "**BEGIN: Abstract Syntax Tree" << std::endl;
+    for (auto stmt_ast : *stmt_list)
+    {
+        *astout << stmt_ast->to_string() << std::endl;
+    }
+    *astout << "**END: Abstract Syntax Tree" << std::endl;
 }
