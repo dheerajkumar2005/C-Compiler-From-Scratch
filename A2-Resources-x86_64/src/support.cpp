@@ -1,6 +1,6 @@
 #include "support.hpp"
 
-int sa_parse;
+extern int sa_parse;
 
 void throw_SemanticError(const std::string &msg){
     if(!sa_parse){
