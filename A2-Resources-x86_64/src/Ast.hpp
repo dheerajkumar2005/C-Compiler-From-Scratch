@@ -2,6 +2,7 @@
 #define AST_HPP
 
 #include <string>
+#include "support.hpp"
 
 enum class Type
 {
