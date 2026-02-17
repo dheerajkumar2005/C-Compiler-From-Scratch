@@ -2,15 +2,8 @@
 #define AST_HPP
 
 #include <string>
-
-enum class Type
-{
-    VOID,
-    INT,
-    FLOAT,
-    STR,
-    BOOL,
-};
+#include <iostream>
+#include <iomanip>
 
 enum class Unary_Operator
 {
@@ -39,11 +32,44 @@ enum class Ternary_Operator
     QUESTION_MARK_COLON,
 };
 
+enum class Type
+{
+    VOID,
+    INT,
+    FLOAT,
+    STR,
+    BOOL,
+};
+
+std::ostream &operator<<(std::ostream &os, Type t)
+{
+    if (t == Type::VOID)
+    {
+        os << "void";
+    }
+    else if (t == Type::INT)
+    {
+        os << "int";
+    }
+    else if (t == Type::FLOAT)
+    {
+        os << "float";
+    }
+    else if (t == Type::STR)
+    {
+        os << "string";
+    }
+    else if (t == Type::BOOL)
+    {
+        os << "bool";
+    }
+}
+
 class Ast
 {
 public:
     virtual ~Ast() = 0;
-    virtual const void print_ast() = 0;
+    virtual void print_ast() const = 0;
 };
 
 class Expression_Ast : public Ast
@@ -72,7 +98,7 @@ public:
     Name_Expr_Ast(std::string *id, Type type);
     ~Name_Expr_Ast() override = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Int_Expr_Ast : public Base_Expr_Ast
@@ -84,7 +110,7 @@ public:
     Int_Expr_Ast(int ival);
     ~Int_Expr_Ast() override = default;
 
-    virtual const void print_ast() override final; // TODO: add const
+    virtual void print_ast() const override final;
 };
 
 class Float_Expr_Ast : public Base_Expr_Ast
@@ -96,7 +122,7 @@ public:
     Float_Expr_Ast(float fval);
     ~Float_Expr_Ast() = default;
 
-    virtual const void print_ast() override final; // TODO: add const
+    virtual void print_ast() const override final;
 };
 
 class String_Expr_Ast : public Base_Expr_Ast
@@ -108,7 +134,7 @@ public:
     String_Expr_Ast(char *_sval);
     ~String_Expr_Ast() = default;
 
-    virtual const void print_ast() override;
+    virtual void print_ast() const override;
 };
 
 class Unary_Expr_AST : public Expression_Ast
@@ -128,7 +154,7 @@ public:
     UMinus_Expr_Ast(Expression_Ast *opd1);
     ~UMinus_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Logical_Not_Expr_Ast : public Unary_Expr_AST
@@ -137,7 +163,7 @@ public:
     Logical_Not_Expr_Ast(Expression_Ast *opd1);
     ~Logical_Not_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Binary_Expr_Ast : public Expression_Ast
@@ -158,7 +184,7 @@ public:
     Boolean_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2);
     ~Boolean_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Div_Expr_Ast : public Binary_Expr_Ast
@@ -167,7 +193,7 @@ public:
     Div_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
     ~Div_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Minus_Expr_Ast : public Binary_Expr_Ast
@@ -176,7 +202,7 @@ public:
     Minus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
     ~Minus_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Mult_Expr_Ast : public Binary_Expr_Ast
@@ -185,7 +211,7 @@ public:
     Mult_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
     ~Mult_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Plus_Expr_Ast : public Binary_Expr_Ast
@@ -194,7 +220,7 @@ public:
     Plus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
     ~Plus_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Relational_Expr_Ast : public Binary_Expr_Ast
@@ -203,7 +229,7 @@ public:
     Relational_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2);
     ~Relational_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Ternary_Expr_Ast : public Expression_Ast
@@ -225,7 +251,7 @@ public:
     Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3);
     ~Conditional_Expr_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Statement_Ast : public Ast
@@ -244,7 +270,7 @@ public:
     Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs);
     ~Assignment_Stmt_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Read_Stmt_Ast : public Statement_Ast
@@ -256,7 +282,7 @@ public:
     Read_Stmt_Ast(Name_Expr_Ast *var);
     ~Read_Stmt_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 class Write_Stmt_Ast : public Statement_Ast
@@ -268,7 +294,7 @@ public:
     Write_Stmt_Ast(Expression_Ast *expr);
     ~Write_Stmt_Ast() = default;
 
-    virtual const void print_ast() override final;
+    virtual void print_ast() const override final;
 };
 
 #endif
