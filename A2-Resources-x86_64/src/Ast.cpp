@@ -420,8 +420,8 @@ std::string Logical_Not_Expr_Ast::to_string() const
 }
 
 std::string Boolean_Expr_Ast::to_string() const
-{  
-    return "Condition: "+ op_to_string(op) +"<bool>\nL_Opd ("+ opd1->to_string()+")\nR_Opd ("+opd2->to_string()+")"; 
+{
+    return "\nCondition: " + op_to_string(op) + "<bool>\nL_Opd (" + opd1->to_string() + ")\nR_Opd (" + opd2->to_string() + ")";
 }
 
 std::string Div_Expr_Ast::to_string() const
@@ -442,11 +442,12 @@ std::string Plus_Expr_Ast::to_string() const
 
 std::string Relational_Expr_Ast::to_string() const
 {
+    return "\nCondition: " + op_to_string(op) + "<bool>\nL_Opd (" + opd1->to_string() + ")\nR_Opd (" + opd2->to_string() + ")";
 }
 
 std::string Conditional_Expr_Ast::to_string() const
 {
-    // return "\nCondition: " + 
+    return opd1->to_string() + "\nTrue_Part (" + opd2->to_string() + ")\nFalse_Part (" + opd3->to_string() + ")";
 }
 
 std::string Assignment_Stmt_Ast::to_string() const
