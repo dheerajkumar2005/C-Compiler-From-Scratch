@@ -23,3 +23,7 @@ void Symbol_Table::insert(const std::string &id, Type type)
     }
     sym_tab[id] = type;
 }
+
+void Func_Table::insert(const std::string &id, Func_Signature* func_sig){
+    if (func_tab) // fix it
+}

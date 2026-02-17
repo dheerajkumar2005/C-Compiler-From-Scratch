@@ -37,6 +37,7 @@ void set_context_to_main(ParserContext *context, Type type, std::string *identif
     Func_Signature *func_sig = new Func_Signature(*identifier, type);
     Procedure *procedure = new Procedure(context->program_ptr, func_sig);
     context->main_func_ptr = procedure;
+    context->program_ptr->func_table
 }
 
 void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list)
@@ -54,7 +55,16 @@ void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list)
     }
 }
 
+/* Verify */
 void add_to_global_sym_tab(Program *program, DeclStmtList *decl_stmt_list)
 {
-    // TODO
+    
+    for (const auto &[type, idListPtr]: *decl_stmt_list){
+        for (const auto &id : *idListPtr){
+            if (*id == "main"){
+                throw new SemanticError("Global variable can't have the name main");
+            }
+            program->symbol_table.insert(*id,type);
+        }
+    }
 }
