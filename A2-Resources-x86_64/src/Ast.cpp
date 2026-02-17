@@ -302,6 +302,7 @@ std::string Conditional_Expr_Ast::to_string() const
 
 std::string Assignment_Stmt_Ast::to_string() const
 {
+    return "Asgn:\nLHS (" + lhs->to_string() + ")\nRHS (" + rhs->to_string() + ")";
 }
 
 std::string Read_Stmt_Ast::to_string() const
