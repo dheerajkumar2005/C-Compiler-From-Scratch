@@ -445,6 +445,7 @@ std::string Relational_Expr_Ast::to_string() const
 
 std::string Conditional_Expr_Ast::to_string() const
 {
+    // return "\nCondition: " + 
 }
 
 std::string Assignment_Stmt_Ast::to_string() const
@@ -454,8 +455,10 @@ std::string Assignment_Stmt_Ast::to_string() const
 
 std::string Read_Stmt_Ast::to_string() const
 {
+    return "Read: " + var->to_string();
 }
 
 std::string Write_Stmt_Ast::to_string() const
 {
+    return "Write: " + expr->to_string();
 }
