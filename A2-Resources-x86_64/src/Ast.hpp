@@ -63,6 +63,7 @@ std::ostream &operator<<(std::ostream &os, Type t)
     {
         os << "bool";
     }
+    return os;
 }
 
 class Ast
