@@ -33,7 +33,7 @@ class Func_Table
 {
 public:
     std::unordered_map<std::string, Func_Signature *> func_tab;
-    void insert(const std::string &id, Func_Signature* func_sig);
+    void insert_decl(const std::string &id, Func_Signature* func_sig);
 };
 
 class Scope

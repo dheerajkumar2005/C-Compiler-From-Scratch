@@ -23,7 +23,12 @@ void Symbol_Table::insert(const std::string &id, Type type)
     }
     sym_tab[id] = type;
 }
-
-void Func_Table::insert(const std::string &id, Func_Signature* func_sig){
-    if (func_tab) // fix it
+/* Verify */
+void Func_Table::insert_decl(const std::string &id, Func_Signature* func_sig){
+    // This is assuming overloading is not allowed i.e diff functions have diff names not only signatures
+    if (func_tab.find(id) != func_tab.end()){
+        throw new SemanticError("Expected only one function declaration per identifier: " + id);
+    
+    }
+    func_tab[id] = func_sig;
 }

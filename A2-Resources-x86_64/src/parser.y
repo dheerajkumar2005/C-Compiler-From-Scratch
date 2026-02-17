@@ -13,11 +13,11 @@
 %lex-param { ParserContext *context }
 
 %union {
-    Stmt_AST *stmt;
+    Statement_Ast *stmt;
     Assign_AST *asgn;
-    Read_AST *read;
-    Write_AST *write;
-    Expr_AST *expr;
+    Read_Stmt_Ast *read;
+    Write_Stmt_Ast *write;
+    Expression_AST *expr;
     Var_AST *var;
     Binary_Expr_AST *rel;
 
@@ -27,10 +27,10 @@
     DeclStmt decl_stmt;
     DeclStmtList *decl_stmt_list;
 
-    Base_Expr_AST *constant;
-    Int_Expr_AST *iptr;
-    Float_Expr_AST *fptr;
-    String_Expr_AST *sptr;
+    Base_Expr_Ast *constant;
+    Int_Expr_Ast *iptr;
+    Float_Expr_Ast *fptr;
+    String_Expr_Ast *sptr;
 
     // TODO: Add fields for parameter and return types
 }

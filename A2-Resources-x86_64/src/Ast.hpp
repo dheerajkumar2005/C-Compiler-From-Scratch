@@ -15,7 +15,6 @@ enum class Type
 enum class Unary_Operator
 {
     NEGATE,
-    LOGICAL_NOT,
 };
 
 enum class Binary_Operator
@@ -26,6 +25,7 @@ enum class Binary_Operator
     DIVIDE,
     LOGICAL_AND,
     LOGICAL_OR,
+    LOGICAL_NOT,
     LT,
     LE,
     GT,
