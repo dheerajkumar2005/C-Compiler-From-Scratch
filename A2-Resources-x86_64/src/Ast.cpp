@@ -145,3 +145,24 @@ Ternary_Expr_Ast::~Ternary_Expr_Ast()
 }
 
 Statement_Ast::~Statement_Ast() {}
+
+void Name_Expr_Ast::print_ast() const
+{
+    std::cout << var_name << "_<" << get_type() << ">";
+}
+
+void Int_Expr_Ast::print_ast() const
+{
+    std::cout << "Num : " << ival << "<" << get_type() << ">";
+}
+
+void Float_Expr_Ast::print_ast() const
+{
+    std::cout << "Num : " << std::fixed << std::setprecision(2) << fval << "<" << get_type() << ">";
+}
+
+void String_Expr_Ast::print_ast() const
+{
+    std::cout << "String : \"" << sval << "\"<" << get_type() << ">";
+}
+
