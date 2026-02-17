@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include "Errors.hpp" 
 
 enum class Unary_Operator
 {
