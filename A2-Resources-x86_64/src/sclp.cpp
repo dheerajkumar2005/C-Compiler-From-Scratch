@@ -19,6 +19,9 @@ extern "C"
     int scanner_error;
 }
 
+int sa_parse;
+
+
 enum Option
 {
     SA_SCAN = 1,
@@ -197,6 +200,16 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (show_ast){
+        if (demo){
+            yyout = stdout;
+        }
+        else{
+            std::string outfilename = filename + ".ast";
+            yyout = std::fopen(outfilename.c_str(),"w");
+        }
+    }
+
     ParserContext context;
     context.program_ptr = new Program();
 
@@ -219,12 +232,19 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    try
-    {
-        return yyparse(&context);
+    else if(sa_parse){
+        yyparse(&context);
     }
-    catch (const SemanticError &e)
-    {
-        std::cerr << "Semantic error: " << e.what() << std::endl;
+
+    else{
+        try
+        {
+            return yyparse(&context);
+        }
+        catch (const SemanticError &e)
+        {
+            std::cerr << "Semantic error: " << e.what() << std::endl;
+        }
     }
+    
 }
