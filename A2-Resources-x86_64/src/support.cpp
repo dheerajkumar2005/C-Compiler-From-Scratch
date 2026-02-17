@@ -157,6 +157,7 @@ void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalPa
 
     // NOTE: We assume no function overloading
     Procedure *func_ptr = context->func_ptr;
+    func_ptr->func_signature = func_sig;
     func_tab[func_name] = func_ptr;
 
     // Insert all params as local variables in the function's symbol table
@@ -240,9 +241,12 @@ void print_func_sig(Procedure *func_ptr)
 void print_stmt_ast_list(StatementList *stmt_list)
 {
     *astout << "**BEGIN: Abstract Syntax Tree" << std::endl;
-    for (auto stmt_ast : *stmt_list)
+    if (stmt_list)
     {
-        *astout << stmt_ast->to_string() << std::endl;
+        for (auto stmt_ast : *stmt_list)
+        {
+            *astout << stmt_ast->to_string() << std::endl;
+        }
     }
     *astout << "**END: Abstract Syntax Tree" << std::endl;
 }

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream> // debugging ONLY
 
 #include "Ast.hpp"
 
@@ -46,7 +47,7 @@ void process_func_def(ParserContext *context, FuncHeader *func_header, FormalPar
 StatementList *process_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
 StatementList *process_stmt_list();
 
-void print_func_sig(Procedure *program_ptr);
+void print_func_sig(Procedure *func_ptr);
 void print_stmt_ast_list(StatementList *stmt_list);
 
 #endif

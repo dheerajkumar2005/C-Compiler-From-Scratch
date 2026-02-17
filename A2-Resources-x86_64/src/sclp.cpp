@@ -252,6 +252,7 @@ int main(int argc, char *argv[])
         catch (const SemanticError &e)
         {
             std::cerr << "Semantic error: " << e.what() << std::endl;
+            return 1;
         }
     }
 }
