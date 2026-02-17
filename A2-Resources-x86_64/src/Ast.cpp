@@ -2,7 +2,17 @@
 
 #include "Ast.hpp"
 
-Expression_Ast::Expression_Ast(Type type) : type(type)
+Ast::Ast()
+{
+}
+
+Statement_Ast::Statement_Ast()
+    : Ast()
+{
+}
+
+Expression_Ast::Expression_Ast(Type type)
+    : Ast(), type(type)
 {
 }
 
@@ -11,7 +21,8 @@ Type Expression_Ast::get_type() const
     return type;
 }
 
-Base_Expr_Ast::Base_Expr_Ast(Type type) : Expression_Ast(type)
+Base_Expr_Ast::Base_Expr_Ast(Type type)
+    : Expression_Ast(type)
 {
 }
 
@@ -24,7 +35,7 @@ Name_Expr_Ast::Name_Expr_Ast(std::string *id, Type type)
 }
 
 Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var)
-    : var(var)
+    : Statement_Ast(), var(var)
 {
     // TODO: Semantic checks
     if(var->get_type() != Type::INT && var->get_type() != Type::FLOAT){
@@ -33,7 +44,7 @@ Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var)
 }
 
 Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr)
-    : expr(expr)
+    : Statement_Ast(), expr(expr)
 {
     // TODO: Semantic checks
     Type type = expr->get_type();
@@ -144,72 +155,103 @@ Ternary_Expr_Ast::~Ternary_Expr_Ast()
 {
 }
 
-Statement_Ast::~Statement_Ast() {}
+Statement_Ast::~Statement_Ast()
+{
+}
 
-void Name_Expr_Ast::print_ast() const
+Expression_Ast::~Expression_Ast()
+{
+}
+
+std::ostream &operator<<(std::ostream &os, Type t)
+{
+    if (t == Type::VOID)
+    {
+        os << "void";
+    }
+    else if (t == Type::INT)
+    {
+        os << "int";
+    }
+    else if (t == Type::FLOAT)
+    {
+        os << "float";
+    }
+    else if (t == Type::STR)
+    {
+        os << "string";
+    }
+    else if (t == Type::BOOL)
+    {
+        os << "bool";
+    }
+    return os;
+}
+
+std::string Name_Expr_Ast::to_string() const
 {
     std::cout << var_name << "_<" << get_type() << ">";
 }
 
-void Int_Expr_Ast::print_ast() const
+std::string Int_Expr_Ast::to_string() const
 {
     std::cout << "Num : " << ival << "<" << get_type() << ">";
 }
 
-void Float_Expr_Ast::print_ast() const
+std::string Float_Expr_Ast::to_string() const
 {
     std::cout << "Num : " << std::fixed << std::setprecision(2) << fval << "<" << get_type() << ">";
 }
 
-void String_Expr_Ast::print_ast() const
+std::string String_Expr_Ast::to_string() const
 {
     std::cout << "String : \"" << sval << "\"<" << get_type() << ">";
 }
 
-void UMinus_Expr_Ast::print_ast() const
+std::string UMinus_Expr_Ast::to_string() const
 {
 }
 
-void Logical_Not_Expr_Ast::print_ast() const
+std::string Logical_Not_Expr_Ast::to_string() const
 {
 }
 
-void Boolean_Expr_Ast::print_ast() const
+std::string Boolean_Expr_Ast::to_string() const
 {
 }
 
-void Div_Expr_Ast::print_ast() const
+std::string Div_Expr_Ast::to_string() const
 {
 }
 
-void Minus_Expr_Ast::print_ast() const
+std::string Minus_Expr_Ast::to_string() const
 {
 }
 
-void Mult_Expr_Ast::print_ast() const
+std::string Mult_Expr_Ast::to_string() const
 {
 }
 
-void Plus_Expr_Ast::print_ast() const
+std::string Plus_Expr_Ast::to_string() const
 {
 }
 
-void Relational_Expr_Ast::print_ast() const
+std::string Relational_Expr_Ast::to_string() const
 {
 }
 
-void Conditional_Expr_Ast::print_ast() const
+std::string Conditional_Expr_Ast::to_string() const
 {
 }
 
-void Assignment_Stmt_Ast::print_ast() const
+std::string Assignment_Stmt_Ast::to_string() const
 {
 }
 
-void Read_Stmt_Ast::print_ast() const
+std::string Read_Stmt_Ast::to_string() const
 {
 }
 
-void Write_Stmt_Ast::print_ast() const
+std::string Write_Stmt_Ast::to_string() const
 {
 }

@@ -7,6 +7,9 @@
 
 extern FILE *yyin;
 extern FILE *yyout;
+std::ostream *astout = nullptr;
+std::ofstream astfile;
+
 extern "C"
 {
     int yyparse(ParserContext *);
@@ -20,7 +23,6 @@ extern "C"
 }
 
 int sa_parse;
-
 
 enum Option
 {
@@ -200,13 +202,17 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (show_ast){
-        if (demo){
-            yyout = stdout;
+    if (show_ast)
+    {
+        if (demo)
+        {
+            astout = &std::cout;
         }
-        else{
+        else
+        {
             std::string outfilename = filename + ".ast";
-            yyout = std::fopen(outfilename.c_str(),"w");
+            astfile.open(outfilename);
+            astout = &astfile;
         }
     }
 
@@ -231,12 +237,12 @@ int main(int argc, char *argv[])
         }
         return 0;
     }
-
-    else if(sa_parse){
+    else if (sa_parse)
+    {
         yyparse(&context);
     }
-
-    else{
+    else
+    {
         try
         {
             return yyparse(&context);
@@ -246,5 +252,4 @@ int main(int argc, char *argv[])
             std::cerr << "Semantic error: " << e.what() << std::endl;
         }
     }
-    
 }

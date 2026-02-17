@@ -3,10 +3,10 @@
     #include "Ast.hpp"
     #include "parse.tab.h"
 
+    #define YY_DECL int yylex(ParserContext *context)
+
     extern int show_tokens;
     extern int scanner_error;
-
-    extern "C" int yylex(ParserContext *);
 
     void display_token(const char *token_name, const char *lexeme) {
         if(show_tokens) {
@@ -14,7 +14,10 @@
         }
     }
 %}
+
+
 %option noyywrap
+%option yylineno
 
 DIGIT [0-9]
 LETTER [a-zA-Z_]

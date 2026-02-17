@@ -34,3 +34,7 @@ ParserContext::ParserContext()
     : program_ptr(nullptr), func_ptr(nullptr)
 {
 }
+
+Scope::~Scope()
+{
+}
