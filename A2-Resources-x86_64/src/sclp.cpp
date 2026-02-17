@@ -53,7 +53,7 @@ enum Option
 int main(int argc, char *argv[])
 {
     int sa_scan = 0;
-    int sa_parse = 0;
+    sa_parse = 0;
     int sa_ast = 0;
     int sa_tac = 0;
     int sa_rtl = 0;
@@ -250,9 +250,9 @@ int main(int argc, char *argv[])
         {
             return yyparse(&context);
         }
-        catch (const SemanticError &e)
+        catch (const SemanticError* &e)
         {
-            std::cerr << "Semantic error: " << e.what() << std::endl;
+            std::cerr << "Semantic error: " << e->what() << std::endl;
             return 1;
         }
     }
