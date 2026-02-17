@@ -261,11 +261,12 @@ std::string Float_Expr_Ast::to_string() const
 
 std::string String_Expr_Ast::to_string() const
 {
-    return "String : \"" + sval + "\"<" + type_to_string(get_type()) + ">";
+    return "String : " + sval + "<" + type_to_string(get_type()) + ">";
 }
 
 std::string UMinus_Expr_Ast::to_string() const
 {
+    return "Arith: Uminus<"+type_to_string(get_type())+">\nL_Opd ("+opd1->to_string()+")";
 }
 
 std::string Logical_Not_Expr_Ast::to_string() const
