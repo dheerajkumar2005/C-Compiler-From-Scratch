@@ -1,14 +1,5 @@
 #include "support.hpp"
 
-extern int sa_parse;
-
-void throw_SemanticError(const std::string &msg){
-    if(!sa_parse){
-        throw new SemanticError(msg);
-    }
-}
-
-
 IdentifierList *process_var_decl_item_list(std::string *identifier)
 {
     return new std::vector<std::string *>{identifier};
@@ -41,7 +32,7 @@ void set_procedure_context(ParserContext *context, Type type, std::string *ident
     // NOTE: This is temporary
     if (type != Type::VOID || *identifier != "main")
     {
-        throw new SemanticError("Expected 'void main'");
+        throw_SemanticError("Expected 'void main'");
     }
 
     // Setting context: If already created this procedure object, don't create it again
@@ -66,13 +57,13 @@ void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list)
             // Function has a different name
             if (*id == procedure->func_signature->name)
             {
-                throw new SemanticError("Local variable name matches function name: " + *id);
+                throw_SemanticError("Local variable name matches function name: " + *id);
             }
 
             // No local variable with the same name
             if (procedure->symbol_table.sym_tab.find(*id) != procedure->symbol_table.sym_tab.end())
             {
-                throw new SemanticError("Local varibale name matches previously declared variable: " + *id);
+                throw_SemanticError("Local varibale name matches previously declared variable: " + *id);
             }
 
             procedure->symbol_table.sym_tab[*id] = decl_stmt_ptr->first;
@@ -87,13 +78,13 @@ void add_to_global_sym_tab(Program *program, DeclStmt *decl_stmt)
         // No global variable with the same name
         if (program->symbol_table.sym_tab.find(*id) != program->symbol_table.sym_tab.end())
         {
-            throw new SemanticError("Expected single declaration of a global variable with name: " + *id);
+            throw_SemanticError("Expected single declaration of a global variable with name: " + *id);
         }
 
         // No function with the same name
         if (program->func_table.func_tab.find(*id) != program->func_table.func_tab.end())
         {
-            throw new SemanticError("Cannot declare a variable with the same name as a function: " + *id);
+            throw_SemanticError("Cannot declare a variable with the same name as a function: " + *id);
         }
 
         program->symbol_table.sym_tab[*id] = decl_stmt->first;
@@ -105,7 +96,7 @@ Name_Expr_Ast *process_variable_name(Procedure *func_ptr, std::string *id)
     auto &local_sym_tab = func_ptr->symbol_table.sym_tab;
     if (local_sym_tab.find(*id) == local_sym_tab.end())
     {
-        throw new SemanticError("Expected variable declaration before usage: " + *id);
+        throw_SemanticError("Expected variable declaration before usage: " + *id);
     }
     return new Name_Expr_Ast(id, local_sym_tab[*id]);
 }
@@ -144,14 +135,14 @@ void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalPa
     const auto &global_sym_tab = context->program_ptr->symbol_table.sym_tab;
     if (global_sym_tab.find(func_name) != global_sym_tab.end())
     {
-        throw new SemanticError("Function name matches global variable name: " + func_name);
+        throw_SemanticError("Function name matches global variable name: " + func_name);
     }
 
     // No other function with the same name
     auto &func_tab = context->program_ptr->func_table.func_tab;
     if (func_tab.find(func_name) != func_tab.end())
     {
-        throw new SemanticError("Expected only one function with name: " + func_name);
+        throw_SemanticError("Expected only one function with name: " + func_name);
     }
 
     // NOTE: We assume no function overloading
@@ -188,7 +179,7 @@ void process_func_def(ParserContext *context, FuncHeader *func_header, FormalPar
     const auto &global_sym_tab = context->program_ptr->symbol_table.sym_tab;
     if (global_sym_tab.find(func_name) != global_sym_tab.end())
     {
-        throw new SemanticError("Function name matches global variable name: " + func_name);
+        throw_SemanticError("Function name matches global variable name: " + func_name);
     }
 
     auto &func_tab = context->program_ptr->func_table.func_tab;
@@ -197,7 +188,7 @@ void process_func_def(ParserContext *context, FuncHeader *func_header, FormalPar
         Procedure *existing_procedure = func_tab[func_name];
         if (*(existing_procedure->func_signature) != *func_sig)
         {
-            throw new SemanticError("Expected function definition to match declaration: " + func_name);
+            throw_SemanticError("Expected function definition to match declaration: " + func_name);
         }
     }
 
