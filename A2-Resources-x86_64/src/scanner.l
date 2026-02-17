@@ -174,8 +174,9 @@ LETTER [a-zA-Z_]
 
 \/\/[^\n]* ;
 
-[ \n]+ ;
+[ \n\t]+ ;
 . {
+    fprintf(stderr, "Bad char: %d\n", yytext[0]);
     scanner_error = 1;
 }
 

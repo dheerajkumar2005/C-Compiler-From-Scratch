@@ -34,4 +34,4 @@ clean :
 	rm -f *.o *.output
 	rm -f $(TGT) 
 	rm -rf parse.tab.c parse.tab.h scan.c 
-	rm -rf *.out *.log *.toks exp?
+	rm -rf *.out *.log *.toks *.ast exp?

@@ -280,7 +280,7 @@ variable_as_operand
 
 /* FIXED */
 variable_name
-    : NAME { $$ = process_variable_name(context->func_ptr, $1); }
+    : NAME { $$ = process_variable_name(context, $1); }
 ;
 
 /* FIXED */
