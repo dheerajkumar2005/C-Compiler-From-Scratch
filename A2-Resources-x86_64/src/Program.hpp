@@ -1,5 +1,3 @@
-// TODO: Write constructors
-
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
@@ -13,10 +11,8 @@
 
 class Symbol_Table
 {
-    std::unordered_map<std::string, Type> sym_tab;
-
 public:
-    void insert(const std::string &id, Type type);
+    std::unordered_map<std::string, Type> sym_tab;
 };
 
 class Func_Signature
@@ -27,13 +23,17 @@ public:
     std::vector<Type> param_types;
 
     Func_Signature(const std::string &name, Type return_type);
+    void add_param(Type type);
+
+    bool operator==(const Func_Signature &other) const;
+    bool operator!=(const Func_Signature &other) const;
 };
 
 class Func_Table
 {
 public:
-    std::unordered_map<std::string, Func_Signature *> func_tab;
-    void insert_decl(const std::string &id, Func_Signature* func_sig);
+    std::unordered_map<std::string, Procedure *> func_tab;
+    // void insert_decl(const std::string &id, Func_Signature *func_sig);
 };
 
 class Scope

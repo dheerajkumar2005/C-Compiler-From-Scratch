@@ -51,24 +51,28 @@ LETTER [a-zA-Z_]
 }
 
 {LETTER}({LETTER}|{DIGIT})* { 
+    // FIXED
     display_token("NAME", yytext); 
-    yylval.var = new VarAST(yytext);
+    yylval.identifier = new std::string(yytext); 
     return NAME;
 }
 
 {DIGIT}+ {
+    // FIXED
     display_token("INT_NUM", yytext);
-    yylval.iptr = new IntLiteralAST(atoi(yytext));
+    yylval.iptr = new Int_Expr_Ast(atoi(yytext));
     return INT_NUM; 
 }
 ({DIGIT}+\.{DIGIT}*)|(\.{DIGIT}+) { 
+    // FIXED
     display_token("FLOAT_NUM", yytext);
-    yylval.fptr = new FloatLiteralAST(atof(yytext));
+    yylval.fptr = new Float_Expr_Ast(atof(yytext));
     return FLOAT_NUM; 
 }
 \"[^\"]*\" {
+    // FIXED
     display_token("STR_CONST", yytext); 
-    yylval.sptr = new StrLiteralAST(yytext);
+    yylval.sptr = new String_Expr_Ast(yytext);
     return STR_CONST; 
 }
 

@@ -15,20 +15,17 @@ Func_Signature::Func_Signature(const std::string &name, Type return_type)
 {
 }
 
-void Symbol_Table::insert(const std::string &id, Type type)
+void Func_Signature::add_param(Type type)
 {
-    if (sym_tab.find(id) != sym_tab.end())
-    {
-        throw new SemanticError("Expected only one declaration per identifier: " + id);
-    }
-    sym_tab[id] = type;
+    param_types.push_back(type);
 }
-/* Verify */
-void Func_Table::insert_decl(const std::string &id, Func_Signature* func_sig){
-    // This is assuming overloading is not allowed i.e diff functions have diff names not only signatures
-    if (func_tab.find(id) != func_tab.end()){
-        throw new SemanticError("Expected only one function declaration per identifier: " + id);
-    
-    }
-    func_tab[id] = func_sig;
+
+bool Func_Signature::operator==(const Func_Signature &other) const
+{
+    return return_type == other.return_type && param_types == other.param_types;
+}
+
+bool Func_Signature::operator!=(const Func_Signature &other) const
+{
+    return !(*this == other);
 }

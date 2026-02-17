@@ -67,8 +67,10 @@ public:
 
 class Name_Expr_Ast : public Base_Expr_Ast
 {
+    std::string var_name;
+
 public:
-    Name_Expr_Ast(char *var_name);
+    Name_Expr_Ast(std::string *id, Type type);
     ~Name_Expr_Ast() override = default;
 
     virtual const void print_ast() override final;

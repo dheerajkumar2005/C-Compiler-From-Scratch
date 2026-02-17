@@ -7,7 +7,7 @@ class ParserContext
 {
 public:
     Program *program_ptr;
-    Procedure *main_func_ptr;
+    Procedure *func_ptr;
 };
 
 #endif
