@@ -379,7 +379,7 @@ std::string op_to_string(Unary_Operator op)
     return oss.str();
 }
 
-std::string op_to_string(Unary_Operator op)
+std::string op_to_string(Ternary_Operator op)
 {
     std::ostringstream oss;
     oss << op;
