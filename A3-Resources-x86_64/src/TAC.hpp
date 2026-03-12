@@ -26,17 +26,14 @@ public:
 
 class Variable_TAC_Operand : public TAC_Operand
 {
-	// TODO: Change this to be the symtab pointer
 	std::string *name;
 	Scope *declaring_scope;
 
 public:
-	// TODO: Add constructor
 	Variable_TAC_Operand(std::string *name, Scope *declaring_scope);
 
 	virtual std::string to_string() const override final;
 };
-
 
 class Int_Const_TAC_Operand : public TAC_Operand
 {
@@ -60,9 +57,10 @@ public:
 
 class String_Const_TAC_operand : public TAC_Operand{
 	std::string sval;
-	public:
-		String_Const_TAC_operand(char* _sval);
-		virtual std::string to_string() const override final;
+
+public:
+	String_Const_TAC_operand(char *_sval);
+	virtual std::string to_string() const override final;
 };
 
 class Temporary_TAC_Operand : public TAC_Operand
@@ -73,7 +71,6 @@ class Temporary_TAC_Operand : public TAC_Operand
 public:
 	Temporary_TAC_Operand();
 
-	// void print_opd();
 	virtual std::string to_string() const override final;
 };
 
@@ -81,9 +78,9 @@ class Shared_Temporary_TAC_Operand : public TAC_Operand{
 	static int tac_stemp_count;
 	int stemp_number;
 
-	public:
-		Shared_Temporary_TAC_Operand();
-		virtual std::string to_string() const override final;
+public:
+	Shared_Temporary_TAC_Operand();
+	virtual std::string to_string() const override final;
 };
 
 class TAC_Label
@@ -91,9 +88,9 @@ class TAC_Label
 	static int tac_label_count;
 	int label_number;
 
-	public:
-		TAC_Label();
-		std::string to_string() const;
+public:
+	TAC_Label();
+	std::string to_string() const;
 };
 
 class TAC_Statement{
@@ -159,10 +156,9 @@ class Code
 	std::list<TAC_Statement *> *stmt_list;
 
 public:
-	Code() { stmt_list = new std::list<TAC_Statement *>; }
-	~Code();
+	Code();
 
-	void append_statement(TAC_Statement *s) { stmt_list->push_back(s); }
+	void append_statement(TAC_Statement *s);
 	void append_list(Code *c);
 	std::list<TAC_Statement *> *get_list() { return stmt_list; }
 

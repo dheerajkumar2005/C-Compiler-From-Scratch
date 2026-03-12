@@ -20,8 +20,6 @@ public:
     virtual std::string to_string() const = 0;
 };
 
-std::ostream &operator<<(std::ostream &os, Type t);
-
 class Expression_Ast : public Ast
 {
 public:

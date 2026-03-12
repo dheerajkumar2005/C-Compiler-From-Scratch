@@ -145,6 +145,7 @@ std::string Assignment_TAC_Statement::to_string() const
 		else
 		{
 			throw_SemanticError("Lhs must exist for Assignment statement\n");
+			return "";
 		}
 	}
 	else
@@ -186,14 +187,29 @@ Label_TAC_Statement::Label_TAC_Statement(TAC_Label *_label) : label(_label) {}
 std::string Label_TAC_Statement::to_string() const{
 	return label->to_string() + ": ";
 }
-	
+
+Code::Code()
+	: stmt_list(new std::list<TAC_Statement *>)
+{
+}
+
+void Code::append_statement(TAC_Statement *s)
+{
+	if (s)
+	{
+		stmt_list->push_back(s);
+	}
+}
 
 void Code::append_list(Code *c)
 {
-	for (auto it = (c->get_list())->begin(); it != (c->get_list())->end(); ++it)
+	if (c)
 	{
-		if (*it != NULL)
-			stmt_list->push_back(*it);
+		auto l = c->get_list();
+		for (auto it = l->begin(); it != l->end(); ++it)
+		{
+			append_statement(*it);
+		}
 	}
 }
 
