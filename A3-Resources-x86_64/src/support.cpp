@@ -1,179 +1,92 @@
 #include "support.hpp"
 
-IdentifierList *process_var_decl_item_list(std::string *identifier)
+IdentifierList *accumulate_var_decl_item_list(std::string *identifier)
 {
     return new std::vector<std::string *>{identifier};
 }
 
-IdentifierList *process_var_decl_item_list(IdentifierList *identifiers, std::string *identifier)
+IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::string *identifier)
 {
     identifiers->push_back(identifier);
     return identifiers;
 }
 
-DeclStmt *process_var_decl_stmt(Type type, IdentifierList *identifiers)
+void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identifiers)
 {
-    return new std::pair<Type, IdentifierList *>(type, identifiers);
-}
-
-DeclStmtList *process_var_decl_stmt_list(DeclStmt *var_decl_stmt)
-{
-    return new std::vector<DeclStmt *>{var_decl_stmt};
-}
-
-DeclStmtList *process_var_decl_stmt_list(DeclStmtList *var_decl_stmts, DeclStmt *var_decl_stmt)
-{
-    var_decl_stmts->push_back(var_decl_stmt);
-    return var_decl_stmts;
-}
-
-void set_procedure_context(ParserContext *context, Type type, std::string *identifier)
-{
-    // NOTE: This is temporary
-    if (type != Type::VOID || *identifier != "main")
+    for (const auto &id : *identifiers)
     {
-        throw_SemanticError("Expected 'void main'");
-    }
-
-    // Setting context: If already created this procedure object, don't create it again
-    auto &func_tab = context->program_ptr->func_table.func_tab;
-    if (func_tab.find(*identifier) != func_tab.end())
-    {
-        context->func_ptr = func_tab[*identifier];
-    }
-    else
-    {
-        Func_Signature *func_sig = new Func_Signature(*identifier, type);
-        context->func_ptr = new Procedure(context->program_ptr, func_sig);
-    }
-}
-
-void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list)
-{
-    for (const auto &decl_stmt_ptr : *decl_stmt_list)
-    {
-        for (const auto &id : *(decl_stmt_ptr->second))
+        // Cannot clash with the function name
+        if (curr_scope->kind == Scope_Kind::FUNCTION && *id == curr_scope->func_sig->name)
         {
-            // Function has a different name
-            if (*id == procedure->func_signature->name)
-            {
-                throw_SemanticError("Local variable name matches function name: " + *id);
-            }
-
-            // No local variable with the same name
-            if (procedure->symbol_table.sym_tab.find(*id) != procedure->symbol_table.sym_tab.end())
-            {
-                throw_SemanticError("Local varibale name matches previously declared variable: " + *id);
-            }
-
-            procedure->symbol_table.sym_tab[*id] = decl_stmt_ptr->first;
-        }
-    }
-}
-
-void add_to_global_sym_tab(Program *program, DeclStmt *decl_stmt)
-{
-    for (const auto &id : *(decl_stmt->second))
-    {
-        // No global variable with the same name
-        if (program->symbol_table.sym_tab.find(*id) != program->symbol_table.sym_tab.end())
-        {
-            throw_SemanticError("Expected single declaration of a global variable with name: " + *id);
+            throw_SemanticError("Local variable name matches function name: " + *id);
         }
 
-        // No function with the same name
-        if (program->func_table.func_tab.find(*id) != program->func_table.func_tab.end())
+        // No local variable with the same name
+        auto &sym_tab = curr_scope->sym_tab;
+        if (sym_tab.find(*id) != sym_tab.end())
         {
-            throw_SemanticError("Cannot declare a variable with the same name as a function: " + *id);
+            throw_SemanticError("Local varibale name matches previously declared variable: " + *id);
         }
 
-        program->symbol_table.sym_tab[*id] = decl_stmt->first;
+        sym_tab[*id] = new Symbol_Table_Entry(Entry_Kind::VARIABLE, type);
     }
 }
 
-Name_Expr_Ast *process_variable_name(ParserContext *context, std::string *id)
+Name_Expr_Ast *process_variable_name(Scope *curr_scope, std::string *id)
 {
-    auto &local_sym_tab = context->func_ptr->symbol_table.sym_tab;
-    if (local_sym_tab.find(*id) != local_sym_tab.end())
+    while (curr_scope)
     {
-        return new Name_Expr_Ast(id, local_sym_tab[*id]);
+        auto &sym_tab = curr_scope->sym_tab;
+        // TODO: I think both LOCAL and PARAMETER is fine over here
+        if (sym_tab.find(*id) != sym_tab.end() && sym_tab[*id]->kind != Entry_Kind::FUNCTION)
+        {
+            return new Name_Expr_Ast(id, curr_scope, sym_tab[*id]->type);
+        }
+
+        curr_scope = curr_scope->parent_scope;
     }
-    auto &global_sym_tab = context->program_ptr->symbol_table.sym_tab;
-    if (global_sym_tab.find(*id) == global_sym_tab.end())
-    {
-        throw_SemanticError("Expected variable declaration before usage: " + *id);
-    }
-    return new Name_Expr_Ast(id, global_sym_tab[*id]);
+
+    throw_SemanticError("Expected variable declaration before usage: " + *id);
+    return nullptr;
 }
 
-FormalParam *process_formal_param(Type type, std::string *id)
+FormalParam *accumulate_formal_param(Type type, std::string *id)
 {
     return new std::pair<Type, std::string *>(type, id);
 }
 
-FormalParamList *process_formal_param_list(FormalParam *formal_param)
+FormalParamList *accumulate_formal_param_list(FormalParam *formal_param)
 {
     return new std::vector<FormalParam *>{formal_param};
 }
 
-FormalParamList *process_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param)
+FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param)
 {
     formal_param_list->push_back(formal_param);
     return formal_param_list;
 }
 
-void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list)
+Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig)
 {
-    Type return_type = func_header->first;
-    std::string func_name = *(func_header->second);
-    Func_Signature *func_sig = new Func_Signature(func_name, return_type);
+    Scope *next_scope = new Scope(Scope_Kind::FUNCTION, curr_scope, func_sig);
 
-    if (formal_param_list)
+    // Add the params to the new symtab
+    const auto &param_types = func_sig->param_types;
+    const auto &param_names = func_sig->param_names;
+    const int num_params = param_types.size();
+
+    for (int i = 0; i < num_params; i++)
     {
-        for (const auto &formal_param : *formal_param_list)
-        {
-            func_sig->add_param(*(formal_param->second), formal_param->first);
-        }
+        Symbol_Table_Entry *ste = new Symbol_Table_Entry(Entry_Kind::PARAMETER, param_types[i]);
+        curr_scope->sym_tab[param_names[i]] = ste;
     }
 
-    // No global variable with this name
-    const auto &global_sym_tab = context->program_ptr->symbol_table.sym_tab;
-    if (global_sym_tab.find(func_name) != global_sym_tab.end())
-    {
-        throw_SemanticError("Function name matches global variable name: " + func_name);
-    }
-
-    // No other function with the same name
-    auto &func_tab = context->program_ptr->func_table.func_tab;
-    if (func_tab.find(func_name) != func_tab.end())
-    {
-        throw_SemanticError("Expected only one function with name: " + func_name);
-    }
-
-    // NOTE: We assume no function overloading
-    Procedure *func_ptr = context->func_ptr;
-    func_ptr->func_signature = func_sig;
-    func_tab[func_name] = func_ptr;
-
-    // Insert all params as local variables in the function's symbol table
-    auto &local_sym_tab = func_ptr->symbol_table.sym_tab;
-    if (formal_param_list)
-    {
-        for (const auto &formal_param : *formal_param_list)
-        {
-            local_sym_tab[*(formal_param->second)] = formal_param->first;
-        }
-    }
+    return next_scope;
 }
 
-void process_func_def(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list)
+Func_Signature *get_func_sig(std::string func_name, Type return_type, FormalParamList *formal_param_list)
 {
-    // TODO: DRY
-
-    Type return_type = func_header->first;
-    std::string func_name = *(func_header->second);
     Func_Signature *func_sig = new Func_Signature(func_name, return_type);
-
     if (formal_param_list)
     {
         for (const auto &formal_param : *formal_param_list)
@@ -182,43 +95,78 @@ void process_func_def(ParserContext *context, FuncHeader *func_header, FormalPar
         }
     }
 
-    const auto &global_sym_tab = context->program_ptr->symbol_table.sym_tab;
-    if (global_sym_tab.find(func_name) != global_sym_tab.end())
+    return func_sig;
+}
+
+void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
+{
+    std::string func_name = *(func_header->second);
+    Type return_type = func_header->first;
+
+    // This name does not already exist in this scope
+    // The grammar ensures that functions only exist in the global scope
+    // NOTE: We don't allow function overloading
+    auto &sym_tab = curr_scope->sym_tab;
+    if (sym_tab.find(func_name) != sym_tab.end())
     {
-        throw_SemanticError("Function name matches global variable name: " + func_name);
+        throw_SemanticError("Expected single declaration of variable/function with name: " + func_name);
     }
 
-    auto &func_tab = context->program_ptr->func_table.func_tab;
-    if (func_tab.find(func_name) != func_tab.end())
+    Func_Signature *func_sig = get_func_sig(func_name, return_type, formal_param_list);
+
+    // Add it to the symbol table
+    sym_tab[func_name] = new Symbol_Table_Entry(Entry_Kind::FUNCTION, return_type, func_sig);
+
+    // TODO: Params need to be added to the function's symtab upon entering its scope
+    // TODO: The only difference to handling function definitions is to check signature match with declaration, if present
+}
+
+Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
+{
+    std::string func_name = *(func_header->second);
+    Type return_type = func_header->first;
+    Func_Signature *func_sig = get_func_sig(func_name, return_type, formal_param_list);
+
+    // If no symtab entry exists, add it
+    // Otherwise, check if the function signatures match
+    auto &sym_tab = curr_scope->sym_tab;
+    if (sym_tab.find(func_name) != sym_tab.end())
     {
-        Procedure *existing_procedure = func_tab[func_name];
-        if (*(existing_procedure->func_signature) != *func_sig)
+        Symbol_Table_Entry *existing_func = sym_tab[func_name];
+        if (*(existing_func->func_sig) != *func_sig)
         {
             throw_SemanticError("Expected function definition to match declaration: " + func_name);
         }
     }
-
     else
     {
-        process_func_decl(context, func_header, formal_param_list);
+        process_func_decl(curr_scope, func_header, formal_param_list);
     }
+
+    return func_sig;
 }
 
-StatementList *process_stmt_list(StatementList *stmt_list, Statement_Ast *stmt)
+StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt)
 {
     stmt_list->push_back(stmt);
     return stmt_list;
 }
 
-StatementList *process_stmt_list()
+StatementList *accumulate_stmt_list()
 {
     return new std::vector<Statement_Ast *>();
 }
 
 // NOTE: IDGAF about tab accumulation and stuff now
-void print_func_sig(Procedure *func_ptr)
+void print_func_sig(Scope *func)
 {
-    Func_Signature *func_signature = func_ptr->func_signature;
+    if (func->kind != Scope_Kind::FUNCTION)
+    {
+        throw_SemanticError("Not a function!");
+    }
+
+    Func_Signature *func_signature = func->func_sig;
+
     std::string func_name = func_signature->name;
     Type return_type = func_signature->return_type;
     std::vector<std::string> param_names = func_signature->param_names;

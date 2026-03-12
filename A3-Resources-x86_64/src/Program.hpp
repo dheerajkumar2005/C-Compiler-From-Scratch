@@ -6,71 +6,60 @@
 #include <vector>
 #include <utility>
 
-#include "Ast.hpp"
 #include "SemanticError.hpp"
+#include "utils.hpp"
 
-class Symbol_Table
+enum class Entry_Kind
 {
-public:
-    std::unordered_map<std::string, Type> sym_tab;
+    VARIABLE,
+    FUNCTION,
+    PARAMETER,
 };
 
-class Func_Signature
+enum class Scope_Kind
 {
-public:
+    GLOBAL,
+    FUNCTION,
+    // later: BLOCK
+};
+
+struct Func_Signature
+{
     std::string name;
     Type return_type;
     std::vector<Type> param_types;
 
-    // ONLY for printing the AST
     std::vector<std::string> param_names;
 
     Func_Signature(const std::string &name, Type return_type);
+
     void add_param(const std::string &param_name, Type type);
 
     bool operator==(const Func_Signature &other) const;
     bool operator!=(const Func_Signature &other) const;
 };
 
-class Scope
+struct Symbol_Table_Entry
 {
-public:
-    Symbol_Table symbol_table;
+
+    Entry_Kind kind;
+    Type type;
+    int size;
+    int offset;
+    Func_Signature *func_sig; // nullptr for non-functions
+
+    Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signature *func_sig = nullptr);
+};
+
+struct Scope
+{
+    Scope_Kind kind;
     Scope *parent_scope;
 
-    Scope(Scope *parent_scope = nullptr);
-    virtual ~Scope() = 0;
-};
+    std::unordered_map<std::string, Symbol_Table_Entry *> sym_tab;
+    Func_Signature *func_sig; // nullptr for non-functions
 
-class Procedure : public Scope
-{
-public:
-    Func_Signature *func_signature;
-    std::vector<Ast *> body;
-
-    Procedure(Scope *parent_scope = nullptr, Func_Signature *func_signature = nullptr);
-};
-
-class Func_Table
-{
-public:
-    std::unordered_map<std::string, Procedure *> func_tab;
-    // void insert_decl(const std::string &id, Func_Signature *func_sig);
-};
-
-class Program : public Scope
-{
-public:
-    Func_Table func_table;
-};
-
-class ParserContext
-{
-public:
-    Program *program_ptr;
-    Procedure *func_ptr;
-
-    ParserContext();
+    Scope(Scope_Kind kind, Scope *parent_scope = nullptr, Func_Signature *func_sig = nullptr);
 };
 
 #endif

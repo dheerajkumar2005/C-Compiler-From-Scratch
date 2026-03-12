@@ -21,33 +21,28 @@ using FuncHeader = std::pair<Type, std::string *>;
 
 using StatementList = std::vector<Statement_Ast *>;
 
-IdentifierList *process_var_decl_item_list(std::string *identifier);
-IdentifierList *process_var_decl_item_list(IdentifierList *identifiers, std::string *identifier);
+IdentifierList *accumulate_var_decl_item_list(std::string *identifier);
+IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::string *identifier);
 
-DeclStmt *process_var_decl_stmt(Type type, IdentifierList *identifiers);
+// TODO: Should add the declarations to the symbol table of the current scope
+void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identifiers);
 
-DeclStmtList *process_var_decl_stmt_list(DeclStmt *var_decl_stmt);
-DeclStmtList *process_var_decl_stmt_list(DeclStmtList *var_decl_stmts, DeclStmt *var_decl_stmt);
+Name_Expr_Ast *process_variable_name(Scope *curr_scope, std::string *identifier);
 
-void set_procedure_context(ParserContext *context, Type type, std::string *identifier);
+FormalParam *accumulate_formal_param(Type type, std::string *id);
 
-void add_to_local_sym_tab(Procedure *procedure, DeclStmtList *decl_stmt_list);
-void add_to_global_sym_tab(Program *program, DeclStmt *decl_stmt);
+FormalParamList *accumulate_formal_param_list(FormalParam *formal_param);
+FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param);
 
-Name_Expr_Ast *process_variable_name(ParserContext *context, std::string *identifier);
+Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig);
 
-FormalParam *process_formal_param(Type type, std::string *id);
+void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
+Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 
-FormalParamList *process_formal_param_list(FormalParam *formal_param);
-FormalParamList *process_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param);
+StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
+StatementList *accumulate_stmt_list();
 
-void process_func_decl(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
-void process_func_def(ParserContext *context, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
-
-StatementList *process_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
-StatementList *process_stmt_list();
-
-void print_func_sig(Procedure *func_ptr);
+void print_func_sig(Scope *func);
 void print_stmt_ast_list(StatementList *stmt_list);
 
 #endif

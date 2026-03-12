@@ -3,7 +3,7 @@
     #include "Ast.hpp"
     #include "parse.tab.h"
 
-    #define YY_DECL int yylex(ParserContext *context)
+    #define YY_DECL int yylex(Scope *context)
 
     extern int show_tokens;
     extern int scanner_error;

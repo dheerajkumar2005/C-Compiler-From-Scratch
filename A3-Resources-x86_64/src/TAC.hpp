@@ -1,35 +1,22 @@
-
 #ifndef TAC_HPP
 #define TAC_HPP
 
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <list>
+#include <iomanip>
 
 #include "Errors.hpp"
+#include "Program.hpp"
+#include "utils.hpp"
 
-enum class TAC_Operator
-{
-	NOP,
-	// Unary
-	NEGATE,
-	LOGICAL_NOT,
-	// Binary
-	ADD,
-	SUBTRACT,
-	MULTIPLY,
-	DIVIDE,
-	LOGICAL_AND,
-	LOGICAL_OR,
-	LT,
-	LE,
-	GT,
-	GE,
-	NE,
-	EQ,
+enum class IO_Kind{
+	READ,
+	WRITE
 };
 
-std::ostream &operator<<(std::ostream &os, TAC_Operator op);
+// std::ostream &operator<<(std::ostream &os, TAC_Operator op);
 
 class TAC_Operand
 {
@@ -40,65 +27,144 @@ public:
 class Variable_TAC_Operand : public TAC_Operand
 {
 	// TODO: Change this to be the symtab pointer
-	// std::string *name;
+	std::string *name;
+	Scope *declaring_scope;
 
 public:
 	// TODO: Add constructor
+	Variable_TAC_Operand(std::string *name, Scope *declaring_scope);
 
 	virtual std::string to_string() const override final;
+};
+
+
+class Int_Const_TAC_Operand : public TAC_Operand
+{
+	int ival;
+
+public:
+	Int_Const_TAC_Operand(int ival);
+
+	virtual std::string to_string() const override final;
+};
+
+class Float_Const_TAC_Operand : public TAC_Operand
+{
+	float fval;
+
+public:
+	Float_Const_TAC_Operand(float fval);
+
+	virtual std::string to_string() const override final;
+};
+
+class String_Const_TAC_operand : public TAC_Operand{
+	std::string sval;
+	public:
+		String_Const_TAC_operand(char* _sval);
+		virtual std::string to_string() const override final;
 };
 
 class Temporary_TAC_Operand : public TAC_Operand
 {
 	static int tac_temp_count;
-
 	int temp_number;
 
 public:
 	Temporary_TAC_Operand();
 
-	void print_opd();
+	// void print_opd();
 	virtual std::string to_string() const override final;
 };
 
-class Int_Const_TAC_Operand : public TAC_Operand
+class Shared_Temporary_TAC_Operand : public TAC_Operand{
+	static int tac_stemp_count;
+	int stemp_number;
+
+	public:
+		Shared_Temporary_TAC_Operand();
+		virtual std::string to_string() const override final;
+};
+
+class TAC_Label
 {
-	int num;
+	static int tac_label_count;
+	int label_number;
 
-public:
-	Int_Const_TAC_Operand(int num);
-
-	virtual std::string to_string() const override final;
+	public:
+		TAC_Label();
+		std::string to_string() const;
 };
 
-// TODO: Add TAC_Operand types for the other constants too
+class TAC_Statement{
+	public:
+	virtual std::string to_string() const = 0;
+};
 
-class TAC_Statement
+class Assignment_TAC_Statement : public TAC_Statement
 {
 	TAC_Operand *lhs;
-	TAC_Operator op;
+	Operator op;
 	TAC_Operand *opd1;
 	TAC_Operand *opd2;
 
 public:
-	TAC_Statement(TAC_Operand *lhs, TAC_Operator op, TAC_Operand *opd1, TAC_Operand *opd2);
-	TAC_Statement(TAC_Operand *lhs, TAC_Operator op, TAC_Operand *opd1);
-	TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1);
+	Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2);
+	Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1);
+	Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1);
 
-	std::string to_string() const;
+	virtual std::string to_string() const final;
+};
+
+class Goto_TAC_Statement : public TAC_Statement
+{
+	TAC_Label *label;
+
+public:
+	Goto_TAC_Statement(TAC_Label *_label);
+	virtual std::string to_string() const final;
+};
+
+class If_Goto_TAC_Statement : public TAC_Statement
+{
+	TAC_Operand* condition;
+	TAC_Label *label;
+
+public:
+	If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_label);
+	virtual std::string to_string() const final;
+};
+
+class IO_TAC_Statement : public TAC_Statement
+{
+	IO_Kind kind;
+	TAC_Operand* opd;
+
+	public:
+		IO_TAC_Statement(IO_Kind _kind, TAC_Operand* _opd);
+		virtual std::string to_string() const final;
+};
+
+class Label_TAC_Statement : public TAC_Statement
+{
+	TAC_Label *label;
+
+public:
+	Label_TAC_Statement(TAC_Label *_label);
+	virtual std::string to_string() const final;
 };
 
 class Code
 {
-	list<TAC_Statement *> *stmt_list;
+	std::list<TAC_Statement *> *stmt_list;
 
 public:
-	Code() { stmt_list = new list<TAC_Statement *>; }
+	Code() { stmt_list = new std::list<TAC_Statement *>; }
 	~Code();
 
 	void append_statement(TAC_Statement *s) { stmt_list->push_back(s); }
 	void append_list(Code *c);
-	list<TAC_Statement *> *get_list() { return stmt_list; }
+	std::list<TAC_Statement *> *get_list() { return stmt_list; }
 
 	void print_code();
 };

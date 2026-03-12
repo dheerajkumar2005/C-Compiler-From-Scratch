@@ -1,12 +1,7 @@
 #include "Program.hpp"
 
-Scope::Scope(Scope *parent_scope)
-    : symbol_table(), parent_scope(parent_scope)
-{
-}
-
-Procedure::Procedure(Scope *parent_scope, Func_Signature *func_signature)
-    : Scope(parent_scope), func_signature(func_signature), body()
+Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signature *func_sig)
+    : kind(kind), type(type), size(0), offset(0), func_sig(func_sig)
 {
 }
 
@@ -31,11 +26,7 @@ bool Func_Signature::operator!=(const Func_Signature &other) const
     return !(*this == other);
 }
 
-ParserContext::ParserContext()
-    : program_ptr(nullptr), func_ptr(nullptr)
-{
-}
-
-Scope::~Scope()
+Scope::Scope(Scope_Kind kind, Scope *parent_scope, Func_Signature *func_sig)
+    : kind(kind), parent_scope(parent_scope), func_sig(func_sig)
 {
 }

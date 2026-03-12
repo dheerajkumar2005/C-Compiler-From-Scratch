@@ -14,9 +14,9 @@ std::ofstream astfile;
 
 extern "C"
 {
-    int yyparse(ParserContext *);
-    int yylex(ParserContext *);
-    void yyerror(ParserContext *, const char *);
+    int yyparse(Scope *);
+    int yylex(Scope *);
+    void yyerror(Scope *, const char *);
 
     // Used by the lexer
     // C++ declarations get name-mangled in the .o file
@@ -218,18 +218,17 @@ int main(int argc, char *argv[])
         }
     }
 
-    ParserContext context;
-    context.program_ptr = new Program();
+    Scope global_scope(Scope_Kind::GLOBAL);
 
     if (sa_scan)
     {
         while (true)
         {
             scanner_error = 0;
-            int next_token = yylex(&context);
+            int next_token = yylex(&global_scope);
             if (scanner_error)
             {
-                yyerror(&context, "syntax error");
+                yyerror(&global_scope, "syntax error");
                 return 1;
             }
             if (!next_token)
@@ -239,16 +238,18 @@ int main(int argc, char *argv[])
         }
         return 0;
     }
+
+    // TODO: Don't print TAC/AST in this case
     else if (sa_parse)
     {
         // TODO: Figure out why the error printing got messed up
-        return yyparse(&context);
+        return yyparse(&global_scope);
     }
     else
     {
         try
         {
-            return yyparse(&context);
+            return yyparse(&global_scope);
         }
         catch (const SemanticError *&e)
         {

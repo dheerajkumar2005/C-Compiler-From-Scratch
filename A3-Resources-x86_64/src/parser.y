@@ -3,9 +3,9 @@
     #include "Ast.hpp"
     #include "Program.hpp"
     
-    extern "C" int yylex(ParserContext *);
-    extern "C" int yyparse(ParserContext *);
-    extern "C" void yyerror(ParserContext *, const char *);
+    extern "C" int yylex(Scope *);
+    extern "C" int yyparse(Scope *);
+    extern "C" void yyerror(Scope *, const char *);
 }
 %{
     #include "Program.hpp" 
@@ -13,8 +13,8 @@
     extern int show_ast;
 %}
 
-%parse-param { ParserContext *context }
-%lex-param { ParserContext *context }
+%parse-param { Scope *curr_scope }
+%lex-param { Scope *curr_scope }
 
 %union {
     StatementList *stmt_list;
@@ -79,8 +79,6 @@
 %type <formal_param> formal_param
 %type <type> param_type
 
-%type <decl_stmt_list> var_decl_stmt_list
-%type <decl_stmt> var_decl_stmt
 %type <type> named_type
 %type <identifier> var_decl_item
 %type <identifier_list> var_decl_item_list
@@ -116,69 +114,79 @@
 
 %%
 
-/* Nothing to do here */
 program
     : global_decl_stmt_list func_def_list
     | func_def_list
 ;
 
-/* DONE */
 global_decl_stmt_list
     : global_decl_stmt_list func_decl
-    | global_decl_stmt_list var_decl_stmt { add_to_global_sym_tab(context->program_ptr, $2); }
-    | var_decl_stmt { add_to_global_sym_tab(context->program_ptr, $1); }
+    | global_decl_stmt_list var_decl_stmt
+    | var_decl_stmt
     | func_decl
 ;
 
-/* DONE */
 func_decl
-    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(context, $1, $3); }
-    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(context, $1); }
+    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1, $3); }
+    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1); }
 ;
 
-/* Nothing to do here */
 func_def_list
     : func_def_list func_def
     | func_def
 
-/* DONE */
 /* NOTE: formal param and func header look the same */
 func_header
-    : named_type NAME { set_procedure_context(context, $1, $2); $$ = process_formal_param($1, $2); } 
+    : named_type NAME { $$ = accumulate_formal_param($1, $2); } 
 ;
 
-/* TODO: Handle body of the function */
 func_def
-    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET {
-        process_func_def(context, $1, $3);
+    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET 
+    { 
+        // Add it to old symtab or match with existing signature
+        Func_Signature *func_sig = process_func_def(curr_scope, $1, $3);
+
+        // Push the new scope
+        curr_scope = make_func_scope(curr_scope, func_sig);
+    }
+    LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
+    {
+        curr_scope = curr_scope->parent_scope;
+
         if(show_ast) {
-            
-            
-            _func_sig(context->func_ptr);
-            print_stmt_ast_list($7);      
+            print_func_sig(curr_scope);
+            print_stmt_ast_list($8);
         }
     }
-    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET {
-        process_func_def(context, $1);
+    
+    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET 
+    {
+        // Add it to old symtab or match with existing signature
+        Func_Signature *func_sig = process_func_def(curr_scope, $1);
+
+        // Push the new scope
+        curr_scope = make_func_scope(curr_scope, func_sig);
+    } 
+    LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
+    {
+        curr_scope = curr_scope->parent_scope;
+
         if(show_ast) {
-            print_func_sig(context->func_ptr);
-            print_stmt_ast_list($6);
+            print_func_sig(curr_scope);
+            print_stmt_ast_list($7);
         }
     }
 ;
 
-/* DONE */
 formal_param_list
-    : formal_param_list COMMA formal_param { $$ = process_formal_param_list($1, $3); }
-    | formal_param { $$ = process_formal_param_list($1); }
+    : formal_param_list COMMA formal_param { $$ = accumulate_formal_param_list($1, $3); }
+    | formal_param { $$ = accumulate_formal_param_list($1); }
 ;
 
-/* DONE */
 formal_param
-    : param_type NAME { $$ = process_formal_param($1, $2); }
+    : param_type NAME { $$ = accumulate_formal_param($1, $2); }
 ;
 
-/* DONE */
 param_type
     : INTEGER { $$ = Type::INT; }
     | FLOAT { $$ = Type::FLOAT; }
@@ -187,8 +195,8 @@ param_type
 ;
 
 statement_list
-    : statement_list statement { $$ = process_stmt_list($1, $2); }
-    | { $$ = process_stmt_list(); }
+    : statement_list statement { $$ = accumulate_stmt_list($1, $2); }
+    | { $$ = accumulate_stmt_list(); }
 ;
 
 statement
@@ -197,30 +205,25 @@ statement
     | read_statement { $$ = $1; }
 ;
 
-/* DONE */
 optional_local_var_decl_stmt_list
     : 
-    | var_decl_stmt_list { add_to_local_sym_tab(context->func_ptr, $1); }
+    | var_decl_stmt_list
 ;
 
-/* DONE */
 var_decl_stmt_list
-    : var_decl_stmt { $$ = process_var_decl_stmt_list($1); }
-    | var_decl_stmt_list var_decl_stmt { $$ = process_var_decl_stmt_list($1, $2); }
+    : var_decl_stmt
+    | var_decl_stmt_list var_decl_stmt
 ;
 
-/* DONE */
 var_decl_stmt
-    : named_type var_decl_item_list SEMICOLON { $$ = process_var_decl_stmt($1, $2); }
+    : named_type var_decl_item_list SEMICOLON { process_var_decl_stmt(curr_scope, $1, $2); }
 ;
 
-/* DONE */
 var_decl_item_list
-    : var_decl_item_list COMMA var_decl_item { $$ = process_var_decl_item_list($1, $3); }
-    | var_decl_item { $$ = process_var_decl_item_list($1); }
+    : var_decl_item_list COMMA var_decl_item { $$ = accumulate_var_decl_item_list($1, $3); }
+    | var_decl_item { $$ = accumulate_var_decl_item_list($1); }
 ;
 
-/* DONE */
 var_decl_item
     : NAME { $$ = $1; }
 ;
@@ -282,7 +285,7 @@ variable_as_operand
 
 /* FIXED */
 variable_name
-    : NAME { $$ = process_variable_name(context, $1); }
+    : NAME { $$ = process_variable_name(curr_scope, $1); }
 ;
 
 /* FIXED */

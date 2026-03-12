@@ -6,50 +6,15 @@
 #include <iomanip>
 #include <sstream>
 
-#include "Errors.hpp"
 #include "TAC.hpp"
 
 extern std::ostream *astout;
 
-enum class Unary_Operator
-{
-    NEGATE,
-    LOGICAL_NOT,
-};
-
-enum class Binary_Operator
-{
-    ADD,
-    SUBTRACT,
-    MULTIPLY,
-    DIVIDE,
-    LOGICAL_AND,
-    LOGICAL_OR,
-    LT,
-    LE,
-    GT,
-    GE,
-    NE,
-    EQ,
-};
-
-enum class Ternary_Operator
-{
-    QUESTION_MARK_COLON,
-};
-
-enum class Type
-{
-    VOID,
-    INT,
-    FLOAT,
-    STR,
-    BOOL,
-};
-
 class Ast
 {
 public:
+    Code *code;
+
     Ast();
     virtual ~Ast() = 0;
     virtual std::string to_string() const = 0;
@@ -59,9 +24,10 @@ std::ostream &operator<<(std::ostream &os, Type t);
 
 class Expression_Ast : public Ast
 {
-    Type type;
-
 public:
+    Type type;
+    TAC_Operand *place;
+
     Expression_Ast(Type type);
     virtual ~Expression_Ast() = 0;
 
@@ -77,10 +43,11 @@ public:
 
 class Name_Expr_Ast : public Base_Expr_Ast
 {
-    std::string var_name;
-
 public:
-    Name_Expr_Ast(std::string *id, Type type);
+    std::string var_name;
+    Scope *declaring_scope;
+
+    Name_Expr_Ast(std::string *id, Scope *declaring_scope, Type type);
     ~Name_Expr_Ast() override = default;
 
     virtual std::string to_string() const override final;
