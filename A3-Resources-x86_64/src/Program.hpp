@@ -16,12 +16,16 @@ enum class Entry_Kind
     PARAMETER,
 };
 
+// std::ostream &operator<<(std::ostream &os, const Entry_Kind &ek);
+
 enum class Scope_Kind
 {
     GLOBAL,
     FUNCTION,
     // later: BLOCK
 };
+
+// std::ostream &operator<<(std::ostream &os, const Scope_Kind &sk);
 
 struct Func_Signature
 {

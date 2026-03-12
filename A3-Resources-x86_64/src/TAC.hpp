@@ -160,9 +160,8 @@ public:
 
 	void append_statement(TAC_Statement *s);
 	void append_list(Code *c);
-	std::list<TAC_Statement *> *get_list() { return stmt_list; }
 
-	void print_code();
+	std::string to_string() const;
 };
 
 #endif

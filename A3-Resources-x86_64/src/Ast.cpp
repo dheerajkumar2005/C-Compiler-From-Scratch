@@ -1,5 +1,3 @@
-// TODO: Complete this file
-
 #include "Ast.hpp"
 
 Ast::Ast() : code(nullptr)
@@ -295,10 +293,8 @@ Conditional_Expr_Ast::Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast 
         throw_SemanticError("can't have type void in expr");
     }
 
-    // TODO: Add in that stored temp business
-
     Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
-    Temporary_TAC_Operand *t2 = new Temporary_TAC_Operand();
+    Shared_Temporary_TAC_Operand *t2 = new Shared_Temporary_TAC_Operand();
 
     TAC_Label *l1 = new TAC_Label();
     TAC_Label *l2 = new TAC_Label();
@@ -389,7 +385,6 @@ std::string Read_Stmt_Ast::to_string() const
 Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr)
     : Statement_Ast(), expr(expr)
 {
-    // TODO: Semantic checks
     Type type = expr->get_type();
     if (type == Type::VOID || type == Type::BOOL)
     {

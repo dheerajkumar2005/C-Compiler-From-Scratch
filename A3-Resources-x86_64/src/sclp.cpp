@@ -12,6 +12,10 @@ int show_ast;
 std::ostream *astout = nullptr;
 std::ofstream astfile;
 
+int show_tac;
+std::ostream *tacout = nullptr;
+std::ofstream tacfile;
+
 extern "C"
 {
     int yyparse(Scope *);
@@ -60,7 +64,7 @@ int main(int argc, char *argv[])
 
     show_tokens = 0;
     show_ast = 0;
-    int show_tac = 0;
+    show_tac = 0;
     int show_rtl = 0;
     int show_symtab = 0;
     int show_asm = 0;
@@ -191,6 +195,16 @@ int main(int argc, char *argv[])
     yyin = std::fopen(filename.c_str(), "r");
     yyout = nullptr;
 
+    if (sa_scan || sa_parse)
+    {
+        show_ast = 0;
+        show_tac = 0;
+    }
+    else if (sa_ast)
+    {
+        show_tac = 0;
+    }
+
     if (show_tokens)
     {
         if (demo)
@@ -218,6 +232,20 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (show_tac)
+    {
+        if (demo)
+        {
+            tacout = &std::cout;
+        }
+        else
+        {
+            std::string outfilename = filename + ".tac";
+            tacfile.open(outfilename);
+            tacout = &tacfile;
+        }
+    }
+
     Scope global_scope(Scope_Kind::GLOBAL);
 
     if (sa_scan)
@@ -239,12 +267,12 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // TODO: Don't print TAC/AST in this case
     else if (sa_parse)
     {
         // TODO: Figure out why the error printing got messed up
         return yyparse(&global_scope);
     }
+
     else
     {
         try

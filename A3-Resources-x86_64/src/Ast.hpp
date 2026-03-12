@@ -9,6 +9,7 @@
 #include "TAC.hpp"
 
 extern std::ostream *astout;
+extern std::ostream *tacout;
 
 class Ast
 {

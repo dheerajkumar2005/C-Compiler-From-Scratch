@@ -9,8 +9,9 @@
 }
 %{
     #include "Program.hpp" 
-    
+
     extern int show_ast;
+    extern int show_tac;
 %}
 
 %parse-param { Scope *curr_scope }
@@ -151,12 +152,19 @@ func_def
     }
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
-        curr_scope = curr_scope->parent_scope;
-
-        if(show_ast) {
-            print_func_sig(curr_scope);
-            print_stmt_ast_list($8);
+        if(show_ast) 
+        {
+            ast_print_func_sig(curr_scope);
+            ast_print_stmt_list($8);
         }
+
+        if(show_tac) 
+        {
+            tac_print_func_sig(curr_scope);
+            tac_print_stmt_list($8);
+        }
+
+        curr_scope = curr_scope->parent_scope;
     }
     
     | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET 
@@ -169,12 +177,19 @@ func_def
     } 
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
-        curr_scope = curr_scope->parent_scope;
-
-        if(show_ast) {
-            print_func_sig(curr_scope);
-            print_stmt_ast_list($7);
+        if(show_ast) 
+        {
+            ast_print_func_sig(curr_scope);
+            ast_print_stmt_list($7);
         }
+
+        if(show_tac) 
+        {
+            tac_print_func_sig(curr_scope);
+            tac_print_stmt_list($7);
+        }
+
+        curr_scope = curr_scope->parent_scope;
     }
 ;
 

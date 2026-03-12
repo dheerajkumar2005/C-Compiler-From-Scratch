@@ -13,6 +13,7 @@ IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::
 
 void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identifiers)
 {
+    auto &sym_tab = curr_scope->sym_tab;
     for (const auto &id : *identifiers)
     {
         // Cannot clash with the function name
@@ -21,11 +22,10 @@ void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identif
             throw_SemanticError("Local variable name matches function name: " + *id);
         }
 
-        // No local variable with the same name
-        auto &sym_tab = curr_scope->sym_tab;
+        // No local variable or params with the same name
         if (sym_tab.find(*id) != sym_tab.end())
         {
-            throw_SemanticError("Local varibale name matches previously declared variable: " + *id);
+            throw_SemanticError("Local variable name matches previously declared variable: " + *id);
         }
 
         sym_tab[*id] = new Symbol_Table_Entry(Entry_Kind::VARIABLE, type);
@@ -37,7 +37,6 @@ Name_Expr_Ast *process_variable_name(Scope *curr_scope, std::string *id)
     while (curr_scope)
     {
         auto &sym_tab = curr_scope->sym_tab;
-        // TODO: I think both LOCAL and PARAMETER is fine over here
         if (sym_tab.find(*id) != sym_tab.end() && sym_tab[*id]->kind != Entry_Kind::FUNCTION)
         {
             return new Name_Expr_Ast(id, curr_scope, sym_tab[*id]->type);
@@ -75,10 +74,18 @@ Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig)
     const auto &param_names = func_sig->param_names;
     const int num_params = param_types.size();
 
+    auto &sym_tab = next_scope->sym_tab;
     for (int i = 0; i < num_params; i++)
     {
         Symbol_Table_Entry *ste = new Symbol_Table_Entry(Entry_Kind::PARAMETER, param_types[i]);
-        curr_scope->sym_tab[param_names[i]] = ste;
+
+        // No other params with the same name
+        if (sym_tab.find(param_names[i]) != sym_tab.end())
+        {
+            throw_SemanticError("Param name matches previous param: " + param_names[i]);
+        }
+
+        sym_tab[param_names[i]] = ste;
     }
 
     return next_scope;
@@ -116,9 +123,6 @@ void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamLi
 
     // Add it to the symbol table
     sym_tab[func_name] = new Symbol_Table_Entry(Entry_Kind::FUNCTION, return_type, func_sig);
-
-    // TODO: Params need to be added to the function's symtab upon entering its scope
-    // TODO: The only difference to handling function definitions is to check signature match with declaration, if present
 }
 
 Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
@@ -157,8 +161,7 @@ StatementList *accumulate_stmt_list()
     return new std::vector<Statement_Ast *>();
 }
 
-// NOTE: IDGAF about tab accumulation and stuff now
-void print_func_sig(Scope *func)
+void ast_print_func_sig(Scope *func)
 {
     if (func->kind != Scope_Kind::FUNCTION)
     {
@@ -181,15 +184,51 @@ void print_func_sig(Scope *func)
     }
 }
 
-void print_stmt_ast_list(StatementList *stmt_list)
+void ast_print_stmt_list(StatementList *stmt_list)
 {
     *astout << "**BEGIN: Abstract Syntax Tree" << std::endl;
     if (stmt_list)
     {
         for (auto stmt_ast : *stmt_list)
         {
-            *astout << stmt_ast->to_string() << std::endl;
+            if (stmt_ast)
+            {
+                *astout << stmt_ast->to_string() << std::endl;
+            }
         }
     }
     *astout << "**END: Abstract Syntax Tree" << std::endl;
+}
+
+void tac_print_func_sig(Scope *func)
+{
+    if (func->kind != Scope_Kind::FUNCTION)
+    {
+        throw_SemanticError("Not a function!");
+    }
+
+    Func_Signature *func_signature = func->func_sig;
+
+    std::string func_name = func_signature->name;
+    Type return_type = func_signature->return_type;
+    std::vector<std::string> param_names = func_signature->param_names;
+    std::vector<Type> param_types = func_signature->param_types;
+
+    *tacout << "**PROCEDURE: " << func_name << std::endl;
+}
+
+void tac_print_stmt_list(StatementList *stmt_list)
+{
+    *tacout << "**BEGIN: Three Address Code Statements" << std::endl;
+    if (stmt_list)
+    {
+        for (auto stmt_ast : *stmt_list)
+        {
+            if (stmt_ast && stmt_ast->code)
+            {
+                *tacout << stmt_ast->code->to_string() << std::endl;
+            }
+        }
+    }
+    *tacout << "**END: Three Address Code Statements" << std::endl;
 }

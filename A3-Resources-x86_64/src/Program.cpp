@@ -1,5 +1,43 @@
 #include "Program.hpp"
 
+// std::ostream &operator<<(std::ostream &os, const Entry_Kind &ek)
+// {
+//     if (ek == Entry_Kind::FUNCTION)
+//     {
+//         os << "FUNCTION";
+//     }
+//     else if (ek == Entry_Kind::PARAMETER)
+//     {
+//         os << "PARAMETER";
+//     }
+//     else if (ek == Entry_Kind::VARIABLE)
+//     {
+//         os << "VARIABLE";
+//     }
+//     else
+//     {
+//         throw_SemanticError("Got weird Entry_Kind");
+//     }
+//     return os;
+// }
+
+// std::ostream &operator<<(std::ostream &os, const Scope_Kind &sk)
+// {
+//     if (sk == Scope_Kind::FUNCTION)
+//     {
+//         os << "FUNCTION";
+//     }
+//     else if (sk == Scope_Kind::GLOBAL)
+//     {
+//         os << "GLOBAL";
+//     }
+//     else
+//     {
+//         throw_SemanticError("Got weird Scope_Kind");
+//     }
+//     return os;
+// }
+
 Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signature *func_sig)
     : kind(kind), type(type), size(0), offset(0), func_sig(func_sig)
 {

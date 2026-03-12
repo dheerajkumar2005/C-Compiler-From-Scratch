@@ -24,7 +24,6 @@ using StatementList = std::vector<Statement_Ast *>;
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier);
 IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::string *identifier);
 
-// TODO: Should add the declarations to the symbol table of the current scope
 void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identifiers);
 
 Name_Expr_Ast *process_variable_name(Scope *curr_scope, std::string *identifier);
@@ -42,7 +41,10 @@ Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, For
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
 StatementList *accumulate_stmt_list();
 
-void print_func_sig(Scope *func);
-void print_stmt_ast_list(StatementList *stmt_list);
+void ast_print_func_sig(Scope *func);
+void ast_print_stmt_list(StatementList *stmt_list);
+
+void tac_print_func_sig(Scope *func);
+void tac_print_stmt_list(StatementList *stmt_list);
 
 #endif

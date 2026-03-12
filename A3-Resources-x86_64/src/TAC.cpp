@@ -1,78 +1,5 @@
 #include "TAC.hpp"
 
-// // TODO: Check correctness
-// std::ostream &operator<<(std::ostream &os, TAC_Operator op)
-// {
-// 	if (op == TAC_Operator::NEGATE)
-// 	{
-// 		os << "-";
-// 	}
-// 	else if (op == TAC_Operator::LOGICAL_NOT)
-// 	{
-// 		os << "!";
-// 	}
-// 	else if (op == TAC_Operator::ADD)
-// 	{
-// 		os << "+";
-// 	}
-// 	else if (op == TAC_Operator::SUBTRACT)
-// 	{
-// 		os << "-";
-// 	}
-// 	else if (op == TAC_Operator::MULTIPLY)
-// 	{
-// 		os << "*";
-// 	}
-// 	else if (op == TAC_Operator::DIVIDE)
-// 	{
-// 		os << "/";
-// 	}
-// 	else if (op == TAC_Operator::LT)
-// 	{
-// 		os << "<";
-// 	}
-// 	else if (op == TAC_Operator::LE)
-// 	{
-// 		os << "<=";
-// 	}
-// 	else if (op == TAC_Operator::GT)
-// 	{
-// 		os << ">";
-// 	}
-// 	else if (op == TAC_Operator::GE)
-// 	{
-// 		os << ">=";
-// 	}
-// 	else if (op == TAC_Operator::NE)
-// 	{
-// 		os << "!=";
-// 	}
-// 	else if (op == TAC_Operator::EQ)
-// 	{
-// 		os << "==";
-// 	}
-// 	else if (op == TAC_Operator::LOGICAL_AND)
-// 	{
-// 		os << "&&";
-// 	}
-// 	else if (op == TAC_Operator::LOGICAL_OR)
-// 	{
-// 		os << "||";
-// 	}
-// 	else
-// 	{
-// 		throw_SemanticError("Unexpected type");
-// 	}
-// 	return os;
-// }
-
-// std::string op_to_string(TAC_Operator op)
-// {
-// 	std::ostringstream oss;
-// 	oss << op;
-// 	return oss.str();
-// }
-
 Variable_TAC_Operand::Variable_TAC_Operand(std::string *name, Scope *declaring_scope)
 	: name(name), declaring_scope(declaring_scope)
 {
@@ -205,19 +132,22 @@ void Code::append_list(Code *c)
 {
 	if (c)
 	{
-		auto l = c->get_list();
-		for (auto it = l->begin(); it != l->end(); ++it)
+		for (auto it = stmt_list->begin(); it != stmt_list->end(); ++it)
 		{
 			append_statement(*it);
 		}
 	}
 }
 
-void Code::print_code()
+std::string Code::to_string() const
 {
+	std::string result;
 	for (auto it = stmt_list->begin(); it != stmt_list->end(); ++it)
 	{
-		if (*it != NULL)
-			(*it)->to_string();
+		if (*it)
+		{
+			result += (*it)->to_string();
+		}
 	}
+	return result;
 }
