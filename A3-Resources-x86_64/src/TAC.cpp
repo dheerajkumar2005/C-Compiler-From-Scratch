@@ -47,43 +47,46 @@ std::string TAC_Label::to_string() const
 }
 
 Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2)
-	: lhs(lhs), op(static_cast<Operator>(op)), opd1(opd1), opd2(opd2)
+	: lhs(lhs), op(binary_to_tac(op)), opd1(opd1), opd2(opd2)
 {
 }
 
 Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1)
-	: lhs(lhs), op(static_cast<Operator>(op)), opd1(opd1), opd2(nullptr)
+	: lhs(lhs), op(unary_to_tac(op)), opd1(opd1), opd2(nullptr)
 {
+	std::cerr << "[Line 57] op: TAC_Operator::" << op_to_string(op) << std::endl;
 }
 
 Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1)
-	: lhs(lhs), op(Operator::NOP), opd1(opd1), opd2(nullptr)
+	: lhs(lhs), op(TAC_Operator::NOP), opd1(opd1), opd2(nullptr)
 {
 }
 
 std::string Assignment_TAC_Statement::to_string() const
 {
-	if (op == Operator::NOP)
+	if (!lhs)
 	{
-		if (lhs)
-		{
-			return lhs->to_string() + " = " + opd1->to_string();
-		}
-		else
-		{
-			throw_SemanticError("Lhs must exist for Assignment statement\n");
-			return "";
-		}
+		throw_SemanticError("LHS must exist for an Assignment statement");
+		return "";
+	}
+
+	if (op == TAC_Operator::NOP)
+	{
+		return lhs->to_string() + " = " + opd1->to_string();
 	}
 	else
 	{
-		if (opd2 != NULL)
+		if (opd2)
 		{
-			return lhs->to_string() + " = " + opd1->to_string() + op_to_string(static_cast<Binary_Operator>(op)) + opd2->to_string();
+			return lhs->to_string() + " = " + opd1->to_string() + " " + op_to_string(op) + " " + opd2->to_string();
 		}
 		else
 		{
-			return lhs->to_string() + " = " + op_to_string(static_cast<Unary_Operator>(op)) + opd1->to_string();
+			std::cerr << op_to_string(op) << std::endl;
+			// std::cerr << "[DEBUG] lhs = " << lhs->to_string() << std::endl;
+			// std::cerr << "[DEBUG] op = " << op_to_string(op) << std::endl;
+			// std::cerr << "[DEBUG] opd1 = " << opd1->to_string() << std::endl;
+			return lhs->to_string() + " = " + op_to_string(op) + " " + opd1->to_string();
 		}
 	}
 }
@@ -106,7 +109,7 @@ std::string IO_TAC_Statement::to_string() const{
 		return "read " + opd->to_string();
 	}
 	else{
-		return "write" + opd->to_string();
+		return "write " + opd->to_string();
 	}
 }
 
@@ -130,9 +133,9 @@ void Code::append_statement(TAC_Statement *s)
 
 void Code::append_list(Code *c)
 {
-	if (c)
+	if (c && c->stmt_list)
 	{
-		for (auto it = stmt_list->begin(); it != stmt_list->end(); ++it)
+		for (auto it = c->stmt_list->begin(); it != c->stmt_list->end(); ++it)
 		{
 			append_statement(*it);
 		}
@@ -146,7 +149,7 @@ std::string Code::to_string() const
 	{
 		if (*it)
 		{
-			result += (*it)->to_string();
+			result += (*it)->to_string() + "\n";
 		}
 	}
 	return result;

@@ -100,17 +100,18 @@ class TAC_Statement{
 
 class Assignment_TAC_Statement : public TAC_Statement
 {
+public:
+	// TEMP
 	TAC_Operand *lhs;
-	Operator op;
+	TAC_Operator op;
 	TAC_Operand *opd1;
 	TAC_Operand *opd2;
 
-public:
 	Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2);
 	Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1);
 	Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1);
 
-	virtual std::string to_string() const final;
+	virtual std::string to_string() const override final;
 };
 
 class Goto_TAC_Statement : public TAC_Statement
@@ -119,7 +120,7 @@ class Goto_TAC_Statement : public TAC_Statement
 
 public:
 	Goto_TAC_Statement(TAC_Label *_label);
-	virtual std::string to_string() const final;
+	virtual std::string to_string() const override final;
 };
 
 class If_Goto_TAC_Statement : public TAC_Statement
@@ -129,7 +130,7 @@ class If_Goto_TAC_Statement : public TAC_Statement
 
 public:
 	If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_label);
-	virtual std::string to_string() const final;
+	virtual std::string to_string() const override final;
 };
 
 class IO_TAC_Statement : public TAC_Statement
@@ -139,7 +140,7 @@ class IO_TAC_Statement : public TAC_Statement
 
 	public:
 		IO_TAC_Statement(IO_Kind _kind, TAC_Operand* _opd);
-		virtual std::string to_string() const final;
+		virtual std::string to_string() const override final;
 };
 
 class Label_TAC_Statement : public TAC_Statement
@@ -148,7 +149,7 @@ class Label_TAC_Statement : public TAC_Statement
 
 public:
 	Label_TAC_Statement(TAC_Label *_label);
-	virtual std::string to_string() const final;
+	virtual std::string to_string() const override final;
 };
 
 class Code

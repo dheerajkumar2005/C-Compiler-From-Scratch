@@ -15,20 +15,12 @@ enum class Type
     BOOL,
 };
 
-enum class Operator : int
+enum class TAC_Operator
 {
-    NOP = 0,
-};
-
-enum class Unary_Operator : int
-{
-    NEGATE = 100,
+    NOP,
+    NEGATE,
     LOGICAL_NOT,
-};
-
-enum class Binary_Operator : int
-{
-    ADD = 200,
+    ADD,
     SUBTRACT,
     MULTIPLY,
     DIVIDE,
@@ -42,20 +34,49 @@ enum class Binary_Operator : int
     EQ,
 };
 
-enum class Ternary_Operator : int
+enum class Unary_Operator
 {
-    QUESTION_MARK_COLON = 300,
+    NEGATE,
+    LOGICAL_NOT,
+};
+
+enum class Binary_Operator
+{
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
+    LOGICAL_AND,
+    LOGICAL_OR,
+    LT,
+    LE,
+    GT,
+    GE,
+    NE,
+    EQ,
+};
+
+enum class Ternary_Operator
+{
+    QUESTION_MARK_COLON,
 };
 
 std::ostream &operator<<(std::ostream &os, Type t);
 std::string type_to_string(Type type);
 
+std::ostream &operator<<(std::ostream &os, TAC_Operator op);
+
 std::ostream &operator<<(std::ostream &os, Binary_Operator op);
 std::ostream &operator<<(std::ostream &os, Unary_Operator op);
 std::ostream &operator<<(std::ostream &os, Ternary_Operator op);
 
+std::string op_to_string(TAC_Operator op);
+
 std::string op_to_string(Binary_Operator op);
 std::string op_to_string(Unary_Operator op);
 std::string op_to_string(Ternary_Operator op);
+
+TAC_Operator binary_to_tac(Binary_Operator op);
+TAC_Operator unary_to_tac(Unary_Operator op);
 
 #endif

@@ -1,8 +1,8 @@
 #! /bin/bash
 
-output1=$(../reference-implementations/A2-sclp test.c --show-ast -d)
+output1=$(../reference-implementations/A3-sclp test.c --show-tac -d)
 echo $?
-output2=$(../src/sclp test.c --show-ast -d )
+output2=$(../src/sclp test.c --show-tac -d )
 echo $?
 
 tmp1=$(mktemp)
