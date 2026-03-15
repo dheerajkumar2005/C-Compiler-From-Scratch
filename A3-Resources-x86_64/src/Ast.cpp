@@ -38,6 +38,8 @@ Name_Expr_Ast::Name_Expr_Ast(std::string *id, Scope *declaring_scope, Type type)
     {
         throw_SemanticError("can't have void types in variable declarations");
     }
+
+    place = new Variable_TAC_Operand(id, declaring_scope);
 }
 
 std::string Name_Expr_Ast::to_string() const
@@ -83,20 +85,15 @@ std::string String_Expr_Ast::to_string() const
 Unary_Expr_AST::Unary_Expr_AST(Type type, Unary_Operator op, Expression_Ast *opd1)
     : Expression_Ast(type), op(op), opd1(opd1)
 {
-    std::cerr << "Type: " << type_to_string(type) << ", op = " << op_to_string(op) << ", opd1 = " << opd1->to_string() << std::endl;
-
     Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
 
     Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(t1, op, opd1->place);
-    std::cerr << "[Line 91] c1: lhs = " << c1->lhs->to_string() << ", op = " << op_to_string(c1->op) << ", opd1 = " << c1->opd1->to_string() << std::endl;
 
     code = new Code();
     code->append_list(opd1->code);
     code->append_statement(c1);
 
     place = t1;
-
-    std::cerr << "Created Unary_Expr_AST. Code is: " << code->to_string() << std::endl;
 }
 
 Unary_Expr_AST::~Unary_Expr_AST()

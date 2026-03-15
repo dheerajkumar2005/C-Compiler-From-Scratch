@@ -54,7 +54,6 @@ Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Oper
 Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1)
 	: lhs(lhs), op(unary_to_tac(op)), opd1(opd1), opd2(nullptr)
 {
-	std::cerr << "[Line 57] op: TAC_Operator::" << op_to_string(op) << std::endl;
 }
 
 Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1)
@@ -82,10 +81,6 @@ std::string Assignment_TAC_Statement::to_string() const
 		}
 		else
 		{
-			std::cerr << op_to_string(op) << std::endl;
-			// std::cerr << "[DEBUG] lhs = " << lhs->to_string() << std::endl;
-			// std::cerr << "[DEBUG] op = " << op_to_string(op) << std::endl;
-			// std::cerr << "[DEBUG] opd1 = " << opd1->to_string() << std::endl;
 			return lhs->to_string() + " = " + op_to_string(op) + " " + opd1->to_string();
 		}
 	}

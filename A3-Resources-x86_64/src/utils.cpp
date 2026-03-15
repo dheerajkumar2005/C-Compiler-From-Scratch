@@ -46,7 +46,7 @@ std::ostream &operator<<(std::ostream &os, TAC_Operator op)
     {
         os << "-";
     }
-    if (op == TAC_Operator::ADD)
+    else if (op == TAC_Operator::ADD)
     {
         os << "+";
     }
@@ -96,12 +96,10 @@ std::ostream &operator<<(std::ostream &os, TAC_Operator op)
     }
     else if (op == TAC_Operator::NOP)
     {
-        // std::cerr << "NOP!!! HOW DID YOU GET HERE?" << std::endl;
         throw_SemanticError("Did not expect NOP");
     }
     else
     {
-        std::cerr << "TEEHEE" << std::endl;
         throw_SemanticError("Unexpected type");
     }
     return os;
@@ -283,17 +281,14 @@ TAC_Operator unary_to_tac(Unary_Operator op)
 {
     if (op == Unary_Operator::LOGICAL_NOT)
     {
-        std::cerr << "Returned: TAC_Operator::LOGICAL_NOT" << std::endl;
         return TAC_Operator::LOGICAL_NOT;
     }
     else if (op == Unary_Operator::NEGATE)
     {
-        std::cerr << "[Line 286] Returned: TAC_Operator::NEGATE" << std::endl;
         return TAC_Operator::NEGATE;
     }
     else
     {
-        std::cerr << "Returned; TAC_Operator::NOP" << std::endl;
         throw_SemanticError("Unexpected type");
         return TAC_Operator::NOP;
     }
