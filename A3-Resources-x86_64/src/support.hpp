@@ -10,6 +10,8 @@
 #include "Program.hpp"
 #include "Errors.hpp"
 
+extern int sa_parse;
+
 using IdentifierList = std::vector<std::string *>;
 using DeclStmt = std::pair<Type, IdentifierList *>;
 using DeclStmtList = std::vector<DeclStmt *>;

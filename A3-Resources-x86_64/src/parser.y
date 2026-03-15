@@ -10,6 +10,7 @@
 %{
     #include "Program.hpp" 
 
+    extern int sa_parse;
     extern int show_ast;
     extern int show_tac;
 %}
@@ -144,52 +145,64 @@ func_header
 func_def
     : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET 
     { 
-        // Add it to old symtab or match with existing signature
-        Func_Signature *func_sig = process_func_def(curr_scope, $1, $3);
+        if(!sa_parse) 
+        {
+            // Add it to old symtab or match with existing signature
+            Func_Signature *func_sig = process_func_def(curr_scope, $1, $3);
 
-        // Push the new scope
-        curr_scope = make_func_scope(curr_scope, func_sig);
+            // Push the new scope
+            curr_scope = make_func_scope(curr_scope, func_sig);
+        }
     }
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
-        if(show_ast) 
+        if (!sa_parse) 
         {
-            ast_print_func_sig(curr_scope);
-            ast_print_stmt_list($8);
-        }
+            if(show_ast) 
+            {
+                ast_print_func_sig(curr_scope);
+                ast_print_stmt_list($8);
+            }
 
-        if(show_tac) 
-        {
-            tac_print_func_sig(curr_scope);
-            tac_print_stmt_list($8);
-        }
+            if(show_tac) 
+            {
+                tac_print_func_sig(curr_scope);
+                tac_print_stmt_list($8);
+            }
 
-        curr_scope = curr_scope->parent_scope;
+            curr_scope = curr_scope->parent_scope;
+        }
     }
     
     | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET 
     {
-        // Add it to old symtab or match with existing signature
-        Func_Signature *func_sig = process_func_def(curr_scope, $1);
+        if (!sa_parse) 
+        {
+            // Add it to old symtab or match with existing signature
+            Func_Signature *func_sig = process_func_def(curr_scope, $1);
 
-        // Push the new scope
-        curr_scope = make_func_scope(curr_scope, func_sig);
+            // Push the new scope
+            curr_scope = make_func_scope(curr_scope, func_sig);
+        }
     } 
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
-        if(show_ast) 
+        if (!sa_parse)
         {
-            ast_print_func_sig(curr_scope);
-            ast_print_stmt_list($7);
-        }
+            if(show_ast) 
+            {
+                ast_print_func_sig(curr_scope);
+                ast_print_stmt_list($7);
+            }
 
-        if(show_tac) 
-        {
-            tac_print_func_sig(curr_scope);
-            tac_print_stmt_list($7);
-        }
+            if(show_tac) 
+            {
+                tac_print_func_sig(curr_scope);
+                tac_print_stmt_list($7);
+            }
 
-        curr_scope = curr_scope->parent_scope;
+            curr_scope = curr_scope->parent_scope;
+        }
     }
 ;
 
@@ -253,31 +266,31 @@ named_type
 ;
 
 assignment_statement
-    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = new Assignment_Stmt_Ast($1, $3); }
+    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
 ;
 
 /* FIXED */
 print_statement
-    : WRITE expression SEMICOLON { $$ = new Write_Stmt_Ast($2); }
+    : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast($2); }
 ;
 
 /* FIXED */
 read_statement
-    : READ variable_name SEMICOLON { $$ = new Read_Stmt_Ast($2); }
+    : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast($2); }
 ;
 
 /* FIXED */
 expression
-    : expression PLUS expression { $$ = new Plus_Expr_Ast($1, $3); }
-    | expression MINUS expression { $$ = new Minus_Expr_Ast($1, $3); }
-    | expression MULT expression { $$ = new Mult_Expr_Ast($1, $3); }
-    | expression DIV expression { $$ = new Div_Expr_Ast($1, $3); }
-    | MINUS expression %prec UMINUS { $$ = new UMinus_Expr_Ast($2); }
+    : expression PLUS expression { $$ = sa_parse ? nullptr : new Plus_Expr_Ast($1, $3); }
+    | expression MINUS expression { $$ = sa_parse ? nullptr : new Minus_Expr_Ast($1, $3); }
+    | expression MULT expression { $$ = sa_parse ? nullptr : new Mult_Expr_Ast($1, $3); }
+    | expression DIV expression { $$ = sa_parse ? nullptr : new Div_Expr_Ast($1, $3); }
+    | MINUS expression %prec UMINUS { $$ = sa_parse ? nullptr : new UMinus_Expr_Ast($2); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $2; }
-    | expression QUESTION_MARK expression COLON expression { $$ = new Conditional_Expr_Ast($1, $3, $5); }
-    | expression AND expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_AND, $1, $3); } 
-    | expression OR expression { $$ = new Boolean_Expr_Ast(Binary_Operator::LOGICAL_OR, $1, $3); }
-    | NOT expression { $$ = new Logical_Not_Expr_Ast($2); }
+    | expression QUESTION_MARK expression COLON expression { $$ = sa_parse ? nullptr : new Conditional_Expr_Ast($1, $3, $5); }
+    | expression AND expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_AND, $1, $3); } 
+    | expression OR expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_OR, $1, $3); }
+    | NOT expression { $$ = sa_parse ? nullptr : new Logical_Not_Expr_Ast($2); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }
@@ -285,12 +298,12 @@ expression
 
 /* FIXED */
 rel_expression
-    : expression LESS_THAN expression { $$ = new Relational_Expr_Ast(Binary_Operator::LT, $1, $3); }
-    | expression LESS_THAN_EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::LE, $1, $3); }
-    | expression GREATER_THAN expression { $$ = new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); }
-    | expression GREATER_THAN_EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::GE, $1, $3); }
-    | expression NOT_EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::NE, $1, $3); }
-    | expression EQUAL expression { $$ = new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3); }
+    : expression LESS_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LT, $1, $3); }
+    | expression LESS_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LE, $1, $3); }
+    | expression GREATER_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); }
+    | expression GREATER_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GE, $1, $3); }
+    | expression NOT_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::NE, $1, $3); }
+    | expression EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3); }
 ;
 
 /* FIXED */

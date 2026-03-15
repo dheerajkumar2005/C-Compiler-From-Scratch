@@ -37,6 +37,7 @@ Name_Expr_Ast::Name_Expr_Ast(std::string *id, Scope *declaring_scope, Type type)
     if (type == Type::VOID)
     {
         throw_SemanticError("can't have void types in variable declarations");
+        return;
     }
 
     place = new Variable_TAC_Operand(id, declaring_scope);
@@ -106,6 +107,7 @@ UMinus_Expr_Ast::UMinus_Expr_Ast(Expression_Ast *opd1)
     if (opd1->get_type() != Type::INT && opd1->get_type() != Type::FLOAT)
     {
         throw_SemanticError("uminus can only have int or float argument");
+        return;
     }
 }
 
@@ -120,6 +122,7 @@ Logical_Not_Expr_Ast::Logical_Not_Expr_Ast(Expression_Ast *opd1)
     if (opd1->get_type() != Type::BOOL)
     {
         throw_SemanticError("operand of logical not should be of type bool");
+        return;
     }
 }
 
@@ -159,10 +162,12 @@ Boolean_Expr_Ast::Boolean_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Exp
     if (!are_same_type(opd1, opd2))
     {
         throw_SemanticError("Both operands should be of the same type");
+        return;
     }
     if (opd1->get_type() != Type::BOOL)
     {
         throw_SemanticError("Operand of Boolean expr should be bool");
+        return;
     }
 }
 
@@ -182,10 +187,12 @@ Div_Expr_Ast::Div_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
     if (!are_same_type(opd1, opd2))
     {
         throw_SemanticError("Both operands should be of the same type");
+        return;
     }
     else if (!is_numeric_type(opd1))
     {
         throw_SemanticError("Operand of arith expr should be int/float");
+        return;
     }
 }
 
@@ -200,10 +207,12 @@ Minus_Expr_Ast::Minus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
     if (!are_same_type(opd1, opd2))
     {
         throw_SemanticError("Both operands should be of the same type");
+        return;
     }
-    else if (!is_numeric_type(opd1))
+    if (!is_numeric_type(opd1))
     {
         throw_SemanticError("Operand of arith expr should be int/float");
+        return;
     }
 }
 
@@ -218,10 +227,12 @@ Mult_Expr_Ast::Mult_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
     if (!are_same_type(opd1, opd2))
     {
         throw_SemanticError("Both operands should be of the same type");
+        return;
     }
-    else if (!is_numeric_type(opd1))
+    if (!is_numeric_type(opd1))
     {
         throw_SemanticError("Operand of arith expr should be int/float");
+        return;
     }
 }
 
@@ -236,10 +247,12 @@ Plus_Expr_Ast::Plus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
     if (!are_same_type(opd1, opd2))
     {
         throw_SemanticError("Both operands should be of the same type");
+        return;
     }
-    else if (!is_numeric_type(opd1))
+    if (!is_numeric_type(opd1))
     {
         throw_SemanticError("Operand of arith expr should be int/float");
+        return;
     }
 }
 
@@ -254,14 +267,17 @@ Relational_Expr_Ast::Relational_Expr_Ast(Binary_Operator op, Expression_Ast *opd
     if (op != Binary_Operator::LT && op != Binary_Operator::LE && op != Binary_Operator::GT && op != Binary_Operator::GE && op != Binary_Operator::NE && op != Binary_Operator::EQ)
     {
         throw_SemanticError("Relational expression ast needs comparison operator");
+        return;
     }
-    else if (!are_same_type(opd1, opd2))
+    if (!are_same_type(opd1, opd2))
     {
         throw_SemanticError("Both operands should be of the same type");
+        return;
     }
-    else if (!is_numeric_type(opd1))
+    if (!is_numeric_type(opd1))
     {
         throw_SemanticError("Operand of comparison expr should be int/float");
+        return;
     }
 }
 
@@ -285,14 +301,17 @@ Conditional_Expr_Ast::Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast 
     if (opd1->get_type() != Type::BOOL)
     {
         throw_SemanticError("comparison part should be of type bool");
+        return;
     }
-    else if (opd2->get_type() != opd3->get_type())
+    if (opd2->get_type() != opd3->get_type())
     {
         throw_SemanticError("both parts should be of same type in ternary expr");
+        return;
     }
-    else if (opd2->get_type() == Type::VOID)
+    if (opd2->get_type() == Type::VOID)
     {
         throw_SemanticError("can't have type void in expr");
+        return;
     }
 
     Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
@@ -344,10 +363,12 @@ Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs
     if (lhs->get_type() != rhs->get_type())
     {
         throw_SemanticError("both sides of assign stmt should have same type");
+        return;
     }
     if (lhs->get_type() == Type::VOID)
     {
         throw_SemanticError("cannot assign to type VOID");
+        return;
     }
 
     Variable_TAC_Operand *id = new Variable_TAC_Operand(&lhs->var_name, lhs->declaring_scope);
@@ -370,6 +391,7 @@ Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var)
     if (var->get_type() != Type::INT && var->get_type() != Type::FLOAT)
     {
         throw_SemanticError("can read only int or float");
+        return;
     }
 
     Variable_TAC_Operand *id = new Variable_TAC_Operand(&var->var_name, var->declaring_scope);
@@ -392,6 +414,7 @@ Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr)
     if (type == Type::VOID || type == Type::BOOL)
     {
         throw_SemanticError("can't print bool or void");
+        return;
     }
 
     IO_TAC_Statement *c1 = new IO_TAC_Statement(IO_Kind::WRITE, expr->place);

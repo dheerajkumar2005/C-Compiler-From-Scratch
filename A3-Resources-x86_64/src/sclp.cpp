@@ -247,16 +247,17 @@ int main(int argc, char *argv[])
     }
 
     Scope global_scope(Scope_Kind::GLOBAL);
+    Scope *global_scope_ptr = sa_parse ? nullptr : &global_scope;
 
     if (sa_scan)
     {
         while (true)
         {
             scanner_error = 0;
-            int next_token = yylex(&global_scope);
+            int next_token = yylex(global_scope_ptr);
             if (scanner_error)
             {
-                yyerror(&global_scope, "syntax error");
+                yyerror(global_scope_ptr, "syntax error");
                 return 1;
             }
             if (!next_token)
@@ -270,14 +271,14 @@ int main(int argc, char *argv[])
     else if (sa_parse)
     {
         // TODO: Figure out why the error printing got messed up
-        return yyparse(&global_scope);
+        return yyparse(global_scope_ptr);
     }
 
     else
     {
         try
         {
-            return yyparse(&global_scope);
+            return yyparse(global_scope_ptr);
         }
         catch (const SemanticError *&e)
         {
