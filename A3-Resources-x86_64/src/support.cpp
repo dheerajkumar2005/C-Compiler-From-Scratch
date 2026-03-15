@@ -295,3 +295,47 @@ void tac_print_stmt_list(StatementList *stmt_list)
     }
     *tacout << "**END: Three Address Code Statements" << std::endl;
 }
+
+void global_symtab_print(Scope* global_scope){
+    *symtabout << "Global Declarations:" << std::endl;
+    if(global_scope->kind != Scope_Kind::GLOBAL){
+        throw_SemanticError("Not in global scope");
+    }
+    auto &sym_tab = global_scope->sym_tab;
+    for(auto &entry : sym_tab){
+        if(entry.second->kind == Entry_Kind::VARIABLE){
+            *symtabout << "Name: " << entry.first << "_" << entry.second->to_string() << std::endl;
+        }
+    }
+}
+
+void symtab_print_func_sig(Scope* func){
+    Func_Signature *func_signature = func->func_sig;
+
+    std::string func_name = func_signature->name;
+    Type return_type = func_signature->return_type;
+    std::vector<std::string> param_names = func_signature->param_names;
+    // std::vector<Type> param_types = func_signature->param_types;
+
+    *symtabout << "**PROCEDURE: " << func_name << ", " << "Return Type:<" << type_to_string(return_type) << ">" << std::endl;
+    *symtabout << "Formal Parameters" << std::endl;
+    auto &sym_tab = func->sym_tab;
+    for(auto &entry : sym_tab){
+        if(entry.second->kind == Entry_Kind::PARAMETER){
+            *symtabout << "Name: " << entry.first << "_" << entry.second->to_string() << std::endl;
+        }
+    }
+}
+
+void symtab_print_local_decl(Scope* func){
+    *symtabout << "Local Declarations" << std::endl;
+     if(func->kind != Scope_Kind::FUNCTION){
+        throw_SemanticError("Not in a func scope");
+    }
+    auto &sym_tab = func->sym_tab;
+    for(auto &entry : sym_tab){
+        if(entry.second->kind == Entry_Kind::VARIABLE){
+            *symtabout << "Name: " << entry.first << "_" << entry.second->to_string() << std::endl;
+        }
+    }
+}

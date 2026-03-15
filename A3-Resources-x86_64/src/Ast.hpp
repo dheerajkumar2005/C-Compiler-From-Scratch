@@ -10,6 +10,7 @@
 
 extern std::ostream *astout;
 extern std::ostream *tacout;
+extern std::ostream *symtabout;
 
 class Ast
 {
