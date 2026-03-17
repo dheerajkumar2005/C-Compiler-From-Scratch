@@ -75,6 +75,10 @@
 %token RIGHT_ROUND_BRACKET
 %token LEFT_CURLY_BRACKET
 %token RIGHT_CURLY_BRACKET
+%token IF
+%token ELSE
+%token DO
+%token WHILE
 
 %type <func_header> func_header
 %type <formal_param_list> formal_param_list
@@ -229,6 +233,10 @@ statement_list
 
 statement
     : assignment_statement { $$ = $1; }
+    | if_statement
+    | do_while_statement
+    | while_statement
+    | compound_statement
     | print_statement { $$ = $1; }
     | read_statement { $$ = $1; }
 ;
@@ -268,6 +276,25 @@ named_type
 assignment_statement
     : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
 ;
+
+if_condition
+    : LEFT_ROUND_BRACKET expression RIGHT_CURLY_BRACKET
+;
+
+if_statement
+    : IF if_condition statement ELSE statement
+    | IF if_condition statement
+
+do_while_statement
+    : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON
+;
+
+while_statement
+    : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement
+;
+
+compound_statement
+    : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET
 
 /* FIXED */
 print_statement

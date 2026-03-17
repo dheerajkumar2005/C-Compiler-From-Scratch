@@ -52,6 +52,22 @@ LETTER [a-zA-Z_]
     display_token("BOOL", "bool");
     return BOOL; 
 }
+"if" {
+    display_token("IF", "if");
+    return IF;
+}
+"else" {
+    display_token("ELSE", "else");
+    return ELSE;
+}
+"do" {
+    display_token("DO", "do");
+    return DO;
+}
+"while" {
+    display_token("WHILE", "while");
+    return WHILE;
+}
 
 {LETTER}({LETTER}|{DIGIT})* { 
     // FIXED
