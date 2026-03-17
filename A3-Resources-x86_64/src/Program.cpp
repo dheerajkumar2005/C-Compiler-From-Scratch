@@ -43,6 +43,11 @@ Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signatur
 {
 }
 
+std::string Symbol_Table_Entry::to_string() const{
+    // Temp Hardcoded VAR and offset
+    return "<"+type_to_string(type)+">"+" Entity Type: VAR (No offset assigned yet)";
+}
+
 Func_Signature::Func_Signature(const std::string &name, Type return_type)
     : name(name), return_type(return_type), param_types(), param_names()
 {

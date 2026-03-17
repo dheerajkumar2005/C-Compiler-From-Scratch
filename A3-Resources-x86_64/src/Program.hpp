@@ -53,6 +53,7 @@ struct Symbol_Table_Entry
     Func_Signature *func_sig; // nullptr for non-functions
 
     Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signature *func_sig = nullptr);
+    std::string to_string() const;
 };
 
 struct Scope

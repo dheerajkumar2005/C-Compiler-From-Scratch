@@ -49,4 +49,8 @@ void ast_print_stmt_list(StatementList *stmt_list);
 void tac_print_func_sig(Scope *func);
 void tac_print_stmt_list(StatementList *stmt_list);
 
+void global_symtab_print(Scope* global_scope);
+void symtab_print_func_sig(Scope* func);
+void symtab_print_local_decl(Scope* func);
+
 #endif

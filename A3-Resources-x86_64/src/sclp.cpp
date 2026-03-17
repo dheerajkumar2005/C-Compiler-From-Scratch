@@ -16,6 +16,10 @@ int show_tac;
 std::ostream *tacout = nullptr;
 std::ofstream tacfile;
 
+int show_symtab;
+std::ostream *symtabout = nullptr;
+std::ofstream symtab_file;
+
 extern "C"
 {
     int yyparse(Scope *);
@@ -65,8 +69,8 @@ int main(int argc, char *argv[])
     show_tokens = 0;
     show_ast = 0;
     show_tac = 0;
+    show_symtab = 0;
     int show_rtl = 0;
-    int show_symtab = 0;
     int show_asm = 0;
 
     int gen_temp_symb_table = 0;
@@ -196,7 +200,8 @@ int main(int argc, char *argv[])
     yyout = nullptr;
 
     if (sa_scan || sa_parse)
-    {
+    {   
+        show_symtab = 0;
         show_ast = 0;
         show_tac = 0;
     }
@@ -217,7 +222,18 @@ int main(int argc, char *argv[])
             yyout = std::fopen(outfilename.c_str(), "w");
         }
     }
-
+    if(show_symtab){
+        if (demo)
+        {
+            symtabout = &std::cout;
+        }
+        else
+        {
+            std::string outfilename = filename + ".sym";
+            symtab_file.open(outfilename);
+            symtabout = &symtab_file;
+        }
+    }
     if (show_ast)
     {
         if (demo)

@@ -13,6 +13,7 @@
     extern int sa_parse;
     extern int show_ast;
     extern int show_tac;
+    extern int show_symtab;
 %}
 
 %parse-param { Scope *curr_scope }
@@ -117,7 +118,13 @@
 %%
 
 program
-    : global_decl_stmt_list func_def_list
+    : global_decl_stmt_list func_def_list {   
+        if(!sa_parse){
+            if(show_symtab){
+                global_symtab_print(curr_scope);
+            }
+        }
+    }
     | func_def_list
 ;
 
@@ -169,6 +176,10 @@ func_def
                 tac_print_func_sig(curr_scope);
                 tac_print_stmt_list($8);
             }
+            if(show_symtab){
+                symtab_print_func_sig(curr_scope);
+                symtab_print_local_decl(curr_scope);
+            }
 
             curr_scope = curr_scope->parent_scope;
         }
@@ -199,6 +210,10 @@ func_def
             {
                 tac_print_func_sig(curr_scope);
                 tac_print_stmt_list($7);
+            }
+            if(show_symtab){
+                symtab_print_func_sig(curr_scope);
+                symtab_print_local_decl(curr_scope);
             }
 
             curr_scope = curr_scope->parent_scope;
