@@ -40,6 +40,8 @@ Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig);
 void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 
+Boolean_Expr_Ast *process_predicate(Expression_Ast *expr);
+
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
 StatementList *accumulate_stmt_list();
 

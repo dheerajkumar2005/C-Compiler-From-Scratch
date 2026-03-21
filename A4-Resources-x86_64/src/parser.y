@@ -43,6 +43,10 @@
     Int_Expr_Ast *iptr;
     Float_Expr_Ast *fptr;
     String_Expr_Ast *sptr;
+
+    Compound_Stmt_Ast *compound_stmt;
+    Boolean_Expr_Ast *predicate;
+    If_Stmt_Ast *if_stmt;
 }
 
 // Terminals (and optionally their types)
@@ -105,10 +109,16 @@
 %type <rel> rel_expression
 %type <var> variable_as_operand
 %type <var> variable_name
+%type <compound_stmt> compound_statement
+%type <predicate> if_condition
+%type <if_stmt> if_statement
 
 %start program
 
 // Disambiguation
+%nonassoc lower_than_else
+%nonassoc ELSE
+
 %right QUESTION_MARK COLON
 %left OR
 %left AND
@@ -233,10 +243,10 @@ statement_list
 
 statement
     : assignment_statement { $$ = $1; }
-    | if_statement
-    | do_while_statement
-    | while_statement
-    | compound_statement
+    | if_statement { $$ = $1; }
+    // | do_while_statement { $$ = $1; }
+    // | while_statement { $$ = $1; }
+    | compound_statement { $$ = $1; }
     | print_statement { $$ = $1; }
     | read_statement { $$ = $1; }
 ;
@@ -278,23 +288,23 @@ assignment_statement
 ;
 
 if_condition
-    : LEFT_ROUND_BRACKET expression RIGHT_CURLY_BRACKET
+    : LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { std::cerr << "HI" << std::endl; $$ = process_predicate($2); std::cerr << "Predicate reduced!" << std::endl; }
 ;
 
 if_statement
-    : IF if_condition statement ELSE statement
-    | IF if_condition statement
+    : IF if_condition statement ELSE statement { $$ = sa_parse ? nullptr : new If_Stmt_Ast($2, $3, $5); }
+    | IF if_condition statement %prec lower_than_else { $$ = sa_parse ? nullptr : new If_Stmt_Ast($2, $3); }
 
-do_while_statement
-    : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON
-;
+// do_while_statement
+//     : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON
+// ;
 
-while_statement
-    : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement
-;
+// while_statement
+//     : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement
+// ;
 
 compound_statement
-    : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET
+    : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET { $$ = new Compound_Stmt_Ast($2);  }
 
 /* FIXED */
 print_statement
@@ -327,7 +337,7 @@ expression
 rel_expression
     : expression LESS_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LT, $1, $3); }
     | expression LESS_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LE, $1, $3); }
-    | expression GREATER_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); }
+    | expression GREATER_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); std::cerr << "REDUCED: x > 10" << std::endl; }
     | expression GREATER_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GE, $1, $3); }
     | expression NOT_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::NE, $1, $3); }
     | expression EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3); }

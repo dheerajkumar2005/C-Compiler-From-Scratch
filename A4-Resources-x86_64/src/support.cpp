@@ -204,6 +204,22 @@ Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, For
     return nullptr;
 }
 
+Boolean_Expr_Ast *process_predicate(Expression_Ast *expr)
+{
+    if (!sa_parse)
+    {
+        Boolean_Expr_Ast *predicate = dynamic_cast<Boolean_Expr_Ast *>(expr);
+
+        if (!predicate)
+        {
+            throw_SemanticError("Expected a predicate of type BOOL");
+        }
+
+        return predicate;
+    }
+    return nullptr;
+}
+
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt)
 {
     if (!sa_parse)

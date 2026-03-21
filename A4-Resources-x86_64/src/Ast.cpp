@@ -428,3 +428,54 @@ std::string Write_Stmt_Ast::to_string() const
 {
     return "Write: " + expr->to_string();
 }
+
+Compound_Stmt_Ast::Compound_Stmt_Ast(Statement_Ast *stmt)
+    : Statement_Ast(), stmts(new std::vector<Statement_Ast *>{stmt})
+{
+}
+
+Compound_Stmt_Ast::Compound_Stmt_Ast(std::vector<Statement_Ast *> *stmts)
+    : Statement_Ast(), stmts(stmts)
+{
+    code = new Code();
+    for (auto stmt : *stmts)
+    {
+        code->append_list(stmt->code);
+    }
+}
+
+std::string Compound_Stmt_Ast::to_string() const
+{
+    std::string result;
+
+    for (auto stmt : *stmts)
+    {
+        result += "\n" + stmt->to_string();
+    }
+
+    return result;
+}
+
+If_Stmt_Ast::If_Stmt_Ast(Boolean_Expr_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause)
+    : Statement_Ast(), predicate(predicate), if_clause(dynamic_cast<Compound_Stmt_Ast *>(_if_clause)), else_clause(dynamic_cast<Compound_Stmt_Ast *>(_else_clause))
+{
+    if (!if_clause)
+    {
+        if_clause = new Compound_Stmt_Ast(if_clause);
+    }
+
+    if (!else_clause)
+    {
+        else_clause = new Compound_Stmt_Ast(else_clause);
+    }
+}
+
+std::string If_Stmt_Ast::to_string() const
+{
+    std::string result = "If:\nCondition (" + predicate->to_string() + ")\nThen (" + if_clause->to_string() + ")";
+    if (else_clause)
+    {
+        result += "\nElse (" + else_clause->to_string() + ")";
+    }
+    return result;
+}

@@ -1,25 +1,17 @@
 // int main();
 
-void main()
+void main(bool b1, bool b2)
 {
-    int x, y;
+    int x;
 
-    x = 10;
-    if (x > 10)
-    {
-        y = x - 5;
-        print y;
+    // if(x > 10) 
+    //     x = 20;
+    // else
+    //     x = 30;
+
+    // if(x < 30) {
+    if(b1 || b2) {
+        x = x * 2;
+        x = x - 9;
     }
-    else
-    {
-        read x;
-        y = x + 249857;
-    }
-
-    do
-    {
-        x = x + 1;
-    } while (x < 100);
-
-    print x;
 }
