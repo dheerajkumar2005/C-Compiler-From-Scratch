@@ -568,6 +568,21 @@ std::string While_Stmt_Ast::to_string() const
 Do_While_Stmt_Ast::Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *body)
     : Statement_Ast(), predicate(predicate), body(body)
 {
+    if (predicate->type != Type::BOOL)
+    {
+        throw_SemanticError("Expected predicate of type BOOL, got: " + type_to_string(predicate->type));
+        return;
+    }
+    TAC_Label *l1 = new TAC_Label();
+    // Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
+    Label_TAC_Statement *c1 = new Label_TAC_Statement(l1);
+    If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(predicate->place, l1);
+
+    code = new Code();
+    code->append_statement(c1);
+    code->append_list(body->code);
+    code->append_list(predicate->code);
+    code->append_statement(c2);
 }
 
 std::string Do_While_Stmt_Ast::to_string() const

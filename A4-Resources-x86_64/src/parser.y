@@ -307,7 +307,7 @@ if_statement
 ;
 
 do_while_statement
-    : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON { $$ = sa_parse ? nullptr : new Do_While_Stmt($2, $5); }
+    : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON { $$ = sa_parse ? nullptr : new Do_While_Stmt_Ast($5, $2); }
 ;
 
 while_statement
