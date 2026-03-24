@@ -46,6 +46,8 @@
 
     Compound_Stmt_Ast *compound_stmt;
     If_Stmt_Ast *if_stmt;
+
+    While_Stmt_Ast *while_stmt;
 }
 
 // Terminals (and optionally their types)
@@ -112,6 +114,7 @@
 %type <expr> if_condition
 %type <if_stmt> unmatched_if
 %type <if_stmt> if_statement
+%type <while_stmt> while_statement
 
 %start program
 
@@ -305,11 +308,11 @@ if_statement
 // ;
 
 while_statement
-    : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement
+    : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement { $$ = sa_parse ? nullptr : new While_Stmt_Ast($3, $5); }
 ;
 
 compound_statement
-    : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET { $$ = new Compound_Stmt_Ast($2);  }
+    : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET { $$ = sa_parse ? nullptr : new Compound_Stmt_Ast($2);  }
 
 /* FIXED */
 print_statement

@@ -265,9 +265,8 @@ class If_Stmt_Ast : public Statement_Ast
 {
 public:
     Expression_Ast *predicate;
-    // TODO: Change this to Statement_Ast *
-    Compound_Stmt_Ast *if_clause;
-    Compound_Stmt_Ast *else_clause;
+    Statement_Ast *if_clause;
+    Statement_Ast *else_clause;
 
     If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause = nullptr);
     If_Stmt_Ast(If_Stmt_Ast *unmatched_if, Statement_Ast *_else_clause = nullptr);
@@ -280,9 +279,11 @@ class While_Stmt_Ast : public Statement_Ast
 {
 public:
     Expression_Ast *predicate;
-    Compound_Stmt_Ast *body;
+    Statement_Ast *body;
 
     While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body);
+
+    virtual std::string to_string() const override final;
 };
 
 #endif

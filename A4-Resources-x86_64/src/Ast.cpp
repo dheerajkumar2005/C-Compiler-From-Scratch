@@ -457,21 +457,12 @@ std::string Compound_Stmt_Ast::to_string() const
 }
 
 If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause)
-    : Statement_Ast(), predicate(predicate), if_clause(dynamic_cast<Compound_Stmt_Ast *>(_if_clause)), else_clause(dynamic_cast<Compound_Stmt_Ast *>(_else_clause))
+    : Statement_Ast(), predicate(predicate), if_clause(_if_clause), else_clause(_else_clause)
 {
     if (predicate->type != Type::BOOL)
     {
         throw_SemanticError("Expected predicate of type BOOL, got: " + type_to_string(predicate->type));
         return;
-    }
-
-    if (!if_clause)
-    {
-        if_clause = new Compound_Stmt_Ast(_if_clause);
-    }
-    if (!else_clause && _else_clause)
-    {
-        else_clause = new Compound_Stmt_Ast(_else_clause);
     }
 
     if (else_clause)
@@ -523,12 +514,8 @@ If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, S
 }
 
 If_Stmt_Ast::If_Stmt_Ast(If_Stmt_Ast *unmatched_if, Statement_Ast *_else_clause)
-    : Statement_Ast(), predicate(unmatched_if->predicate), if_clause(unmatched_if->if_clause), else_clause(dynamic_cast<Compound_Stmt_Ast *>(_else_clause))
+    : Statement_Ast(), predicate(unmatched_if->predicate), if_clause(unmatched_if->if_clause), else_clause(_else_clause)
 {
-    if (!else_clause && _else_clause)
-    {
-        else_clause = new Compound_Stmt_Ast(_else_clause);
-    }
 }
 
 std::string If_Stmt_Ast::to_string() const
@@ -542,10 +529,37 @@ std::string If_Stmt_Ast::to_string() const
 }
 
 While_Stmt_Ast::While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body)
-    : Statement_Ast(), predicate(_predicate), body(dynamic_cast<Compound_Stmt_Ast *>(_body))
+    : Statement_Ast(), predicate(_predicate), body(_body)
 {
-    if (!body)
+    if (predicate->type != Type::BOOL)
     {
-        body = new Compound_Stmt_Ast(body);
+        throw_SemanticError("Expected predicate of type BOOL, got: " + type_to_string(predicate->type));
+        return;
     }
+
+    Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
+
+    TAC_Label *l1 = new TAC_Label();
+    TAC_Label *l2 = new TAC_Label();
+
+    Label_TAC_Statement *c1 = new Label_TAC_Statement(l1);
+    Assignment_TAC_Statement *c2 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place);
+    If_Goto_TAC_Statement *c3 = new If_Goto_TAC_Statement(t1, l2);
+    Goto_TAC_Statement *c4 = new Goto_TAC_Statement(l1);
+    Label_TAC_Statement *c5 = new Label_TAC_Statement(l2);
+
+    code = new Code();
+    code->append_statement(c1);
+    code->append_list(predicate->code);
+    code->append_statement(c2);
+    code->append_statement(c3);
+    code->append_list(body->code);
+    code->append_statement(c4);
+    code->append_statement(c5);
+}
+
+std::string While_Stmt_Ast::to_string() const
+{
+    // TODO
+    return "";
 }
