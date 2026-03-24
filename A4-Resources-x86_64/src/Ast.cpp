@@ -456,17 +456,53 @@ std::string Compound_Stmt_Ast::to_string() const
     return result;
 }
 
-If_Stmt_Ast::If_Stmt_Ast(Boolean_Expr_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause)
+If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause)
     : Statement_Ast(), predicate(predicate), if_clause(dynamic_cast<Compound_Stmt_Ast *>(_if_clause)), else_clause(dynamic_cast<Compound_Stmt_Ast *>(_else_clause))
 {
-    if (!if_clause)
+    if (predicate->type != Type::BOOL)
     {
-        if_clause = new Compound_Stmt_Ast(if_clause);
+        throw_SemanticError("Expected predicate of type BOOL, got: " + type_to_string(predicate->type));
+        return;
     }
 
-    if (!else_clause)
+    if (!if_clause)
     {
-        else_clause = new Compound_Stmt_Ast(else_clause);
+        if_clause = new Compound_Stmt_Ast(_if_clause);
+    }
+    if (!else_clause && _else_clause)
+    {
+        else_clause = new Compound_Stmt_Ast(_else_clause);
+    }
+
+    Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
+
+    TAC_Label *l1 = new TAC_Label();
+
+    Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place);
+    If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(t1, l1);
+    Label_TAC_Statement *c3 = new Label_TAC_Statement(l1);
+
+    code = new Code();
+    code->append_list(predicate->code);
+    code->append_statement(c1);
+    code->append_statement(c2);
+    code->append_list(if_clause->code);
+
+    if (else_clause)
+    {
+        TAC_Label *l2 = new TAC_Label();
+
+        Goto_TAC_Statement *c4 = new Goto_TAC_Statement(l2);
+        Label_TAC_Statement *c5 = new Label_TAC_Statement(l2);
+
+        code->append_statement(c4);
+        code->append_statement(c3);
+        code->append_list(else_clause->code);
+        code->append_statement(c5);
+    }
+    else
+    {
+        code->append_statement(c3);
     }
 }
 

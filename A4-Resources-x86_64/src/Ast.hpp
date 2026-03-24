@@ -264,11 +264,11 @@ public:
 class If_Stmt_Ast : public Statement_Ast
 {
 public:
-    Boolean_Expr_Ast *predicate;
+    Expression_Ast *predicate;
     Compound_Stmt_Ast *if_clause;
     Compound_Stmt_Ast *else_clause;
 
-    If_Stmt_Ast(Boolean_Expr_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause = nullptr);
+    If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause = nullptr);
     ~If_Stmt_Ast() = default;
 
     virtual std::string to_string() const override final;

@@ -1,9 +1,7 @@
-void main()
+void main(int x, bool b)
 {
-    int x, y;
-    bool b;
-    float z;
-
-    if (z)
-        x = 10;
+    if (b)
+    {
+        x = x * 2;
+    }
 }

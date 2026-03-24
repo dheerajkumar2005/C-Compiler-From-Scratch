@@ -45,7 +45,6 @@
     String_Expr_Ast *sptr;
 
     Compound_Stmt_Ast *compound_stmt;
-    Boolean_Expr_Ast *predicate;
     If_Stmt_Ast *if_stmt;
 }
 
@@ -110,7 +109,7 @@
 %type <var> variable_as_operand
 %type <var> variable_name
 %type <compound_stmt> compound_statement
-%type <predicate> if_condition
+%type <expr> if_condition
 %type <if_stmt> if_statement
 
 %start program
@@ -288,7 +287,7 @@ assignment_statement
 ;
 
 if_condition
-    : LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { std::cerr << "HI" << std::endl; $$ = process_predicate($2); std::cerr << "Predicate reduced!" << std::endl; }
+    : LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = process_predicate($2); }
 ;
 
 if_statement
