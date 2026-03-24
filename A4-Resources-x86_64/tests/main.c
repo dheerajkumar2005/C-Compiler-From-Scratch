@@ -4,11 +4,8 @@ void main(bool b1, bool b2, bool b3)
 {
     int x, y, z;
 
-    while (x + y >= z && y <= z)
+    do
     {
-        {
-            x = x - 1;
-            y = y + 3 - x / 10;
-        }
-    }
+        x = x - 1;
+    } while (x >= y);
 }
