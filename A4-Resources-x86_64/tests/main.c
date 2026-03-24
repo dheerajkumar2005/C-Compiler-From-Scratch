@@ -18,18 +18,21 @@ void main(bool b1, bool b2, bool b3)
     //     // z = y - 236;
     //     z = 2 * y;
     // }
-    if (b1)
-    {
-        x = x + 1;
-    }
-    if (b2)
-    {
-        y = y + 2;
-    }
-    else
-    {
-        z = z + 3;
-    }
+    // if (b1)
+    // {
+    //     x = x + 1;
+    // }
+    // if (b2)
+    // {
+    //     y = y + 2;
+    // }
+    // else
+    // {
+    //     z = z + 3;
+    // }
+    while(b1){ 
+        {x = x + 1;}
+    };
 
     // if(b1 && b2 || b3) {
     // // if(b1 || b2) {

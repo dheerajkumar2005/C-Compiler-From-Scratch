@@ -561,5 +561,6 @@ While_Stmt_Ast::While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body)
 std::string While_Stmt_Ast::to_string() const
 {
     // TODO
-    return "";
+    std::string result = "While:\nCondition (" + predicate->to_string() + ")\nBody (\n" + body->to_string() + ")";
+    return result;
 }
