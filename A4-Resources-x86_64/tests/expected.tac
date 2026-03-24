@@ -1,20 +1,12 @@
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
-	temp0 = x_ < 20
-	b1_ = temp0
-	temp1 = b1_ && b2_
-	temp2 = temp1 || b3_
-	temp5 = ! temp2
-	if(temp5) goto Label1
-	temp3 = x_ * 2
-	x_ = temp3
-	temp4 = x_ - 9
-	x_ = temp4
+	temp1 = ! b1_
+	if(temp1) goto Label1
+	temp0 = x_ * 2
+	x_ = temp0
 	goto Label0
 Label1:
-	temp6 = y_ - 236
-	z_ = temp6
-	temp7 = 2 * y_
-	z_ = temp7
+	temp2 = 2 * y_
+	z_ = temp2
 Label0:
 **END: Three Address Code Statements

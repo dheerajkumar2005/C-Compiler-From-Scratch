@@ -474,35 +474,60 @@ If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, S
         else_clause = new Compound_Stmt_Ast(_else_clause);
     }
 
-    Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
-
-    TAC_Label *l1 = new TAC_Label();
-
-    Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place);
-    If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(t1, l1);
-    Label_TAC_Statement *c3 = new Label_TAC_Statement(l1);
-
-    code = new Code();
-    code->append_list(predicate->code);
-    code->append_statement(c1);
-    code->append_statement(c2);
-    code->append_list(if_clause->code);
-
     if (else_clause)
     {
+        Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
+
+        TAC_Label *l1 = new TAC_Label();
         TAC_Label *l2 = new TAC_Label();
 
-        Goto_TAC_Statement *c4 = new Goto_TAC_Statement(l2);
+        Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place);
+        If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(t1, l2);
+        Label_TAC_Statement *c3 = new Label_TAC_Statement(l1);
+        Goto_TAC_Statement *c4 = new Goto_TAC_Statement(l1);
+
+        code = new Code();
+        code->append_list(predicate->code);
+        code->append_statement(c1);
+        code->append_statement(c2);
+        code->append_list(if_clause->code);
+        code->append_statement(c4);
+
         Label_TAC_Statement *c5 = new Label_TAC_Statement(l2);
 
-        code->append_statement(c4);
-        code->append_statement(c3);
-        code->append_list(else_clause->code);
         code->append_statement(c5);
+        code->append_list(else_clause->code);
+
+        code->append_statement(c3);
     }
     else
     {
+        Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand();
+
+        TAC_Label *l1 = new TAC_Label();
+        // TAC_Label *l2 = new TAC_Label();
+
+        Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place);
+        If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(t1, l1);
+        Label_TAC_Statement *c3 = new Label_TAC_Statement(l1);
+        Goto_TAC_Statement *c4 = new Goto_TAC_Statement(l1);
+
+        code = new Code();
+        code->append_list(predicate->code);
+        code->append_statement(c1);
+        code->append_statement(c2);
+        code->append_list(if_clause->code);
+        code->append_statement(c4);
         code->append_statement(c3);
+    }
+}
+
+If_Stmt_Ast::If_Stmt_Ast(If_Stmt_Ast *unmatched_if, Statement_Ast *_else_clause)
+    : Statement_Ast(), predicate(unmatched_if->predicate), if_clause(unmatched_if->if_clause), else_clause(dynamic_cast<Compound_Stmt_Ast *>(_else_clause))
+{
+    if (!else_clause && _else_clause)
+    {
+        else_clause = new Compound_Stmt_Ast(_else_clause);
     }
 }
 
@@ -514,4 +539,13 @@ std::string If_Stmt_Ast::to_string() const
         result += "\nElse (" + else_clause->to_string() + ")";
     }
     return result;
+}
+
+While_Stmt_Ast::While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body)
+    : Statement_Ast(), predicate(_predicate), body(dynamic_cast<Compound_Stmt_Ast *>(_body))
+{
+    if (!body)
+    {
+        body = new Compound_Stmt_Ast(body);
+    }
 }

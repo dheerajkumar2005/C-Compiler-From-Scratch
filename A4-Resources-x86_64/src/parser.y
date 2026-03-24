@@ -110,6 +110,7 @@
 %type <var> variable_name
 %type <compound_stmt> compound_statement
 %type <expr> if_condition
+%type <if_stmt> unmatched_if
 %type <if_stmt> if_statement
 
 %start program
@@ -244,7 +245,7 @@ statement
     : assignment_statement { $$ = $1; }
     | if_statement { $$ = $1; }
     // | do_while_statement { $$ = $1; }
-    // | while_statement { $$ = $1; }
+    | while_statement { $$ = $1; }
     | compound_statement { $$ = $1; }
     | print_statement { $$ = $1; }
     | read_statement { $$ = $1; }
@@ -290,17 +291,22 @@ if_condition
     : LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = process_predicate($2); }
 ;
 
+unmatched_if
+    : IF if_condition statement { $$ = sa_parse ? nullptr : new If_Stmt_Ast($2, $3); }
+;
+
 if_statement
-    : IF if_condition statement ELSE statement { $$ = sa_parse ? nullptr : new If_Stmt_Ast($2, $3, $5); }
-    | IF if_condition statement %prec lower_than_else { $$ = sa_parse ? nullptr : new If_Stmt_Ast($2, $3); }
+    : unmatched_if ELSE statement { $$ = sa_parse ? nullptr : new If_Stmt_Ast($1, $3); }
+    | unmatched_if %prec lower_than_else { $$ = sa_parse ? nullptr : $1; }
+;
 
 // do_while_statement
 //     : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON
 // ;
 
-// while_statement
-//     : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement
-// ;
+while_statement
+    : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement
+;
 
 compound_statement
     : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET { $$ = new Compound_Stmt_Ast($2);  }
