@@ -563,3 +563,14 @@ std::string While_Stmt_Ast::to_string() const
     // TODO
     return "";
 }
+
+Do_While_Stmt_Ast::Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *body)
+    : Statement_Ast(), predicate(predicate), body(body)
+{
+}
+
+std::string Do_While_Stmt_Ast::to_string() const
+{
+    // TODO
+    return "";
+}

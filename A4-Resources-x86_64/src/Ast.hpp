@@ -286,4 +286,15 @@ public:
     virtual std::string to_string() const override final;
 };
 
+class Do_While_Stmt_Ast : public Statement_Ast
+{
+public:
+    Expression_Ast *predicate;
+    Statement_Ast *body;
+
+    Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *body);
+
+    virtual std::string to_string() const override final;
+};
+
 #endif

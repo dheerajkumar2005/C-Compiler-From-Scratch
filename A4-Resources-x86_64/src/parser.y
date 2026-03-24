@@ -48,6 +48,8 @@
     If_Stmt_Ast *if_stmt;
 
     While_Stmt_Ast *while_stmt;
+
+    Do_While_Stmt_Ast *do_while_stmt;
 }
 
 // Terminals (and optionally their types)
@@ -114,6 +116,7 @@
 %type <expr> if_condition
 %type <if_stmt> unmatched_if
 %type <if_stmt> if_statement
+%type <do_while_stmt> do_while_statement
 %type <while_stmt> while_statement
 
 %start program
@@ -247,7 +250,7 @@ statement_list
 statement
     : assignment_statement { $$ = $1; }
     | if_statement { $$ = $1; }
-    // | do_while_statement { $$ = $1; }
+    | do_while_statement { $$ = $1; }
     | while_statement { $$ = $1; }
     | compound_statement { $$ = $1; }
     | print_statement { $$ = $1; }
@@ -303,9 +306,9 @@ if_statement
     | unmatched_if %prec lower_than_else { $$ = sa_parse ? nullptr : $1; }
 ;
 
-// do_while_statement
-//     : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON
-// ;
+do_while_statement
+    : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON { $$ = sa_parse ? nullptr : new Do_While_Stmt($2, $5); }
+;
 
 while_statement
     : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement { $$ = sa_parse ? nullptr : new While_Stmt_Ast($3, $5); }
