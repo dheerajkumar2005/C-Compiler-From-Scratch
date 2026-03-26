@@ -98,6 +98,7 @@ class TAC_Statement{
 	virtual std::string to_string() const = 0;
 };
 
+// Transformed to Move_RTL_Statement
 class Assignment_TAC_Statement : public TAC_Statement
 {
 public:
@@ -114,6 +115,7 @@ public:
 	virtual std::string to_string() const override final;
 };
 
+// Transformed to Goto_RTL_Statement
 class Goto_TAC_Statement : public TAC_Statement
 {
 	TAC_Label *label;
@@ -123,6 +125,7 @@ public:
 	virtual std::string to_string() const override final;
 };
 
+// Transformed to If_Goto_RTL_Statement
 class If_Goto_TAC_Statement : public TAC_Statement
 {
 	TAC_Operand* condition;
@@ -133,6 +136,7 @@ public:
 	virtual std::string to_string() const override final;
 };
 
+// Transformed to Read_RTL_Statement and Write_RTL_Statement
 class IO_TAC_Statement : public TAC_Statement
 {
 	IO_Kind kind;
@@ -143,6 +147,7 @@ class IO_TAC_Statement : public TAC_Statement
 		virtual std::string to_string() const override final;
 };
 
+// Transformed to Label_RTL_Statement
 class Label_TAC_Statement : public TAC_Statement
 {
 	TAC_Label *label;
