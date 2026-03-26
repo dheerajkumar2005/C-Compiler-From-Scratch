@@ -1,12 +1,12 @@
 // Nested ternary operator with logical expressions
-int value;
+int global_x;
 
 void main(){
     int ans;
 
-    read value;
+    read global_x;
 
-    ans = (value < 10) ? 1 : ((value < 50) ? 2 : 3);
+    ans = (global_x > 0) ? 1 : ((global_x == 0) ? 0 : -1);
 
     print ans;
 }
