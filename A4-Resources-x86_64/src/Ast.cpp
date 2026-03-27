@@ -357,8 +357,8 @@ Statement_Ast::~Statement_Ast()
 {
 }
 
-Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs)
-    : Statement_Ast(), lhs(lhs), rhs(rhs)
+Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs, RegisterTracker *register_tracker)
+    : Statement_Ast(), lhs(lhs), rhs(rhs), reg_tracker(reg_tracker)
 {
     if (lhs->get_type() != rhs->get_type())
     {
@@ -380,6 +380,10 @@ Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs
     code->append_statement(c1);
 
     rtl_code = new RTL_Code();
+    for (auto tac_stmt_ptr : *(code->stmt_list))
+    {
+        rtl_code->append_list(tac_stmt_ptr->to_rtl(reg_tracker));
+    }
 }
 
 std::string Assignment_Stmt_Ast::to_string() const

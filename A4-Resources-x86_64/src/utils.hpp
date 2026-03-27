@@ -15,6 +15,24 @@ enum class Type
     BOOL,
 };
 
+enum class RTL_Operator
+{
+    NEGATE,      // uminus
+    LOGICAL_NOT, // not
+    ADD,         // add
+    SUBTRACT,    // sub
+    MULTIPLY,    // mul
+    DIVIDE,      // div
+    LOGICAL_AND, // and
+    LOGICAL_OR,  // or
+    LT,          // slt
+    LE,          // sle
+    GT,          // sgt
+    GE,          // sge
+    NE,          // sne
+    EQ,          // seq
+};
+
 enum class TAC_Operator
 {
     NOP,
@@ -69,6 +87,7 @@ std::ostream &operator<<(std::ostream &os, TAC_Operator op);
 std::ostream &operator<<(std::ostream &os, Binary_Operator op);
 std::ostream &operator<<(std::ostream &os, Unary_Operator op);
 std::ostream &operator<<(std::ostream &os, Ternary_Operator op);
+std::ostream &operator<<(std::ostream &os, RTL_Operator op);
 
 std::string op_to_string(TAC_Operator op);
 
@@ -76,7 +95,11 @@ std::string op_to_string(Binary_Operator op);
 std::string op_to_string(Unary_Operator op);
 std::string op_to_string(Ternary_Operator op);
 
+std::string op_to_string(RTL_Operator op);
+
 TAC_Operator binary_to_tac(Binary_Operator op);
 TAC_Operator unary_to_tac(Unary_Operator op);
+
+RTL_Operator tac_to_rtl(TAC_Operator op);
 
 #endif

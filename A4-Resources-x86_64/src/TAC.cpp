@@ -86,13 +86,92 @@ std::string Assignment_TAC_Statement::to_string() const
 	}
 }
 
+RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
+{
+	RTL_Code *rtl_code = new RTL_Code();
+
+	auto &reg_map = reg_tracker->reg_map;
+	auto &available_regs = reg_tracker->available_regs;
+
+	// Operand 1
+	RTL_Register *reg_opd1 = reg_tracker->get_register(opd1);
+
+	if (!reg_opd1)
+	{
+		reg_opd1 = reg_tracker->get_register();
+
+		RTL_Statement *load_stmt;
+		if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd1))
+		{
+			load_stmt = new Load_Int_RTL_Statement(reg_opd1, o->ival);
+		}
+		else
+		{
+			load_stmt = new Load_RTL_Statement(reg_opd1, opd1);
+		}
+
+		rtl_code->append_statement(load_stmt);
+	}
+
+	// LHS
+	RTL_Register *reg_lhs = reg_tracker->get_register();
+	reg_tracker->reg_map[lhs] = reg_lhs;
+
+	// Operand 2 (may be nullptr)
+	RTL_Register *reg_opd2 = reg_tracker->get_register(opd2);
+
+	if (opd2 && !reg_opd2)
+	{
+		reg_opd2 = reg_tracker->get_register();
+
+		RTL_Statement *load_stmt;
+		if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd2))
+		{
+			load_stmt = new Load_Int_RTL_Statement(reg_opd1, o->ival);
+		}
+		else
+		{
+			load_stmt = new Load_RTL_Statement(reg_opd2, opd2);
+		}
+
+		rtl_code->append_statement(load_stmt);
+	}
+
+	Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2);
+	rtl_code->append_statement(compute_stmt);
+
+	// Cleanup
+	reg_tracker->free_register(opd1, reg_opd1);
+	reg_tracker->free_register(opd2, reg_opd2);
+
+	return rtl_code;
+}
+
 Goto_TAC_Statement::Goto_TAC_Statement(TAC_Label *_label) : label(_label) {}
 std::string Goto_TAC_Statement::to_string() const{
 	return "goto " + label->to_string();
 }
 
+RTL_Code *Goto_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
+{
+	RTL_Code *rtl_code = new RTL_Code();
+
+	Goto_RTL_Statement *goto_stmt = new Goto_RTL_Statement(label->label_number);
+	rtl_code->append_statement(goto_stmt);
+
+	return rtl_code;
+}
+
 If_Goto_TAC_Statement::If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_label)
-	: condition(_cond), label(_label) {}
+	: condition(_cond), label(_label)
+{
+}
+
+RTL_Code *If_Goto_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
+{
+	// TODO
+	return nullptr;
+}
 
 std::string If_Goto_TAC_Statement::to_string() const{
 	return "if(" + condition->to_string() + ") goto " + label->to_string();
@@ -108,9 +187,21 @@ std::string IO_TAC_Statement::to_string() const{
 	}
 }
 
+RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
+{
+	// TODO
+	return nullptr;
+}
+
 Label_TAC_Statement::Label_TAC_Statement(TAC_Label *_label) : label(_label) {}
 std::string Label_TAC_Statement::to_string() const{
 	return label->to_string() + ": ";
+}
+
+RTL_Code *Label_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
+{
+	// TODO
+	return nullptr;
 }
 
 Code::Code()
@@ -148,4 +239,120 @@ std::string Code::to_string() const
 		}
 	}
 	return result;
+}
+
+void RTL_Code::append_statement(RTL_Statement *rtl_statement)
+{
+	if (rtl_statement)
+	{
+		stmt_list->push_back(rtl_statement);
+	}
+}
+
+void RTL_Code::append_list(RTL_Code *rtl_code)
+{
+	if (rtl_code && rtl_code->stmt_list)
+	{
+		for (auto it = rtl_code->stmt_list->begin(); it != rtl_code->stmt_list->end(); ++it)
+		{
+			append_statement(*it);
+		}
+	}
+}
+
+Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival) : reg(reg), ival(ival)
+{
+}
+
+Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var) : reg(reg), var(var)
+{
+	if (!dynamic_cast<Variable_TAC_Operand *>(var) && !dynamic_cast<Shared_Temporary_TAC_Operand *>(var))
+	{
+		throw_SemanticError("Expected to load either a variable or a shared temporary variable");
+	}
+}
+
+Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2)
+	: lhs(lhs), op(op), opd1(opd1), opd2(opd2)
+{
+}
+
+Goto_RTL_Statement::Goto_RTL_Statement(int label_number) : label_number(label_number)
+{
+}
+
+RegisterTracker::RegisterTracker()
+	: reg_map(), available_regs()
+{
+	available_regs[new RTL_Register(1)] = true;	 // v0
+	available_regs[new RTL_Register(2)] = true;	 // t0
+	available_regs[new RTL_Register(3)] = true;	 // t1
+	available_regs[new RTL_Register(4)] = true;	 // t2
+	available_regs[new RTL_Register(5)] = true;	 // t3
+	available_regs[new RTL_Register(6)] = true;	 // t4
+	available_regs[new RTL_Register(7)] = true;	 // t5
+	available_regs[new RTL_Register(8)] = true;	 // t6
+	available_regs[new RTL_Register(9)] = true;	 // t7
+	available_regs[new RTL_Register(10)] = true; // t8
+	available_regs[new RTL_Register(11)] = true; // t9
+	available_regs[new RTL_Register(12)] = true; // s0
+	available_regs[new RTL_Register(13)] = true; // s1
+	available_regs[new RTL_Register(14)] = true; // s2
+	available_regs[new RTL_Register(15)] = true; // s3
+	available_regs[new RTL_Register(16)] = true; // s4
+	available_regs[new RTL_Register(17)] = true; // s5
+	available_regs[new RTL_Register(18)] = true; // s6
+	available_regs[new RTL_Register(19)] = true; // s7
+}
+
+RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
+{
+	if (!opd || reg_map.find(opd) == reg_map.end() || !reg_map[opd])
+	{
+		return nullptr;
+	}
+
+	return reg_map[opd];
+}
+
+RTL_Register *RegisterTracker::get_register()
+{
+	RTL_Register *chosen_reg_ptr = nullptr;
+	for (auto it = available_regs.begin(); it != available_regs.end(); ++it)
+	{
+		if (it->second)
+		{
+			chosen_reg_ptr = it->first;
+		}
+	}
+
+	if (chosen_reg_ptr)
+	{
+		available_regs[chosen_reg_ptr] = false;
+		return chosen_reg_ptr;
+	}
+
+	throw_SemanticError("Out of registers!!!");
+	return nullptr;
+}
+
+void RegisterTracker::free_register(TAC_Operand *opd, RTL_Register *reg)
+{
+	if (opd && reg_map.find(opd) != reg_map.end())
+	{
+		reg_map[opd] = nullptr;
+	}
+	if (reg && available_regs.find(reg) != available_regs.end())
+	{
+		available_regs[reg] = true;
+	}
+}
+
+RTL_Register::RTL_Register(int priority) : priority(priority)
+{
+}
+
+Scope::Scope(Scope_Kind kind, Scope *parent_scope, Func_Signature *func_sig)
+	: kind(kind), parent_scope(parent_scope), func_sig(func_sig), reg_tracker(reg_tracker)
+{
 }

@@ -290,7 +290,7 @@ named_type
 ;
 
 assignment_statement
-    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
+    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3, curr_scope->reg_tracker); }
 ;
 
 if_condition

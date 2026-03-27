@@ -5,12 +5,12 @@ TGT = sclp
 SCAN = scanner.l
 PARSE = parser.y
 
-OBJ = Ast.o parse.tab.o Program.o scan.o $(TGT).o SemanticError.o support.o Errors.o TAC.o utils.o RegisterTracker.o RTL.o
+OBJ = Ast.o parse.tab.o Program.o scan.o $(TGT).o SemanticError.o support.o Errors.o TAC.o utils.o
 
 CPPSTD = --std=c++0x
 CFLAGS = -g -fpermissive
 
-HEADERS = Ast.hpp Program.hpp SemanticError.hpp support.hpp Errors.hpp TAC.hpp utils.hpp RegisterTracker.hpp RTL.hpp
+HEADERS = Ast.hpp Program.hpp SemanticError.hpp support.hpp Errors.hpp TAC.hpp utils.hpp
 
 $(TGT): $(OBJ)
 	$(CPP) $(CPPSTD)  $(OBJ) -o $(TGT) -ly 

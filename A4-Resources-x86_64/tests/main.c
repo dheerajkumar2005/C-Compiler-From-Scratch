@@ -3,19 +3,22 @@ int value;
 
 void main()
 {
-    int x, y;
-    bool b;
+    int x, y, z;
+    bool b1, b2, b3;
 
-    if (b)
-    {
-        read y;
-        x = y;
-    }
-    else
-    {
-        read x;
-        y = x;
-    }
+    // z = x + y;
+    // z = x - y;
+    // z = x * y;
+    // z = x / y;
 
-    print x;
+    // b3 = !b1;
+    // b3 = b1 && b2;
+    // b3 = b1 || b2;
+
+    b1 = x < y;
+    b1 = x <= y;
+    b1 = x > y;
+    b1 = x >= y;
+    b1 = x == y;
+    b1 = x != y;
 }

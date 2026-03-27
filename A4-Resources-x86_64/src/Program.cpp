@@ -63,8 +63,3 @@ bool Func_Signature::operator!=(const Func_Signature &other) const
 {
     return !(*this == other);
 }
-
-Scope::Scope(Scope_Kind kind, Scope *parent_scope, Func_Signature *func_sig)
-    : kind(kind), parent_scope(parent_scope), func_sig(func_sig)
-{
-}

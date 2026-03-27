@@ -2,8 +2,8 @@
 #include <fstream>
 #include <iostream>
 
-#include "Program.hpp"
-#include "SemanticError.hpp"
+#include "TAC.hpp"
+// #include "SemanticError.hpp"
 
 extern FILE *yyin;
 extern FILE *yyout;
