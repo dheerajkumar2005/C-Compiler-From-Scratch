@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "TAC.hpp"
+#include "RTL.hpp"
 
 extern std::ostream *astout;
 extern std::ostream *tacout;
@@ -208,6 +209,8 @@ public:
 class Statement_Ast : public Ast
 {
 public:
+    RTL_Code *rtl_code;
+
     Statement_Ast();
     virtual ~Statement_Ast() = 0;
 };

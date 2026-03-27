@@ -1,12 +1,21 @@
 // Nested ternary operator with logical expressions
 int value;
 
-void main(){
-    int ans;
+void main()
+{
+    int x, y;
+    bool b;
 
-    read value;
+    if (b)
+    {
+        read y;
+        x = y;
+    }
+    else
+    {
+        read x;
+        y = x;
+    }
 
-    ans = (value < 10) ? 1 : ((value < 50) ? 2 : 3);
-
-    print ans;
+    print x;
 }

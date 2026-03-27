@@ -94,7 +94,7 @@ public:
 };
 
 class TAC_Statement{
-	public:
+public:
 	virtual std::string to_string() const = 0;
 };
 

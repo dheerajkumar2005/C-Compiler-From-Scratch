@@ -349,7 +349,7 @@ std::string Conditional_Expr_Ast::to_string() const
 }
 
 Statement_Ast::Statement_Ast()
-    : Ast()
+    : Ast(), rtl_code(nullptr)
 {
 }
 
@@ -378,6 +378,8 @@ Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs
     code = new Code();
     code->append_list(rhs->code);
     code->append_statement(c1);
+
+    rtl_code = new RTL_Code();
 }
 
 std::string Assignment_Stmt_Ast::to_string() const
