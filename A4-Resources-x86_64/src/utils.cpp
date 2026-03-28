@@ -457,4 +457,6 @@ std::string rtl_priority_to_register(int priority){
     else{
         throw_SemanticError("This register doesn't exist currently, I have no clue why is it used\n");
     }
+
+    return result;
 }

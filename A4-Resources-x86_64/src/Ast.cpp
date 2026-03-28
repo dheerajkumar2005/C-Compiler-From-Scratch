@@ -639,6 +639,10 @@ Do_While_Stmt_Ast::Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *b
         throw_SemanticError("Expected predicate of type BOOL, got: " + type_to_string(predicate->type));
         return;
     }
+}
+
+Code *Do_While_Stmt_Ast::codegen()
+{
     TAC_Label *l1 = new TAC_Label();
     Label_TAC_Statement *c1 = new Label_TAC_Statement(l1);
     If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(predicate->place, l1);
@@ -648,6 +652,8 @@ Do_While_Stmt_Ast::Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *b
     code->append_list(body->get_code());
     code->append_list(predicate->get_code());
     code->append_statement(c2);
+
+    return code;
 }
 
 std::string Do_While_Stmt_Ast::to_string() const
