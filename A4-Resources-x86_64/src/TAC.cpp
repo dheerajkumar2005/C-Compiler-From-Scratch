@@ -112,6 +112,10 @@ std::string Assignment_TAC_Statement::to_string() const
 	}
 }
 
+RTL_Statement::RTL_Statement(bool is_float) : is_float(is_float)
+{
+}
+
 RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
 	RTL_Code *rtl_code = new RTL_Code();
@@ -168,7 +172,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		if (op != TAC_Operator::NOP)
 		{
-			Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2);
+			Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2, true);
 			rtl_code->append_statement(compute_stmt);
 		}
 
@@ -237,7 +241,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		if (op != TAC_Operator::NOP)
 		{
-			Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2);
+			Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2, true);
 			rtl_code->append_statement(compute_stmt);
 		}
 
@@ -411,7 +415,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		rtl_code->append_statement(iload_stmt);
 		reg_tracker->free_register(nullptr, reg); // cleanup
 
-		Read_RTL_Statement *read_stmt = new Read_RTL_Statement();
+		Read_RTL_Statement *read_stmt = new Read_RTL_Statement(is_float);
 		rtl_code->append_statement(read_stmt);
 
 		if (is_int)
@@ -448,7 +452,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		Load_RTL_Statement *load_stmt = new Load_RTL_Statement(reg2, opd, is_float);
 		rtl_code->append_statement(load_stmt);
 
-		Write_RTL_Statement *write_stmt = new Write_RTL_Statement();
+		Write_RTL_Statement *write_stmt = new Write_RTL_Statement(is_float);
 		rtl_code->append_statement(write_stmt);
 
 		// Cleanup
@@ -552,15 +556,18 @@ void RTL_Code::append_list(RTL_Code *rtl_code)
 	}
 }
 
-Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival) : reg(reg), ival(ival)
+Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival)
+	: RTL_Statement(false), reg(reg), ival(ival)
 {
 }
 
-Load_Float_RTL_Statement::Load_Float_RTL_Statement(RTL_Register *reg, float fval) : reg(reg), fval(fval)
+Load_Float_RTL_Statement::Load_Float_RTL_Statement(RTL_Register *reg, float fval)
+	: RTL_Statement(true), reg(reg), fval(fval)
 {
 }
 
-Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float) : reg(reg), var(var), is_float(is_float)
+Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float)
+	: RTL_Statement(is_float), reg(reg), var(var)
 {
 	if (!dynamic_cast<Variable_TAC_Operand *>(var) && !dynamic_cast<Shared_Temporary_TAC_Operand *>(var))
 	{
@@ -569,7 +576,7 @@ Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool
 }
 
 Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float)
-	: reg(reg), var(var), is_float(is_float)
+	: RTL_Statement(is_float), reg(reg), var(var)
 {
 	if (!dynamic_cast<Variable_TAC_Operand *>(var) && !dynamic_cast<Shared_Temporary_TAC_Operand *>(var))
 	{
@@ -577,12 +584,13 @@ Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bo
 	}
 }
 
-Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2)
-	: lhs(lhs), op(op), opd1(opd1), opd2(opd2)
+Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, bool is_float)
+	: RTL_Statement(is_float), lhs(lhs), op(op), opd1(opd1), opd2(opd2)
 {
 }
 
-Goto_RTL_Statement::Goto_RTL_Statement(int label_number) : label_number(label_number)
+Goto_RTL_Statement::Goto_RTL_Statement(int label_number)
+	: RTL_Statement(false), label_number(label_number)
 {
 }
 
@@ -593,7 +601,7 @@ std::string Goto_RTL_Statement::to_string() const
 }
 
 If_Goto_RTL_Statement::If_Goto_RTL_Statement(RTL_Register *predicate, int label_number)
-	: predicate(predicate), label_number(label_number)
+	: RTL_Statement(false), predicate(predicate), label_number(label_number)
 {
 }
 
@@ -603,7 +611,18 @@ std::string If_Goto_RTL_Statement::to_string() const
 	return result;
 }
 
-Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_number)
+Read_RTL_Statement::Read_RTL_Statement(bool is_float)
+	: RTL_Statement(is_float)
+{
+}
+
+Write_RTL_Statement::Write_RTL_Statement(bool is_float)
+	: Write_RTL_Statement(is_float)
+{
+}
+
+Label_RTL_Statement::Label_RTL_Statement(int label_number)
+	: RTL_Statement(false), label_number(label_number)
 {
 }
 std::string Label_RTL_Statement::to_string() const
