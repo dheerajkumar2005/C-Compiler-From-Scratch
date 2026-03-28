@@ -166,14 +166,19 @@ public:
 
 class RegisterTracker
 {
+
 public:
+	const static int PRIORITY_V0 = 1;
+	const static int PRIORITY_F12 = 26;
+	const static int PRIORITY_A0 = 100;
+	const static int PRIORITY_V1 = 200;
+	const static int PRIORITY_F0 = 300;
+
 	std::map<int, RTL_Register *> all_regs;
 
 	std::unordered_map<TAC_Operand *, int> reg_map;
 	std::map<int, bool> available_int_regs;
 	std::map<int, bool> available_float_regs;
-	std::map<int, bool> reserved_int_regs;
-	std::map<int, bool> reserved_float_regs;
 
 	RegisterTracker();
 
@@ -183,8 +188,7 @@ public:
 	RTL_Register *get_int_register();
 	RTL_Register *get_float_register();
 
-	RTL_Register *get_int_reserved_register();
-	RTL_Register *get_float_reserved_register();
+	void mark(TAC_Operand *opd, RTL_Register *reg);
 
 	void free_register(TAC_Operand *opd, RTL_Register *reg);
 };

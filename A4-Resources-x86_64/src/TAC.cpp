@@ -143,7 +143,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		if (op != TAC_Operator::NOP)
 		{
 			reg_lhs = reg_tracker->get_float_register();
-			reg_tracker->reg_map[lhs] = reg_lhs;
+			reg_tracker->mark(lhs, reg_lhs);
 		}
 
 		// Operand 2 (may be nullptr)
@@ -212,7 +212,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		if (op != TAC_Operator::NOP)
 		{
 			reg_lhs = reg_tracker->get_int_register();
-			reg_tracker->reg_map[lhs] = reg_lhs;
+			reg_tracker->mark(lhs, reg_lhs);
 		}
 
 		// Operand 2 (may be nullptr)
@@ -281,7 +281,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		if (op != TAC_Operator::NOP)
 		{
 			reg_lhs = reg_tracker->get_int_register();
-			reg_tracker->reg_map[lhs] = reg_lhs;
+			reg_tracker->mark(lhs, reg_lhs);
 		}
 
 		// Operand 2 (may be nullptr)
@@ -405,11 +405,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		RTL_Code *rtl_code = new RTL_Code();
 
-		RTL_Register *reg = reg_tracker->get_int_register();
-		if (reg->priority != 1) // v0
-		{
-			throw_SemanticError("Expected v0 to be free rn");
-		}
+		RTL_Register *reg = reg_tracker->get_register(RegisterTracker::PRIORITY_V0);
 		int signal = is_float ? 7 : 5;
 		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, signal);
 		rtl_code->append_statement(iload_stmt);
@@ -420,15 +416,16 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		if (is_int)
 		{
-			// read from v0 and store
+			reg = reg_tracker->get_register(RegisterTracker::PRIORITY_V0);
 		}
 		else
 		{
-			// read from f0 and store
+			reg = reg_tracker->get_register(RegisterTracker::PRIORITY_F0);
 		}
 
-		// Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg, opd, is_float);
-		// rtl_code->append_statement(store_stmt);
+		RTL_Statement *store_stmt = new Store_RTL_Statement(reg, opd, is_float);
+		rtl_code->append_statement(store_stmt);
+		reg_tracker->free_register(nullptr, reg); // cleanup
 
 		return rtl_code;
 	}
@@ -441,25 +438,22 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		RTL_Code *rtl_code = new RTL_Code();
 
-		RTL_Register *reg = reg_tracker->get_int_register();
-		if (reg->priority != 1) // v0
-		{
-			throw_SemanticError("Expected v0 to be free rn");
-		}
+		RTL_Register *reg1 = reg_tracker->get_register(RegisterTracker::PRIORITY_V0);
 		int signal = is_int ? 1 : (is_float ? 3 : 4);
-		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, signal);
+		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg1, signal);
 		rtl_code->append_statement(iload_stmt);
 
-		reg = is_float ? reg_tracker->get_float_reserved_register() : reg_tracker->get_int_reserved_register();
-		if (reg->priority != 100) // a0
-		{
-			throw_SemanticError("Expected a0(f12) to be free rn");
-		}
-		Load_RTL_Statement *load_stmt = new Load_RTL_Statement(reg, opd, is_float);
+		RTL_Register *reg2 = reg_tracker->get_register(is_float ? RegisterTracker::PRIORITY_F12 : RegisterTracker::PRIORITY_A0);
+		// TODO: Could be either a move (if printing an expression) or a load (if printing a variable)
+		Load_RTL_Statement *load_stmt = new Load_RTL_Statement(reg2, opd, is_float);
 		rtl_code->append_statement(load_stmt);
 
 		Write_RTL_Statement *write_stmt = new Write_RTL_Statement();
 		rtl_code->append_statement(write_stmt);
+
+		// Cleanup
+		reg_tracker->free_register(nullptr, reg1);
+		reg_tracker->free_register(nullptr, reg2);
 
 		return rtl_code;
 	}
@@ -617,7 +611,8 @@ Goto_RTL_Statement::Goto_RTL_Statement(int label_number) : label_number(label_nu
 {
 }
 
-std::string Goto_RTL_Statement::to_string() const{
+std::string Goto_RTL_Statement::to_string() const
+{
 	std::string result = "goto:\tLabel" + std::to_string(label_number);
 	return result;
 }
@@ -627,7 +622,8 @@ If_Goto_RTL_Statement::If_Goto_RTL_Statement(RTL_Register *predicate, int label_
 {
 }
 
-std::string If_Goto_RTL_Statement::to_string() const{
+std::string If_Goto_RTL_Statement::to_string() const
+{
 	std::string result = "bgtz:\t" + rtl_priority_to_register(predicate->priority) + " , " + "Label" + std::to_string(label_number);
 	return result;
 }
@@ -635,12 +631,13 @@ std::string If_Goto_RTL_Statement::to_string() const{
 Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_number)
 {
 }
-std::string Label_RTL_Statement::to_string() const{
+std::string Label_RTL_Statement::to_string() const
+{
 	std::string result = "Label" + std::to_string(label_number) + ":";
 	return result;
 }
 RegisterTracker::RegisterTracker()
-	: all_regs(), reg_map(), available_int_regs(), available_float_regs(), reserved_int_regs(), reserved_float_regs()
+	: all_regs(), reg_map(), available_int_regs(), available_float_regs()
 {
 	// v0 to s7
 	for (int i = 1; i <= 19; i++)
@@ -650,11 +647,6 @@ RegisterTracker::RegisterTracker()
 		available_int_regs[i] = true;
 	}
 
-	// a0
-	RTL_Register *reg = new RTL_Register(100);
-	all_regs[100] = reg;
-	reserved_int_regs[100] = true;
-
 	// f2 to f30
 	for (int i = 21; i < 35; i++)
 	{
@@ -663,9 +655,20 @@ RegisterTracker::RegisterTracker()
 		available_float_regs[i] = true;
 	}
 
+	// a0
+	RTL_Register *reg = new RTL_Register(PRIORITY_A0);
+	all_regs[PRIORITY_A0] = reg;
+
+	// v1
+	reg = new RTL_Register(PRIORITY_V1);
+	all_regs[PRIORITY_V1] = reg;
+
+	// f0
+	reg = new RTL_Register(PRIORITY_F0);
+	all_regs[PRIORITY_F0] = reg;
+
 	// The reserved float register is f12
 	// TODO: Write a testcase which requires the use of f12 in something else, then use it for printing a float
-	reserved_float_regs[26] = true; // f12
 }
 
 RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
@@ -680,107 +683,76 @@ RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
 
 RTL_Register *RegisterTracker::get_register(int priority)
 {
-	if (all_regs.find(priority) == all_regs.end())
+	if (all_regs.find(priority) != all_regs.end())
 	{
-		return nullptr;
+		if (available_int_regs.find(priority) != available_int_regs.end() && available_int_regs[priority])
+		{
+			return all_regs[priority];
+		}
+		if (available_float_regs.find(priority) != available_float_regs.end() && available_float_regs[priority])
+		{
+			return all_regs[priority];
+		}
 	}
+	throw_SemanticError("Expected to find unused register with priority " + std::to_string(priority));
 
 	return all_regs[priority];
 }
 
 RTL_Register *RegisterTracker::get_int_register()
 {
-	RTL_Register *chosen_reg_ptr = nullptr;
 	for (auto it = available_int_regs.begin(); it != available_int_regs.end(); ++it)
 	{
 		if (it->second)
 		{
-			chosen_reg_ptr = it->first;
+			it->second = false;
+			return all_regs[it->first];
 		}
-	}
-
-	if (chosen_reg_ptr)
-	{
-		available_int_regs[chosen_reg_ptr] = false;
-		return chosen_reg_ptr;
 	}
 
 	throw_SemanticError("Out of int registers!!!");
 	return nullptr;
 }
 
-RTL_Register *RegisterTracker::get_int_reserved_register()
-{
-	RTL_Register *chosen_reg_ptr = nullptr;
-	for (auto it = reserved_int_regs.begin(); it != reserved_int_regs.end(); ++it)
-	{
-		if (it->second)
-		{
-			chosen_reg_ptr = it->first;
-		}
-	}
-
-	if (chosen_reg_ptr)
-	{
-		reserved_int_regs[chosen_reg_ptr] = false;
-		return chosen_reg_ptr;
-	}
-
-	throw_SemanticError("Out of reserved int registers!");
-	return nullptr;
-}
-
 RTL_Register *RegisterTracker::get_float_register()
 {
-	RTL_Register *chosen_reg_ptr = nullptr;
 	for (auto it = available_float_regs.begin(); it != available_float_regs.end(); ++it)
 	{
 		if (it->second)
 		{
-			chosen_reg_ptr = it->first;
+			it->second = false;
+			return all_regs[it->first];
 		}
-	}
-
-	if (chosen_reg_ptr)
-	{
-		available_int_regs[chosen_reg_ptr] = false;
-		return chosen_reg_ptr;
 	}
 
 	throw_SemanticError("Out of float registers!!!");
 	return nullptr;
 }
 
-RTL_Register *RegisterTracker::get_float_reserved_register()
+void RegisterTracker::mark(TAC_Operand *opd, RTL_Register *reg)
 {
-	RTL_Register *chosen_reg_ptr = nullptr;
-	for (auto it = reserved_float_regs.begin(); it != reserved_float_regs.end(); ++it)
+	if (opd)
 	{
-		if (it->second)
-		{
-			chosen_reg_ptr = it->first;
-		}
+		reg_map[opd] = reg->priority;
 	}
-
-	if (chosen_reg_ptr)
-	{
-		reserved_float_regs[chosen_reg_ptr] = false;
-		return chosen_reg_ptr;
-	}
-
-	throw_SemanticError("Out of reserved float registers!");
-	return nullptr;
 }
 
 void RegisterTracker::free_register(TAC_Operand *opd, RTL_Register *reg)
 {
-	if (opd && reg_map.find(opd) != reg_map.end())
+	reg_map.erase(opd);
+
+	if (reg)
 	{
-		reg_map[opd] = nullptr;
-	}
-	if (reg && available_int_regs.find(reg) != available_int_regs.end())
-	{
-		available_int_regs[reg] = true;
+		int priority = reg->priority;
+
+		if (available_int_regs.find(priority) != available_int_regs.end())
+		{
+			available_int_regs[priority] = true;
+		}
+		if (available_float_regs.find(priority) != available_float_regs.end())
+		{
+			available_float_regs[priority] = true;
+		}
 	}
 }
 
