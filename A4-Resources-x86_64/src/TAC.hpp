@@ -47,7 +47,9 @@ public:
 };
 
 class RTL_Statement
-{
+{	
+	public:
+		virtual std::string to_string() const = 0;
 };
 
 class RTL_Code
@@ -68,6 +70,7 @@ public:
 	int ival;
 
 	Load_Int_RTL_Statement(RTL_Register *reg, int ival);
+	virtual std::string to_string() const override final;
 };
 
 class Load_Float_RTL_Statement : public RTL_Statement
@@ -77,6 +80,8 @@ public:
 	float fval;
 
 	Load_Float_RTL_Statement(RTL_Register *reg, float fval);
+	virtual std::string to_string() const override final;
+
 };
 
 class Load_RTL_Statement : public RTL_Statement
@@ -87,6 +92,8 @@ public:
 	bool is_float;
 
 	Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
+	virtual std::string to_string() const override final;
+
 };
 
 class Store_RTL_Statement : public RTL_Statement
@@ -97,6 +104,8 @@ public:
 	bool is_float;
 
 	Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
+	virtual std::string to_string() const override final;
+
 };
 
 class Compute_RTL_Statement : public RTL_Statement
@@ -110,6 +119,8 @@ public:
 	TAC_Compute_Kind compute_kind;
 
 	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, TAC_Compute_Kind compute_kind = TAC_Compute_Kind::REGULAR);
+	virtual std::string to_string() const override final;
+
 };
 
 class Goto_RTL_Statement : public RTL_Statement
@@ -118,6 +129,8 @@ public:
 	int label_number;
 
 	Goto_RTL_Statement(int label_number);
+	virtual std::string to_string() const override final;
+
 };
 
 class If_Goto_RTL_Statement : public RTL_Statement
@@ -127,26 +140,33 @@ public:
 	int label_number;
 
 	If_Goto_RTL_Statement(RTL_Register *predicate, int label_number);
+	virtual std::string to_string() const override final;
+
 };
 
 class Read_RTL_Statement : public RTL_Statement
 {
 public:
 	Read_RTL_Statement() = default;
+	virtual std::string to_string() const override final;
+
 };
 
 class Write_RTL_Statement : public RTL_Statement
 {
 public:
 	Write_RTL_Statement() = default;
+	virtual std::string to_string() const override final;
+
 };
 
 class Label_RTL_Statement : public RTL_Statement
 {
 public:
 	int label_number;
-
 	Label_RTL_Statement(int label_number);
+	virtual std::string to_string() const override final;
+
 };
 
 class RegisterTracker

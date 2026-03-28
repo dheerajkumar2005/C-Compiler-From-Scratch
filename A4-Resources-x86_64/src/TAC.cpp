@@ -551,9 +551,19 @@ Goto_RTL_Statement::Goto_RTL_Statement(int label_number) : label_number(label_nu
 {
 }
 
+std::string Goto_RTL_Statement::to_string() const{
+	std::string result = "goto:\tLabel" + std::to_string(label_number);
+	return result;
+}
+
 If_Goto_RTL_Statement::If_Goto_RTL_Statement(RTL_Register *predicate, int label_number)
 	: predicate(predicate), label_number(label_number)
 {
+}
+
+std::string If_Goto_RTL_Statement::to_string() const{
+	std::string result = "bgtz:\t" + rtl_priority_to_register(predicate->priority) + " , " + "Label" + std::to_string(label_number);
+	return result;
 }
 
 Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_number)
@@ -585,25 +595,25 @@ RegisterTracker::RegisterTracker()
 
 	reserved_int_regs[new RTL_Register(100)] = true; // a0
 
-	available_float_regs[new RTL_Register(1)] = true; // f2
-	available_float_regs[new RTL_Register(2)] = true; // f4
-	available_float_regs[new RTL_Register(3)] = true; // f6
-	available_float_regs[new RTL_Register(4)] = true; // f8
-	available_float_regs[new RTL_Register(5)] = true; // f10
-	// available_float_regs[new RTL_Register(6)] = true;  // f12
-	available_float_regs[new RTL_Register(7)] = true;  // f14
-	available_float_regs[new RTL_Register(8)] = true;  // f16
-	available_float_regs[new RTL_Register(9)] = true;  // f18
-	available_float_regs[new RTL_Register(10)] = true; // f20
-	available_float_regs[new RTL_Register(11)] = true; // f22
-	available_float_regs[new RTL_Register(12)] = true; // f24
-	available_float_regs[new RTL_Register(13)] = true; // f26
-	available_float_regs[new RTL_Register(14)] = true; // f28
-	available_float_regs[new RTL_Register(15)] = true; // f30
+	available_float_regs[new RTL_Register(21)] = true; // f2
+	available_float_regs[new RTL_Register(22)] = true; // f4
+	available_float_regs[new RTL_Register(23)] = true; // f6
+	available_float_regs[new RTL_Register(24)] = true; // f8
+	available_float_regs[new RTL_Register(25)] = true; // f10
+	available_float_regs[new RTL_Register(26)] = true;  // f12
+	available_float_regs[new RTL_Register(27)] = true;  // f14
+	available_float_regs[new RTL_Register(28)] = true;  // f16
+	available_float_regs[new RTL_Register(29)] = true;  // f18
+	available_float_regs[new RTL_Register(30)] = true; // f20
+	available_float_regs[new RTL_Register(31)] = true; // f22
+	available_float_regs[new RTL_Register(32)] = true; // f24
+	available_float_regs[new RTL_Register(33)] = true; // f26
+	available_float_regs[new RTL_Register(34)] = true; // f28
+	available_float_regs[new RTL_Register(35)] = true; // f30
 
 	// The reserved float register is f12
 	// TODO: Write a testcase which requires the use of f12 in something else, then use it for printing a float
-	reserved_float_regs[new RTL_Register(100)] = true; // f12
+	reserved_float_regs[new RTL_Register(26)] = true; // f12
 }
 
 RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)

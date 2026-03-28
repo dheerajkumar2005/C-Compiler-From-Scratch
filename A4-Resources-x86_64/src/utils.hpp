@@ -101,5 +101,6 @@ TAC_Operator binary_to_tac(Binary_Operator op);
 TAC_Operator unary_to_tac(Unary_Operator op);
 
 RTL_Operator tac_to_rtl(TAC_Operator op);
+std::string rtl_priority_to_register(int priority);
 
 #endif

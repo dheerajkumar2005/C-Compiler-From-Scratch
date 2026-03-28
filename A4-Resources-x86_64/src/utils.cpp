@@ -436,3 +436,22 @@ RTL_Operator tac_to_rtl(TAC_Operator op)
 
     return RTL_Operator::ADD; // dummy
 }
+
+std::string rtl_priority_to_register(int priority){
+    std::string result;
+    if(priority == 1){
+        result = "t0"; 
+    }
+    else if(priority > 1 && priority <= 11){
+        result = "t" + std::to_string(priority-2);
+    }
+    else if(priority > 11 && priority <= 19){
+        result = "s" + std::to_string(priority-12);
+    }
+    else if(priority > 20 && priority <= 35){
+        result = "f" + std::to_string((priority-20)*2);
+    }
+    else if(priority == 100){
+        result = "a0";
+    }
+}
