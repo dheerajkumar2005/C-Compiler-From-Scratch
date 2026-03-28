@@ -133,14 +133,20 @@ class RegisterTracker
 {
 public:
 	std::unordered_map<TAC_Operand *, RTL_Register *> reg_map;
-	std::map<RTL_Register *, bool, RTL_Register_Comparator> available_regs;
-	std::map<RTL_Register *, bool, RTL_Register_Comparator> reserved_regs;
+	std::map<RTL_Register *, bool, RTL_Register_Comparator> available_int_regs;
+	std::map<RTL_Register *, bool, RTL_Register_Comparator> available_float_regs;
+	std::map<RTL_Register *, bool, RTL_Register_Comparator> reserved_int_regs;
+	std::map<RTL_Register *, bool, RTL_Register_Comparator> reserved_float_regs;
+
 
 	RegisterTracker();
 
 	RTL_Register *get_register(TAC_Operand *opd);
-	RTL_Register *get_register();
-	RTL_Register *get_reserved_register();
+	RTL_Register *get_int_register();
+	RTL_Register *get_float_register();
+	RTL_Register *get_int_reserved_register();
+	RTL_Register *get_float_reserved_register();
+
 
 	void free_register(TAC_Operand *opd, RTL_Register *reg);
 };
