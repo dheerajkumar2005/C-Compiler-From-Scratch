@@ -310,9 +310,13 @@ void tac_print_stmt_list(StatementList *stmt_list)
     {
         for (auto stmt_ast : *stmt_list)
         {
-            if (stmt_ast && stmt_ast->code)
+            if (stmt_ast)
             {
-                *tacout << stmt_ast->code->to_string() << std::endl;
+                Code *code = stmt_ast->get_code();
+                if (code)
+                {
+                    *tacout << code->to_string() << std::endl;
+                }
             }
         }
     }

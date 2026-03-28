@@ -612,59 +612,52 @@ Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_
 }
 
 RegisterTracker::RegisterTracker()
-	: reg_map(), available_int_regs(), available_float_regs(), reserved_int_regs(), reserved_float_regs()
+	: all_regs(), reg_map(), available_int_regs(), available_float_regs(), reserved_int_regs(), reserved_float_regs()
 {
-	available_int_regs[new RTL_Register(1)] = true;	 // v0
-	available_int_regs[new RTL_Register(2)] = true;	 // t0
-	available_int_regs[new RTL_Register(3)] = true;	 // t1
-	available_int_regs[new RTL_Register(4)] = true;	 // t2
-	available_int_regs[new RTL_Register(5)] = true;	 // t3
-	available_int_regs[new RTL_Register(6)] = true;	 // t4
-	available_int_regs[new RTL_Register(7)] = true;	 // t5
-	available_int_regs[new RTL_Register(8)] = true;	 // t6
-	available_int_regs[new RTL_Register(9)] = true;	 // t7
-	available_int_regs[new RTL_Register(10)] = true; // t8
-	available_int_regs[new RTL_Register(11)] = true; // t9
-	available_int_regs[new RTL_Register(12)] = true; // s0
-	available_int_regs[new RTL_Register(13)] = true; // s1
-	available_int_regs[new RTL_Register(14)] = true; // s2
-	available_int_regs[new RTL_Register(15)] = true; // s3
-	available_int_regs[new RTL_Register(16)] = true; // s4
-	available_int_regs[new RTL_Register(17)] = true; // s5
-	available_int_regs[new RTL_Register(18)] = true; // s6
-	available_int_regs[new RTL_Register(19)] = true; // s7
+	// v0 to s7
+	for (int i = 1; i <= 19; i++)
+	{
+		RTL_Register *reg = new RTL_Register(i);
+		all_regs[i] = reg;
+		available_int_regs[i] = true;
+	}
 
-	reserved_int_regs[new RTL_Register(100)] = true; // a0
+	// a0
+	RTL_Register *reg = new RTL_Register(100);
+	all_regs[100] = reg;
+	reserved_int_regs[100] = true;
 
-	available_float_regs[new RTL_Register(21)] = true; // f2
-	available_float_regs[new RTL_Register(22)] = true; // f4
-	available_float_regs[new RTL_Register(23)] = true; // f6
-	available_float_regs[new RTL_Register(24)] = true; // f8
-	available_float_regs[new RTL_Register(25)] = true; // f10
-	available_float_regs[new RTL_Register(26)] = true;  // f12
-	available_float_regs[new RTL_Register(27)] = true;  // f14
-	available_float_regs[new RTL_Register(28)] = true;  // f16
-	available_float_regs[new RTL_Register(29)] = true;  // f18
-	available_float_regs[new RTL_Register(30)] = true; // f20
-	available_float_regs[new RTL_Register(31)] = true; // f22
-	available_float_regs[new RTL_Register(32)] = true; // f24
-	available_float_regs[new RTL_Register(33)] = true; // f26
-	available_float_regs[new RTL_Register(34)] = true; // f28
-	available_float_regs[new RTL_Register(35)] = true; // f30
+	// f2 to f30
+	for (int i = 21; i < 35; i++)
+	{
+		RTL_Register *reg = new RTL_Register(i);
+		all_regs[i] = reg;
+		available_float_regs[i] = true;
+	}
 
 	// The reserved float register is f12
 	// TODO: Write a testcase which requires the use of f12 in something else, then use it for printing a float
-	reserved_float_regs[new RTL_Register(26)] = true; // f12
+	reserved_float_regs[26] = true; // f12
 }
 
 RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
 {
-	if (!opd || reg_map.find(opd) == reg_map.end() || !reg_map[opd])
+	if (!opd || reg_map.find(opd) == reg_map.end() || all_regs.find(reg_map[opd]) == all_regs.end())
 	{
 		return nullptr;
 	}
 
-	return reg_map[opd];
+	return all_regs[reg_map[opd]];
+}
+
+RTL_Register *RegisterTracker::get_register(int priority)
+{
+	if (all_regs.find(priority) == all_regs.end())
+	{
+		return nullptr;
+	}
+
+	return all_regs[priority];
 }
 
 RTL_Register *RegisterTracker::get_int_register()

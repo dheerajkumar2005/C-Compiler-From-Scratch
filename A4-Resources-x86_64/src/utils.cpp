@@ -454,4 +454,6 @@ std::string rtl_priority_to_register(int priority){
     else if(priority == 100){
         result = "a0";
     }
+
+    return result;
 }

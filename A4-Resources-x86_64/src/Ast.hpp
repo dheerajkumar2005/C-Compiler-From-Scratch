@@ -317,6 +317,7 @@ public:
 
     Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *body);
 
+    virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
 };
 

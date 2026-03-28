@@ -25,13 +25,13 @@ public:
 	RTL_Register(int priority);
 };
 
-struct RTL_Register_Comparator
-{
-	bool operator()(const RTL_Register *lhs, const RTL_Register *rhs)
-	{
-		return lhs->priority < rhs->priority;
-	}
-};
+// struct RTL_Register_Comparator
+// {
+// 	bool operator()(const RTL_Register *lhs, const RTL_Register *rhs)
+// 	{
+// 		return lhs->priority < rhs->priority;
+// 	}
+// };
 
 class TAC_Operand
 {
@@ -43,9 +43,9 @@ public:
 };
 
 class RTL_Statement
-{	
-	public:
-		virtual std::string to_string() const = 0;
+{
+public:
+	virtual std::string to_string() const = 0;
 };
 
 class RTL_Code
@@ -100,6 +100,8 @@ public:
 	bool is_float;
 
 	Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
+	~Store_RTL_Statement() = default;
+
 	virtual std::string to_string() const override final;
 
 };
@@ -112,9 +114,8 @@ public:
 	RTL_Register *opd1;
 	RTL_Register *opd2;
 
-	virtual std::string to_string() const override final;
-
 	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr);
+	virtual std::string to_string() const override final;
 };
 
 class Goto_RTL_Statement : public RTL_Statement
@@ -124,7 +125,6 @@ public:
 
 	Goto_RTL_Statement(int label_number);
 	virtual std::string to_string() const override final;
-
 };
 
 class If_Goto_RTL_Statement : public RTL_Statement
@@ -167,21 +167,24 @@ public:
 class RegisterTracker
 {
 public:
-	std::unordered_map<TAC_Operand *, RTL_Register *> reg_map;
-	std::map<RTL_Register *, bool, RTL_Register_Comparator> available_int_regs;
-	std::map<RTL_Register *, bool, RTL_Register_Comparator> available_float_regs;
-	std::map<RTL_Register *, bool, RTL_Register_Comparator> reserved_int_regs;
-	std::map<RTL_Register *, bool, RTL_Register_Comparator> reserved_float_regs;
+	std::map<int, RTL_Register *> all_regs;
 
+	std::unordered_map<TAC_Operand *, int> reg_map;
+	std::map<int, bool> available_int_regs;
+	std::map<int, bool> available_float_regs;
+	std::map<int, bool> reserved_int_regs;
+	std::map<int, bool> reserved_float_regs;
 
 	RegisterTracker();
 
 	RTL_Register *get_register(TAC_Operand *opd);
+	RTL_Register *get_register(int priority);
+
 	RTL_Register *get_int_register();
 	RTL_Register *get_float_register();
+
 	RTL_Register *get_int_reserved_register();
 	RTL_Register *get_float_reserved_register();
-
 
 	void free_register(TAC_Operand *opd, RTL_Register *reg);
 };
