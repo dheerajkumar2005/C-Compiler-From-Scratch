@@ -226,7 +226,7 @@ public:
     Statement_Ast(RegisterTracker *register_tracker);
     virtual ~Statement_Ast() = 0;
 
-    virtual RTL_Code *rtlgen() final;
+    virtual RTL_Code *rtlgen();
 };
 
 class Assignment_Stmt_Ast : public Statement_Ast
@@ -241,7 +241,6 @@ public:
 
     virtual Code *codegen() override final;
 
-    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -255,7 +254,6 @@ public:
     ~Read_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -269,7 +267,6 @@ public:
     ~Write_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -282,7 +279,7 @@ public:
     ~Compound_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    // virtual RTL_Code *rtlgen() override final;
+    virtual RTL_Code *rtlgen() override final; // compound statements are the only special case
     virtual std::string to_string() const override final;
 };
 
@@ -297,7 +294,6 @@ public:
     ~If_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -309,6 +305,7 @@ public:
 
     While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body);
 
+    virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
 };
 

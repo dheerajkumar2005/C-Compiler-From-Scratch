@@ -17,13 +17,6 @@ enum class IO_Kind{
 	WRITE
 };
 
-enum class TAC_Compute_Kind
-{
-	REGULAR,
-	FLOAT_ARITHMETIC,
-	FLOAT_RELATIONAL,
-};
-
 class RTL_Register
 {
 public:
@@ -43,6 +36,9 @@ struct RTL_Register_Comparator
 class TAC_Operand
 {
 public:
+	Type type;
+
+	TAC_Operand(Type type);
 	virtual std::string to_string() const = 0;
 };
 
@@ -106,10 +102,8 @@ public:
 	RTL_Operator op;
 	RTL_Register *opd1;
 	RTL_Register *opd2;
-	// TODO: Remove this from here (or maybe not - think about it)
-	TAC_Compute_Kind compute_kind;
 
-	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, TAC_Compute_Kind compute_kind = TAC_Compute_Kind::REGULAR);
+	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr);
 };
 
 class Goto_RTL_Statement : public RTL_Statement
@@ -135,6 +129,7 @@ public:
 	Read_RTL_Statement() = default;
 };
 
+// TODO: Note that while printing expressions, need to move and not load
 class Write_RTL_Statement : public RTL_Statement
 {
 public:
@@ -192,7 +187,7 @@ class Variable_TAC_Operand : public TAC_Operand
 	Scope *declaring_scope;
 
 public:
-	Variable_TAC_Operand(std::string *name, Scope *declaring_scope);
+	Variable_TAC_Operand(Type type, std::string *name, Scope *declaring_scope);
 
 	virtual std::string to_string() const override final;
 };
@@ -232,7 +227,7 @@ class Temporary_TAC_Operand : public TAC_Operand
 	int temp_number;
 
 public:
-	Temporary_TAC_Operand();
+	Temporary_TAC_Operand(Type type);
 
 	virtual std::string to_string() const override final;
 };
@@ -243,7 +238,7 @@ class Shared_Temporary_TAC_Operand : public TAC_Operand
 	int stemp_number;
 
 public:
-	Shared_Temporary_TAC_Operand();
+	Shared_Temporary_TAC_Operand(Type type);
 	virtual std::string to_string() const override final;
 };
 
@@ -272,11 +267,10 @@ public:
 	TAC_Operator op;
 	TAC_Operand *opd1;
 	TAC_Operand *opd2;
-	TAC_Compute_Kind kind;
 
-	Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2, TAC_Compute_Kind kind);
-	Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1, TAC_Compute_Kind kind);
-	Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1, TAC_Compute_Kind kind);
+	Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2);
+	Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1);
+	Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1);
 
 	virtual std::string to_string() const override final;
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
