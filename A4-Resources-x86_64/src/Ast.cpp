@@ -381,6 +381,8 @@ Code *Conditional_Expr_Ast::codegen()
     code->append_statement(c7);
 
     place = t2;
+
+    return code;
 }
 
 std::string Conditional_Expr_Ast::to_string() const
@@ -519,6 +521,8 @@ RTL_Code *Compound_Stmt_Ast::rtlgen()
         // Every statement has its own register tracking mechanism
         rtl_code->append_list(stmt_ast_ptr->rtlgen());
     }
+
+    return rtl_code;
 }
 
 std::string Compound_Stmt_Ast::to_string() const
@@ -618,6 +622,8 @@ Code *While_Stmt_Ast::codegen()
     code->append_list(body->get_code());
     code->append_statement(c4);
     code->append_statement(c5);
+
+    return code;
 }
 
 std::string While_Stmt_Ast::to_string() const

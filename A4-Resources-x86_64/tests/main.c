@@ -8,9 +8,4 @@ void main()
         z = 20;
     else
         z = 30;
-    // else if (y < z)
-    // {
-    //     z = 20;
-    // }
-    // else z = 30;
 }

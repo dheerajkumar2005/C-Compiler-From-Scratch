@@ -14,13 +14,13 @@ void main()
     //     b = c;
     // }
 
-    // while (!b2)
-    // {
-    //     b = c + 1;
-    // }
-
-    do
+    while (!b2)
     {
-        d = a - 1;
-    } while (b1);
+        b = c + 1;
+    }
+
+    // do
+    // {
+    //     d = a - 1;
+    // } while (b1);
 }

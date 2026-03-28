@@ -351,6 +351,13 @@ RTL_Code *If_Goto_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	RTL_Code *rtl_code = new RTL_Code();
 
 	RTL_Register *reg_condition = reg_tracker->get_register(condition);
+	if (!reg_condition && (dynamic_cast<Variable_TAC_Operand *>(condition) || dynamic_cast<Shared_Temporary_TAC_Operand *>(condition)))
+	{
+		// This can happen for do-while
+		reg_condition = reg_tracker->get_int_register();
+		RTL_Statement *load_stmt = new Load_RTL_Statement(reg_condition, condition);
+		rtl_code->append_statement(load_stmt);
+	}
 
 	If_Goto_RTL_Statement *if_goto_stmt = new If_Goto_RTL_Statement(reg_condition, label->label_number);
 	rtl_code->append_statement(if_goto_stmt);
@@ -406,12 +413,22 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		int signal = is_float ? 7 : 5;
 		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, signal);
 		rtl_code->append_statement(iload_stmt);
+		reg_tracker->free_register(nullptr, reg); // cleanup
 
 		Read_RTL_Statement *read_stmt = new Read_RTL_Statement();
 		rtl_code->append_statement(read_stmt);
 
-		Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg, opd, is_float);
-		rtl_code->append_statement(store_stmt);
+		if (is_int)
+		{
+			// read from v0 and store
+		}
+		else
+		{
+			// read from f0 and store
+		}
+
+		// Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg, opd, is_float);
+		// rtl_code->append_statement(store_stmt);
 
 		return rtl_code;
 	}
