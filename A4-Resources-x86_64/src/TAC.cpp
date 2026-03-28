@@ -561,9 +561,21 @@ Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival)
 {
 }
 
+std::string Load_Int_RTL_Statement::to_string() const
+{
+	// TODO
+	return "";
+}
+
 Load_Float_RTL_Statement::Load_Float_RTL_Statement(RTL_Register *reg, float fval)
 	: RTL_Statement(true), reg(reg), fval(fval)
 {
+}
+
+std::string Load_Float_RTL_Statement::to_string() const
+{
+	// TODO
+	return "";
 }
 
 Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float)
@@ -575,6 +587,12 @@ Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool
 	}
 }
 
+std::string Load_RTL_Statement::to_string() const
+{
+	// TODO
+	return "";
+}
+
 Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float)
 	: RTL_Statement(is_float), reg(reg), var(var)
 {
@@ -584,7 +602,13 @@ Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bo
 	}
 }
 
-Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, bool is_float)
+std::string Store_RTL_Statement::to_string() const
+{
+	// TODO
+	return "";
+}
+
+Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2, bool is_float)
 	: RTL_Statement(is_float), lhs(lhs), op(op), opd1(opd1), opd2(opd2)
 {
 }
@@ -612,12 +636,13 @@ std::string Compute_RTL_Statement::to_string() const
 	}
 	else
 	{
-
 		if (op == RTL_Operator::LT || op == RTL_Operator::LE || op == RTL_Operator::EQ)
 		{
 			result = op_float_to_string(op) + ":\t" + result_name;
 		}
 	}
+
+	return result;
 }
 
 Goto_RTL_Statement::Goto_RTL_Statement(int label_number)
@@ -647,9 +672,21 @@ Read_RTL_Statement::Read_RTL_Statement(bool is_float)
 {
 }
 
-Write_RTL_Statement::Write_RTL_Statement(bool is_float)
-	: Write_RTL_Statement(is_float)
+std::string Read_RTL_Statement::to_string() const
 {
+	// TODO
+	return "";
+}
+
+Write_RTL_Statement::Write_RTL_Statement(bool is_float)
+	: RTL_Statement(is_float)
+{
+}
+
+std::string Write_RTL_Statement::to_string() const
+{
+	// TODO
+	return "";
 }
 
 Label_RTL_Statement::Label_RTL_Statement(int label_number)
@@ -661,6 +698,7 @@ std::string Label_RTL_Statement::to_string() const
 	std::string result = "Label" + std::to_string(label_number) + ":";
 	return result;
 }
+
 RegisterTracker::RegisterTracker()
 	: all_regs(), reg_map(), available_int_regs(), available_float_regs()
 {
