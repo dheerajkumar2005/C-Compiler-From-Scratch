@@ -4,16 +4,17 @@ int value;
 void main()
 {
     int x, y, z;
+    int a, b, c, d;
     bool b1, b2, b3;
 
-    // z = x + y;
-    // z = x - y;
-    // z = x * y;
-    // z = x / y;
+    z = x + y;
+    z = x - y;
+    z = x * y;
+    z = x / y;
 
-    // b3 = !b1;
-    // b3 = b1 && b2;
-    // b3 = b1 || b2;
+    b3 = !b1;
+    b3 = b1 && b2;
+    b3 = b1 || b2;
 
     b1 = x < y;
     b1 = x <= y;
@@ -21,4 +22,6 @@ void main()
     b1 = x >= y;
     b1 = x == y;
     b1 = x != y;
+
+    x = (a + b) * (c + d);
 }

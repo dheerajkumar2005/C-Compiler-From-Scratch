@@ -90,9 +90,6 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
 	RTL_Code *rtl_code = new RTL_Code();
 
-	auto &reg_map = reg_tracker->reg_map;
-	auto &available_regs = reg_tracker->available_regs;
-
 	// Operand 1
 	RTL_Register *reg_opd1 = reg_tracker->get_register(opd1);
 
@@ -114,8 +111,12 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	}
 
 	// LHS
-	RTL_Register *reg_lhs = reg_tracker->get_register();
-	reg_tracker->reg_map[lhs] = reg_lhs;
+	RTL_Register *reg_lhs = nullptr;
+	if (op != TAC_Operator::NOP)
+	{
+		reg_lhs = reg_tracker->get_register();
+		reg_tracker->reg_map[lhs] = reg_lhs;
+	}
 
 	// Operand 2 (may be nullptr)
 	RTL_Register *reg_opd2 = reg_tracker->get_register(opd2);
@@ -127,7 +128,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		RTL_Statement *load_stmt;
 		if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd2))
 		{
-			load_stmt = new Load_Int_RTL_Statement(reg_opd1, o->ival);
+			load_stmt = new Load_Int_RTL_Statement(reg_opd2, o->ival);
 		}
 		else
 		{
@@ -137,8 +138,18 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		rtl_code->append_statement(load_stmt);
 	}
 
-	Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2);
-	rtl_code->append_statement(compute_stmt);
+	if (op != TAC_Operator::NOP)
+	{
+		Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2);
+		rtl_code->append_statement(compute_stmt);
+	}
+
+	// Store the lhs if it is a variable or a shared temporary
+	if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
+	{
+		Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg_lhs, lhs);
+		rtl_code->append_statement(store_stmt);
+	}
 
 	// Cleanup
 	reg_tracker->free_register(opd1, reg_opd1);
@@ -169,28 +180,79 @@ If_Goto_TAC_Statement::If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_lab
 
 RTL_Code *If_Goto_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
-	// TODO
-	return nullptr;
+	RTL_Code *rtl_code = new RTL_Code();
+
+	RTL_Register *reg_condition = reg_tracker->get_register(condition);
+
+	If_Goto_RTL_Statement *if_goto_stmt = new If_Goto_RTL_Statement(reg_condition, label->label_number);
+	rtl_code->append_statement(if_goto_stmt);
+
+	// Cleanup
+	reg_tracker->free_register(condition, reg_condition);
+
+	return rtl_code;
 }
 
 std::string If_Goto_TAC_Statement::to_string() const{
 	return "if(" + condition->to_string() + ") goto " + label->to_string();
 }
 
-IO_TAC_Statement::IO_TAC_Statement(IO_Kind _kind, TAC_Operand* _opd) : kind(_kind), opd(_opd){};
-std::string IO_TAC_Statement::to_string() const{
-	if(kind == IO_Kind::READ){
+IO_TAC_Statement::IO_TAC_Statement(IO_Kind _kind, TAC_Operand *_opd)
+	: kind(_kind), opd(_opd)
+{
+}
+
+std::string IO_TAC_Statement::to_string() const
+{
+	if (kind == IO_Kind::READ)
+	{
 		return "read " + opd->to_string();
 	}
-	else{
+	else
+	{
 		return "write " + opd->to_string();
 	}
 }
 
 RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
-	// TODO
-	return nullptr;
+	if (this->kind == IO_Kind::READ)
+	{
+		RTL_Code *rtl_code = new RTL_Code();
+
+		RTL_Register *reg = reg_tracker->get_register();
+		if (reg->priority != 1) // v0
+		{
+			throw_SemanticError("Expected v0 to be free rn");
+		}
+
+		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, 5);
+		rtl_code->append_statement(iload_stmt);
+
+		Read_RTL_Statement *read_stmt = new Read_RTL_Statement();
+		rtl_code->append_statement(read_stmt);
+
+		Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg, opd);
+		rtl_code->append_statement(store_stmt);
+	}
+	else if (kind == IO_Kind::WRITE)
+	{
+		RTL_Code *rtl_code = new RTL_Code();
+
+		RTL_Register *reg = reg_tracker->get_register();
+		if (reg->priority != 1) // v0
+		{
+			throw_SemanticError("Expected v0 to be free rn");
+		}
+
+		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, 1);
+		rtl_code->append_statement(iload_stmt);
+	}
+	else
+	{
+		throw_SemanticError("Expected either a READ or a WRITE operation");
+		return nullptr;
+	}
 }
 
 Label_TAC_Statement::Label_TAC_Statement(TAC_Label *_label) : label(_label) {}
@@ -272,6 +334,15 @@ Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var) : re
 	}
 }
 
+Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var)
+	: reg(reg), var(var)
+{
+	if (!dynamic_cast<Variable_TAC_Operand *>(var) && !dynamic_cast<Shared_Temporary_TAC_Operand *>(var))
+	{
+		throw_SemanticError("Expected to store either a variable or a shared temporary variable");
+	}
+}
+
 Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2)
 	: lhs(lhs), op(op), opd1(opd1), opd2(opd2)
 {
@@ -281,8 +352,13 @@ Goto_RTL_Statement::Goto_RTL_Statement(int label_number) : label_number(label_nu
 {
 }
 
+If_Goto_RTL_Statement::If_Goto_RTL_Statement(RTL_Register *predicate, int label_number)
+	: predicate(predicate), label_number(label_number)
+{
+}
+
 RegisterTracker::RegisterTracker()
-	: reg_map(), available_regs()
+	: reg_map(), available_regs(), reserved_regs()
 {
 	available_regs[new RTL_Register(1)] = true;	 // v0
 	available_regs[new RTL_Register(2)] = true;	 // t0
@@ -303,6 +379,8 @@ RegisterTracker::RegisterTracker()
 	available_regs[new RTL_Register(17)] = true; // s5
 	available_regs[new RTL_Register(18)] = true; // s6
 	available_regs[new RTL_Register(19)] = true; // s7
+
+	reserved_regs[new RTL_Register(100)] = true; // a0
 }
 
 RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)

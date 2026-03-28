@@ -72,8 +72,11 @@ public:
 
 class Store_RTL_Statement : public RTL_Statement
 {
-	// TODO: Check whether it is Variable_TAC_Operand or Shared_Temporary_TAC_Operand
+public:
+	RTL_Register *reg;
 	TAC_Operand *var;
+
+	Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var);
 };
 
 class Compute_RTL_Statement : public RTL_Statement
@@ -97,8 +100,11 @@ public:
 
 class If_Goto_RTL_Statement : public RTL_Statement
 {
+public:
 	RTL_Register *predicate;
 	int label_number;
+
+	If_Goto_RTL_Statement(RTL_Register *predicate, int label_number);
 };
 
 class Read_RTL_Statement : public RTL_Statement
@@ -120,8 +126,8 @@ class RegisterTracker
 {
 public:
 	std::unordered_map<TAC_Operand *, RTL_Register *> reg_map;
-	// TODO: Ensure this is sorted in ascending order of register priority
 	std::map<RTL_Register *, bool, RTL_Register_Comparator> available_regs;
+	std::map<RTL_Register *, bool, RTL_Register_Comparator> reserved_regs;
 
 	RegisterTracker();
 
