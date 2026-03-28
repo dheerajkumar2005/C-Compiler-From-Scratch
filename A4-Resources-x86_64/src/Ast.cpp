@@ -358,7 +358,7 @@ Statement_Ast::~Statement_Ast()
 }
 
 Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs, RegisterTracker *register_tracker)
-    : Statement_Ast(), lhs(lhs), rhs(rhs), reg_tracker(reg_tracker)
+    : Statement_Ast(), lhs(lhs), rhs(rhs)
 {
     if (lhs->get_type() != rhs->get_type())
     {
@@ -382,7 +382,8 @@ Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs
     rtl_code = new RTL_Code();
     for (auto tac_stmt_ptr : *(code->stmt_list))
     {
-        rtl_code->append_list(tac_stmt_ptr->to_rtl(reg_tracker));
+        RTL_Code *stmt_code = tac_stmt_ptr->to_rtl(register_tracker);
+        rtl_code->append_list(stmt_code);
     }
 }
 

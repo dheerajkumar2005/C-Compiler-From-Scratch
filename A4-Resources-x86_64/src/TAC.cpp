@@ -248,7 +248,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, 1);
 		rtl_code->append_statement(iload_stmt);
 
-		RTL_Register *reg = reg_tracker->get_reserved_register();
+		reg = reg_tracker->get_reserved_register();
 		if (reg->priority != 100) // a0
 		{
 			throw_SemanticError("Expected a0 to be free rn");
@@ -318,6 +318,10 @@ std::string Code::to_string() const
 		}
 	}
 	return result;
+}
+
+RTL_Code::RTL_Code() : stmt_list(new std::list<RTL_Statement *>)
+{
 }
 
 void RTL_Code::append_statement(RTL_Statement *rtl_statement)
@@ -473,6 +477,6 @@ RTL_Register::RTL_Register(int priority) : priority(priority)
 }
 
 Scope::Scope(Scope_Kind kind, Scope *parent_scope, Func_Signature *func_sig)
-	: kind(kind), parent_scope(parent_scope), func_sig(func_sig), reg_tracker(reg_tracker)
+	: kind(kind), parent_scope(parent_scope), func_sig(func_sig), reg_tracker(new RegisterTracker())
 {
 }

@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/src/sclp",
             "args": [
                 // "--sa-parse",
-                "--show-ast",
+                // "--show-ast",
                 "-d",
                 "../tests/main.c"
             ],

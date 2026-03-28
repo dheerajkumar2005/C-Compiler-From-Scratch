@@ -348,7 +348,7 @@ expression
 rel_expression
     : expression LESS_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LT, $1, $3); }
     | expression LESS_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LE, $1, $3); }
-    | expression GREATER_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); std::cerr << "REDUCED: x > 10" << std::endl; }
+    | expression GREATER_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); }
     | expression GREATER_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GE, $1, $3); }
     | expression NOT_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::NE, $1, $3); }
     | expression EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3); }

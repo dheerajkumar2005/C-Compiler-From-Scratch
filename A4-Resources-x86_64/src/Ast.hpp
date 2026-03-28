@@ -219,7 +219,6 @@ class Assignment_Stmt_Ast : public Statement_Ast
 protected:
     Name_Expr_Ast *lhs;
     Expression_Ast *rhs;
-    RegisterTracker *reg_tracker;
 
 public:
     Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs, RegisterTracker *reg_tracker);
