@@ -1,7 +1,6 @@
-// int main();
-
 void main()
 {
-    bool x;
-    print 1 < 2 < 3;
+    int x, y;
+
+    y = -x;
 }

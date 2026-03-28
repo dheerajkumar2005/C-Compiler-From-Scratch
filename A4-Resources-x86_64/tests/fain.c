@@ -3,7 +3,7 @@ void main()
     int a, b, c, d, x, y, z;
     bool b1, b2, b3, b4;
 
-    a = (b1 ? b : c) + 1;
+    // a = (b1 ? b : c) + 1;
 
     // if (b1)
     // {
@@ -19,8 +19,8 @@ void main()
     //     b = c + 1;
     // }
 
-    // do
-    // {
-    //     d = a - 1;
-    // } while (b3);
+    do
+    {
+        d = a - 1;
+    } while (b1);
 }

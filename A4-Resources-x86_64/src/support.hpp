@@ -42,6 +42,8 @@ Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, For
 
 Expression_Ast *process_predicate(Expression_Ast *expr);
 
+If_Stmt_Ast *add_else_clause(If_Stmt_Ast *unmatched_if, Statement_Ast *else_clause);
+
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
 StatementList *accumulate_stmt_list();
 

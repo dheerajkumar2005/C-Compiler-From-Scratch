@@ -1,9 +1,9 @@
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
-Label0:
-	temp0 = ! x_
-	if(temp0) goto Label1
-	a_ = b_
+	temp0 = x_ < y_
+	temp1 = ! temp0
+	if(temp1) goto Label0
+	z_ = 10
 	goto Label0
-Label1:
+Label0:
 **END: Three Address Code Statements

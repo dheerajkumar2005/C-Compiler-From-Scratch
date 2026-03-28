@@ -302,7 +302,7 @@ unmatched_if
 ;
 
 if_statement
-    : unmatched_if ELSE statement { $$ = sa_parse ? nullptr : new If_Stmt_Ast($1, $3); }
+    : unmatched_if ELSE statement { $$ = sa_parse ? nullptr : add_else_clause($1, $3); }
     | unmatched_if %prec lower_than_else { $$ = sa_parse ? nullptr : $1; }
 ;
 
@@ -319,12 +319,12 @@ compound_statement
 
 /* FIXED */
 print_statement
-    : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast($2); }
+    : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast($2, curr_scope->reg_tracker); }
 ;
 
 /* FIXED */
 read_statement
-    : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast($2); }
+    : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast($2, curr_scope->reg_tracker); }
 ;
 
 /* FIXED */

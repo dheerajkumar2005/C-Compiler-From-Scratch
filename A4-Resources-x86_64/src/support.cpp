@@ -216,6 +216,17 @@ Expression_Ast *process_predicate(Expression_Ast *expr)
     return nullptr;
 }
 
+If_Stmt_Ast *add_else_clause(If_Stmt_Ast *unmatched_if, Statement_Ast *else_clause)
+{
+    if (unmatched_if->else_clause || !else_clause)
+    {
+        throw_SemanticError("Expected unmatched_if to not have an else clause and else_clause to be non-null");
+    }
+
+    unmatched_if->else_clause = else_clause;
+    return unmatched_if;
+}
+
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt)
 {
     if (!sa_parse)
