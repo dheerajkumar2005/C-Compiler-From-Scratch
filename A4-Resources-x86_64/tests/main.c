@@ -16,6 +16,8 @@ void main()
     bool a;
     float x,y;
     // x = a? x+1:y+1;
+    // a = x < y;
     a = x < y;
+    print 1.1+1.2;
     // print a;
 }

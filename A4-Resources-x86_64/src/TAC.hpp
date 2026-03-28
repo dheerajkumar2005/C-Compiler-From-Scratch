@@ -80,6 +80,16 @@ public:
 
 };
 
+class Move_RTL_Statement : public RTL_Statement{
+	public:
+		RTL_Register* dest;
+		RTL_Register* src;
+		bool is_movtf;
+		bool is_movt;
+
+		Move_RTL_Statement(RTL_Register* dest, RTL_Register* src, bool is_movtf, bool is_movt);
+};
+
 class Load_RTL_Statement : public RTL_Statement
 {
 public:

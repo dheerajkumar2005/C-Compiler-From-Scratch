@@ -577,12 +577,17 @@ Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bo
 	}
 }
 
+Move_RTL_Statement::Move_RTL_Statement(RTL_Register *dest, RTL_Register* src, bool is_movtf, bool is_movt)
+	: dest(dest),src(src),is_movtf(is_movtf),is_movt(is_movt)
+{
+}
+
 Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2)
 	: lhs(lhs), op(op), opd1(opd1), opd2(opd2)
 {
 }
 
-std::string Compute_RTL_Statement::to_string(bool is_float) const{
+std::string Compute_RTL_Statement::to_string() const{
 	std::string result;
 
 	std::string result_name = rtl_priority_to_register(lhs->priority);
