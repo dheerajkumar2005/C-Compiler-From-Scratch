@@ -225,7 +225,6 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		{
 			throw_SemanticError("Expected v0 to be free rn");
 		}
-
 		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, 5);
 		rtl_code->append_statement(iload_stmt);
 
@@ -234,6 +233,8 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg, opd);
 		rtl_code->append_statement(store_stmt);
+
+		return rtl_code;
 	}
 	else if (kind == IO_Kind::WRITE)
 	{
@@ -244,9 +245,21 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		{
 			throw_SemanticError("Expected v0 to be free rn");
 		}
-
 		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, 1);
 		rtl_code->append_statement(iload_stmt);
+
+		RTL_Register *reg = reg_tracker->get_reserved_register();
+		if (reg->priority != 100) // a0
+		{
+			throw_SemanticError("Expected a0 to be free rn");
+		}
+		Load_RTL_Statement *load_stmt = new Load_RTL_Statement(reg, opd);
+		rtl_code->append_statement(load_stmt);
+
+		Write_RTL_Statement *write_stmt = new Write_RTL_Statement();
+		rtl_code->append_statement(write_stmt);
+
+		return rtl_code;
 	}
 	else
 	{
@@ -262,8 +275,12 @@ std::string Label_TAC_Statement::to_string() const{
 
 RTL_Code *Label_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
-	// TODO
-	return nullptr;
+	RTL_Code *rtl_code = new RTL_Code();
+
+	Label_RTL_Statement *label_stmt = new Label_RTL_Statement(label->label_number);
+	rtl_code->append_statement(label_stmt);
+
+	return rtl_code;
 }
 
 Code::Code()
@@ -357,6 +374,10 @@ If_Goto_RTL_Statement::If_Goto_RTL_Statement(RTL_Register *predicate, int label_
 {
 }
 
+Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_number)
+{
+}
+
 RegisterTracker::RegisterTracker()
 	: reg_map(), available_regs(), reserved_regs()
 {
@@ -411,6 +432,27 @@ RTL_Register *RegisterTracker::get_register()
 	}
 
 	throw_SemanticError("Out of registers!!!");
+	return nullptr;
+}
+
+RTL_Register *RegisterTracker::get_reserved_register()
+{
+	RTL_Register *chosen_reg_ptr = nullptr;
+	for (auto it = reserved_regs.begin(); it != reserved_regs.end(); ++it)
+	{
+		if (it->second)
+		{
+			chosen_reg_ptr = it->first;
+		}
+	}
+
+	if (chosen_reg_ptr)
+	{
+		reserved_regs[chosen_reg_ptr] = false;
+		return chosen_reg_ptr;
+	}
+
+	throw_SemanticError("Out of reserved registers!");
 	return nullptr;
 }
 

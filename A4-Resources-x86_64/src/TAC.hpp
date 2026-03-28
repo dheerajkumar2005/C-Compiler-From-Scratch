@@ -109,17 +109,22 @@ public:
 
 class Read_RTL_Statement : public RTL_Statement
 {
-	RTL_Register *var;
+public:
+	Read_RTL_Statement() = default;
 };
 
 class Write_RTL_Statement : public RTL_Statement
 {
-	RTL_Register *var;
+public:
+	Write_RTL_Statement() = default;
 };
 
 class Label_RTL_Statement : public RTL_Statement
 {
+public:
 	int label_number;
+
+	Label_RTL_Statement(int label_number);
 };
 
 class RegisterTracker
@@ -133,6 +138,7 @@ public:
 
 	RTL_Register *get_register(TAC_Operand *opd);
 	RTL_Register *get_register();
+	RTL_Register *get_reserved_register();
 
 	void free_register(TAC_Operand *opd, RTL_Register *reg);
 };
