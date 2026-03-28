@@ -662,19 +662,13 @@ RTL_Register *RegisterTracker::get_register(int priority)
 
 RTL_Register *RegisterTracker::get_int_register()
 {
-	RTL_Register *chosen_reg_ptr = nullptr;
 	for (auto it = available_int_regs.begin(); it != available_int_regs.end(); ++it)
 	{
 		if (it->second)
 		{
-			chosen_reg_ptr = it->first;
+			it->second = false;
+			return all_regs[it->first];
 		}
-	}
-
-	if (chosen_reg_ptr)
-	{
-		available_int_regs[chosen_reg_ptr] = false;
-		return chosen_reg_ptr;
 	}
 
 	throw_SemanticError("Out of int registers!!!");
