@@ -45,6 +45,9 @@ public:
 class RTL_Statement
 {
 public:
+	bool is_float;
+
+	RTL_Statement(bool is_float);
 	virtual std::string to_string() const = 0;
 };
 
@@ -95,7 +98,6 @@ class Load_RTL_Statement : public RTL_Statement
 public:
 	RTL_Register *reg;
 	TAC_Operand *var;
-	bool is_float;
 
 	Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
 	virtual std::string to_string() const override final;
@@ -107,7 +109,6 @@ class Store_RTL_Statement : public RTL_Statement
 public:
 	RTL_Register *reg;
 	TAC_Operand *var;
-	bool is_float;
 
 	Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
 	~Store_RTL_Statement() = default;
@@ -124,7 +125,7 @@ public:
 	RTL_Register *opd1;
 	RTL_Register *opd2;
 
-	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr);
+	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, bool is_float = false);
 	virtual std::string to_string() const override final;
 };
 
@@ -151,7 +152,7 @@ public:
 class Read_RTL_Statement : public RTL_Statement
 {
 public:
-	Read_RTL_Statement() = default;
+	Read_RTL_Statement(bool is_float);
 	virtual std::string to_string() const override final;
 
 };
@@ -160,9 +161,8 @@ public:
 class Write_RTL_Statement : public RTL_Statement
 {
 public:
-	Write_RTL_Statement() = default;
+	Write_RTL_Statement(bool is_float);
 	virtual std::string to_string() const override final;
-
 };
 
 class Label_RTL_Statement : public RTL_Statement
