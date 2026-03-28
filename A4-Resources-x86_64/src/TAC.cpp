@@ -95,7 +95,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 	if (!reg_opd1)
 	{
-		reg_opd1 = reg_tracker->get_register();
+		reg_opd1 = reg_tracker->get_int_register();
 
 		RTL_Statement *load_stmt;
 		if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd1))
@@ -114,7 +114,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	RTL_Register *reg_lhs = nullptr;
 	if (op != TAC_Operator::NOP)
 	{
-		reg_lhs = reg_tracker->get_register();
+		reg_lhs = reg_tracker->get_int_register();
 		reg_tracker->reg_map[lhs] = reg_lhs;
 	}
 
@@ -123,7 +123,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 	if (opd2 && !reg_opd2)
 	{
-		reg_opd2 = reg_tracker->get_register();
+		reg_opd2 = reg_tracker->get_int_register();
 
 		RTL_Statement *load_stmt;
 		if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd2))
@@ -220,7 +220,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	{
 		RTL_Code *rtl_code = new RTL_Code();
 
-		RTL_Register *reg = reg_tracker->get_register();
+		RTL_Register *reg = reg_tracker->get_int_register();
 		if (reg->priority != 1) // v0
 		{
 			throw_SemanticError("Expected v0 to be free rn");
@@ -240,7 +240,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	{
 		RTL_Code *rtl_code = new RTL_Code();
 
-		RTL_Register *reg = reg_tracker->get_register();
+		RTL_Register *reg = reg_tracker->get_int_register();
 		if (reg->priority != 1) // v0
 		{
 			throw_SemanticError("Expected v0 to be free rn");
@@ -248,7 +248,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg, 1);
 		rtl_code->append_statement(iload_stmt);
 
-		RTL_Register *reg = reg_tracker->get_reserved_register();
+		RTL_Register *reg = reg_tracker->get_int_reserved_register();
 		if (reg->priority != 100) // a0
 		{
 			throw_SemanticError("Expected a0 to be free rn");
@@ -379,29 +379,47 @@ Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_
 }
 
 RegisterTracker::RegisterTracker()
-	: reg_map(), available_regs(), reserved_regs()
+	: reg_map(), available_int_regs(), available_float_regs(), reserved_int_regs(), reserved_float_regs()
 {
-	available_regs[new RTL_Register(1)] = true;	 // v0
-	available_regs[new RTL_Register(2)] = true;	 // t0
-	available_regs[new RTL_Register(3)] = true;	 // t1
-	available_regs[new RTL_Register(4)] = true;	 // t2
-	available_regs[new RTL_Register(5)] = true;	 // t3
-	available_regs[new RTL_Register(6)] = true;	 // t4
-	available_regs[new RTL_Register(7)] = true;	 // t5
-	available_regs[new RTL_Register(8)] = true;	 // t6
-	available_regs[new RTL_Register(9)] = true;	 // t7
-	available_regs[new RTL_Register(10)] = true; // t8
-	available_regs[new RTL_Register(11)] = true; // t9
-	available_regs[new RTL_Register(12)] = true; // s0
-	available_regs[new RTL_Register(13)] = true; // s1
-	available_regs[new RTL_Register(14)] = true; // s2
-	available_regs[new RTL_Register(15)] = true; // s3
-	available_regs[new RTL_Register(16)] = true; // s4
-	available_regs[new RTL_Register(17)] = true; // s5
-	available_regs[new RTL_Register(18)] = true; // s6
-	available_regs[new RTL_Register(19)] = true; // s7
+	available_int_regs[new RTL_Register(1)] = true;	 // v0
+	available_int_regs[new RTL_Register(2)] = true;	 // t0
+	available_int_regs[new RTL_Register(3)] = true;	 // t1
+	available_int_regs[new RTL_Register(4)] = true;	 // t2
+	available_int_regs[new RTL_Register(5)] = true;	 // t3
+	available_int_regs[new RTL_Register(6)] = true;	 // t4
+	available_int_regs[new RTL_Register(7)] = true;	 // t5
+	available_int_regs[new RTL_Register(8)] = true;	 // t6
+	available_int_regs[new RTL_Register(9)] = true;	 // t7
+	available_int_regs[new RTL_Register(10)] = true; // t8
+	available_int_regs[new RTL_Register(11)] = true; // t9
+	available_int_regs[new RTL_Register(12)] = true; // s0
+	available_int_regs[new RTL_Register(13)] = true; // s1
+	available_int_regs[new RTL_Register(14)] = true; // s2
+	available_int_regs[new RTL_Register(15)] = true; // s3
+	available_int_regs[new RTL_Register(16)] = true; // s4
+	available_int_regs[new RTL_Register(17)] = true; // s5
+	available_int_regs[new RTL_Register(18)] = true; // s6
+	available_int_regs[new RTL_Register(19)] = true; // s7
 
-	reserved_regs[new RTL_Register(100)] = true; // a0
+	reserved_int_regs[new RTL_Register(100)] = true; // a0
+
+	available_float_regs[new RTL_Register(1)] = true;	 // f2
+	available_float_regs[new RTL_Register(2)] = true;	 // f4
+	available_float_regs[new RTL_Register(3)] = true;	 // f6
+	available_float_regs[new RTL_Register(4)] = true;	 // f8
+	available_float_regs[new RTL_Register(5)] = true;	 // f10
+	available_float_regs[new RTL_Register(8)] = true;	 // f12
+	available_float_regs[new RTL_Register(7)] = true;	 // f14
+	available_float_regs[new RTL_Register(6)] = true;	 // f16
+	available_float_regs[new RTL_Register(9)] = true;	 // f18
+	available_float_regs[new RTL_Register(10)] = true; // f20
+	available_float_regs[new RTL_Register(11)] = true; // f22
+	available_float_regs[new RTL_Register(12)] = true; // f24
+	available_float_regs[new RTL_Register(13)] = true; // f26
+	available_float_regs[new RTL_Register(14)] = true; // f28
+	available_float_regs[new RTL_Register(15)] = true; // f30
+
+	reserved_float_regs[new RTL_Register(100)] = true; // f0
 }
 
 RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
@@ -414,10 +432,10 @@ RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
 	return reg_map[opd];
 }
 
-RTL_Register *RegisterTracker::get_register()
+RTL_Register *RegisterTracker::get_int_register()
 {
 	RTL_Register *chosen_reg_ptr = nullptr;
-	for (auto it = available_regs.begin(); it != available_regs.end(); ++it)
+	for (auto it = available_int_regs.begin(); it != available_int_regs.end(); ++it)
 	{
 		if (it->second)
 		{
@@ -427,18 +445,18 @@ RTL_Register *RegisterTracker::get_register()
 
 	if (chosen_reg_ptr)
 	{
-		available_regs[chosen_reg_ptr] = false;
+		available_int_regs[chosen_reg_ptr] = false;
 		return chosen_reg_ptr;
 	}
 
-	throw_SemanticError("Out of registers!!!");
+	throw_SemanticError("Out of int registers!!!");
 	return nullptr;
 }
 
-RTL_Register *RegisterTracker::get_reserved_register()
+RTL_Register *RegisterTracker::get_int_reserved_register()
 {
 	RTL_Register *chosen_reg_ptr = nullptr;
-	for (auto it = reserved_regs.begin(); it != reserved_regs.end(); ++it)
+	for (auto it = reserved_int_regs.begin(); it != reserved_int_regs.end(); ++it)
 	{
 		if (it->second)
 		{
@@ -448,11 +466,53 @@ RTL_Register *RegisterTracker::get_reserved_register()
 
 	if (chosen_reg_ptr)
 	{
-		reserved_regs[chosen_reg_ptr] = false;
+		reserved_int_regs[chosen_reg_ptr] = false;
 		return chosen_reg_ptr;
 	}
 
-	throw_SemanticError("Out of reserved registers!");
+	throw_SemanticError("Out of reserved int registers!");
+	return nullptr;
+}
+
+RTL_Register *RegisterTracker::get_float_register()
+{
+	RTL_Register *chosen_reg_ptr = nullptr;
+	for (auto it = available_float_regs.begin(); it != available_float_regs.end(); ++it)
+	{
+		if (it->second)
+		{
+			chosen_reg_ptr = it->first;
+		}
+	}
+
+	if (chosen_reg_ptr)
+	{
+		available_int_regs[chosen_reg_ptr] = false;
+		return chosen_reg_ptr;
+	}
+
+	throw_SemanticError("Out of float registers!!!");
+	return nullptr;
+}
+
+RTL_Register *RegisterTracker::get_float_reserved_register()
+{
+	RTL_Register *chosen_reg_ptr = nullptr;
+	for (auto it = reserved_float_regs.begin(); it != reserved_float_regs.end(); ++it)
+	{
+		if (it->second)
+		{
+			chosen_reg_ptr = it->first;
+		}
+	}
+
+	if (chosen_reg_ptr)
+	{
+		reserved_float_regs[chosen_reg_ptr] = false;
+		return chosen_reg_ptr;
+	}
+
+	throw_SemanticError("Out of reserved int registers!");
 	return nullptr;
 }
 
@@ -462,9 +522,9 @@ void RegisterTracker::free_register(TAC_Operand *opd, RTL_Register *reg)
 	{
 		reg_map[opd] = nullptr;
 	}
-	if (reg && available_regs.find(reg) != available_regs.end())
+	if (reg && available_int_regs.find(reg) != available_int_regs.end())
 	{
-		available_regs[reg] = true;
+		available_int_regs[reg] = true;
 	}
 }
 
