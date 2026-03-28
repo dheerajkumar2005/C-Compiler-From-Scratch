@@ -51,18 +51,18 @@ std::string TAC_Label::to_string() const
 	return "Label" + std::to_string(label_number);
 }
 
-Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2)
-	: lhs(lhs), op(binary_to_tac(op)), opd1(opd1), opd2(opd2)
+Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2, TAC_Compute_Kind kind)
+	: TAC_Statement(), lhs(lhs), op(binary_to_tac(op)), opd1(opd1), opd2(opd2), kind(kind)
 {
 }
 
-Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1)
-	: lhs(lhs), op(unary_to_tac(op)), opd1(opd1), opd2(nullptr)
+Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1, TAC_Compute_Kind kind)
+	: TAC_Statement(), lhs(lhs), op(unary_to_tac(op)), opd1(opd1), opd2(nullptr), kind(kind)
 {
 }
 
-Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1)
-	: lhs(lhs), op(TAC_Operator::NOP), opd1(opd1), opd2(nullptr)
+Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1, TAC_Compute_Kind kind)
+	: TAC_Statement(), lhs(lhs), op(TAC_Operator::NOP), opd1(opd1), opd2(nullptr), kind(kind)
 {
 }
 
@@ -91,157 +91,149 @@ std::string Assignment_TAC_Statement::to_string() const
 	}
 }
 
-RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker, Type lhs_type, Type rhs_type) const
+RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
 	RTL_Code *rtl_code = new RTL_Code();
 
-	if (rhs_type == Type::FLOAT)
+	if (kind == TAC_Compute_Kind::FLOAT_ARITHMETIC)
 	{
-		if (lhs_type == Type::FLOAT) // Arithmetic expression involving floats
+		// Operand 1
+		RTL_Register *reg_opd1 = reg_tracker->get_register(opd1);
+
+		if (!reg_opd1)
 		{
-			// Operand 1
-			RTL_Register *reg_opd1 = reg_tracker->get_register(opd1);
+			reg_opd1 = reg_tracker->get_float_register();
 
-			if (!reg_opd1)
+			RTL_Statement *load_stmt;
+			if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd1))
 			{
-				reg_opd1 = reg_tracker->get_float_register();
-
-				RTL_Statement *load_stmt;
-				if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd1))
-				{
-					load_stmt = new Load_Float_RTL_Statement(reg_opd1, o->fval);
-				}
-				else
-				{
-					load_stmt = new Load_RTL_Statement(reg_opd1, opd1, true);
-				}
-
-				rtl_code->append_statement(load_stmt);
+				load_stmt = new Load_Float_RTL_Statement(reg_opd1, o->fval);
+			}
+			else
+			{
+				load_stmt = new Load_RTL_Statement(reg_opd1, opd1, true);
 			}
 
-			// LHS
-			RTL_Register *reg_lhs = nullptr;
-			if (op != TAC_Operator::NOP)
-			{
-				reg_lhs = reg_tracker->get_float_register();
-				reg_tracker->reg_map[lhs] = reg_lhs;
-			}
-
-			// Operand 2 (may be nullptr)
-			RTL_Register *reg_opd2 = reg_tracker->get_register(opd2);
-
-			if (opd2 && !reg_opd2)
-			{
-				reg_opd2 = reg_tracker->get_float_register();
-
-				RTL_Statement *load_stmt;
-				if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd2))
-				{
-					load_stmt = new Load_Float_RTL_Statement(reg_opd2, o->fval);
-				}
-				else
-				{
-					load_stmt = new Load_RTL_Statement(reg_opd2, opd2, true);
-				}
-
-				rtl_code->append_statement(load_stmt);
-			}
-
-			if (op != TAC_Operator::NOP)
-			{
-				Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2, RTL_Compute_Kind::FLOAT_ARITHMETIC);
-				rtl_code->append_statement(compute_stmt);
-			}
-
-			// Store the lhs if it is a variable or a shared temporary
-			if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
-			{
-				Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg_lhs, lhs, true);
-				rtl_code->append_statement(store_stmt);
-			}
-
-			// Cleanup
-			reg_tracker->free_register(opd1, reg_opd1);
-			reg_tracker->free_register(opd2, reg_opd2);
-
-			return rtl_code;
+			rtl_code->append_statement(load_stmt);
 		}
-		else if (lhs_type == Type::BOOL) // Relational expression involving floats
+
+		// LHS
+		RTL_Register *reg_lhs = nullptr;
+		if (op != TAC_Operator::NOP)
 		{
-			// Operand 1
-			RTL_Register *reg_opd1 = reg_tracker->get_register(opd1);
-
-			if (!reg_opd1)
-			{
-				reg_opd1 = reg_tracker->get_float_register();
-
-				RTL_Statement *load_stmt;
-				if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd1))
-				{
-					load_stmt = new Load_Float_RTL_Statement(reg_opd1, o->fval);
-				}
-				else
-				{
-					load_stmt = new Load_RTL_Statement(reg_opd1, opd1, true);
-				}
-
-				rtl_code->append_statement(load_stmt);
-			}
-
-			// LHS
-			RTL_Register *reg_lhs = nullptr;
-			if (op != TAC_Operator::NOP)
-			{
-				reg_lhs = reg_tracker->get_int_register();
-				reg_tracker->reg_map[lhs] = reg_lhs;
-			}
-
-			// Operand 2 (may be nullptr)
-			RTL_Register *reg_opd2 = reg_tracker->get_register(opd2);
-
-			if (opd2 && !reg_opd2)
-			{
-				reg_opd2 = reg_tracker->get_float_register();
-
-				RTL_Statement *load_stmt;
-				if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd2))
-				{
-					load_stmt = new Load_Float_RTL_Statement(reg_opd2, o->fval);
-				}
-				else
-				{
-					load_stmt = new Load_RTL_Statement(reg_opd2, opd2, true);
-				}
-
-				rtl_code->append_statement(load_stmt);
-			}
-
-			if (op != TAC_Operator::NOP)
-			{
-				Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2, RTL_Compute_Kind::FLOAT_RELATIONAL);
-				rtl_code->append_statement(compute_stmt);
-			}
-
-			// Store the lhs if it is a variable or a shared temporary
-			if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
-			{
-				Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg_lhs, lhs);
-				rtl_code->append_statement(store_stmt);
-			}
-
-			// Cleanup
-			reg_tracker->free_register(opd1, reg_opd1);
-			reg_tracker->free_register(opd2, reg_opd2);
-
-			return rtl_code;
+			reg_lhs = reg_tracker->get_float_register();
+			reg_tracker->reg_map[lhs] = reg_lhs;
 		}
-		else
+
+		// Operand 2 (may be nullptr)
+		RTL_Register *reg_opd2 = reg_tracker->get_register(opd2);
+
+		if (opd2 && !reg_opd2)
 		{
-			throw_SemanticError("Unexpected Type combination: (" + type_to_string(lhs_type) + ", " + type_to_string(rhs_type) + ")");
-			return nullptr;
+			reg_opd2 = reg_tracker->get_float_register();
+
+			RTL_Statement *load_stmt;
+			if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd2))
+			{
+				load_stmt = new Load_Float_RTL_Statement(reg_opd2, o->fval);
+			}
+			else
+			{
+				load_stmt = new Load_RTL_Statement(reg_opd2, opd2, true);
+			}
+
+			rtl_code->append_statement(load_stmt);
 		}
+
+		if (op != TAC_Operator::NOP)
+		{
+			Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2, TAC_Compute_Kind::FLOAT_ARITHMETIC);
+			rtl_code->append_statement(compute_stmt);
+		}
+
+		// Store the lhs if it is a variable or a shared temporary
+		if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
+		{
+			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg_lhs, lhs, true);
+			rtl_code->append_statement(store_stmt);
+		}
+
+		// Cleanup
+		reg_tracker->free_register(opd1, reg_opd1);
+		reg_tracker->free_register(opd2, reg_opd2);
+
+		return rtl_code;
 	}
-	else
+	else if (kind == TAC_Compute_Kind::FLOAT_RELATIONAL)
+	{
+		// Operand 1
+		RTL_Register *reg_opd1 = reg_tracker->get_register(opd1);
+
+		if (!reg_opd1)
+		{
+			reg_opd1 = reg_tracker->get_float_register();
+
+			RTL_Statement *load_stmt;
+			if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd1))
+			{
+				load_stmt = new Load_Float_RTL_Statement(reg_opd1, o->fval);
+			}
+			else
+			{
+				load_stmt = new Load_RTL_Statement(reg_opd1, opd1, true);
+			}
+
+			rtl_code->append_statement(load_stmt);
+		}
+
+		// LHS
+		RTL_Register *reg_lhs = nullptr;
+		if (op != TAC_Operator::NOP)
+		{
+			reg_lhs = reg_tracker->get_int_register();
+			reg_tracker->reg_map[lhs] = reg_lhs;
+		}
+
+		// Operand 2 (may be nullptr)
+		RTL_Register *reg_opd2 = reg_tracker->get_register(opd2);
+
+		if (opd2 && !reg_opd2)
+		{
+			reg_opd2 = reg_tracker->get_float_register();
+
+			RTL_Statement *load_stmt;
+			if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd2))
+			{
+				load_stmt = new Load_Float_RTL_Statement(reg_opd2, o->fval);
+			}
+			else
+			{
+				load_stmt = new Load_RTL_Statement(reg_opd2, opd2, true);
+			}
+
+			rtl_code->append_statement(load_stmt);
+		}
+
+		if (op != TAC_Operator::NOP)
+		{
+			Compute_RTL_Statement *compute_stmt = new Compute_RTL_Statement(reg_lhs, tac_to_rtl(op), reg_opd1, reg_opd2, TAC_Compute_Kind::FLOAT_RELATIONAL);
+			rtl_code->append_statement(compute_stmt);
+		}
+
+		// Store the lhs if it is a variable or a shared temporary
+		if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
+		{
+			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(reg_lhs, lhs);
+			rtl_code->append_statement(store_stmt);
+		}
+
+		// Cleanup
+		reg_tracker->free_register(opd1, reg_opd1);
+		reg_tracker->free_register(opd2, reg_opd2);
+
+		return rtl_code;
+	}
+	else // TAC_Compute_Kind::REGULAR
 	{
 		// Operand 1
 		RTL_Register *reg_opd1 = reg_tracker->get_register(opd1);
@@ -550,7 +542,7 @@ Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bo
 	}
 }
 
-Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2, RTL_Compute_Kind compute_kind)
+Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2, TAC_Compute_Kind compute_kind)
 	: lhs(lhs), op(op), opd1(opd1), opd2(opd2), compute_kind(compute_kind)
 {
 }

@@ -17,7 +17,7 @@ enum class IO_Kind{
 	WRITE
 };
 
-enum class RTL_Compute_Kind
+enum class TAC_Compute_Kind
 {
 	REGULAR,
 	FLOAT_ARITHMETIC,
@@ -106,9 +106,10 @@ public:
 	RTL_Operator op;
 	RTL_Register *opd1;
 	RTL_Register *opd2;
-	RTL_Compute_Kind compute_kind;
+	// TODO: Remove this from here (or maybe not - think about it)
+	TAC_Compute_Kind compute_kind;
 
-	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, RTL_Compute_Kind compute_kind = RTL_Compute_Kind::REGULAR);
+	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, TAC_Compute_Kind compute_kind = TAC_Compute_Kind::REGULAR);
 };
 
 class Goto_RTL_Statement : public RTL_Statement
@@ -259,7 +260,7 @@ public:
 class TAC_Statement{
 public:
 	virtual std::string to_string() const = 0;
-	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker, Type lhs_type, Type rhs_type) const = 0;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const = 0;
 };
 
 // Transformed to Move_RTL_Statement
@@ -271,13 +272,14 @@ public:
 	TAC_Operator op;
 	TAC_Operand *opd1;
 	TAC_Operand *opd2;
+	TAC_Compute_Kind kind;
 
-	Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2);
-	Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1);
-	Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1);
+	Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2, TAC_Compute_Kind kind);
+	Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1, TAC_Compute_Kind kind);
+	Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1, TAC_Compute_Kind kind);
 
 	virtual std::string to_string() const override final;
-	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker, Type lhs_type, Type rhs_type) const override final;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
 };
 
 // Transformed to Goto_RTL_Statement
@@ -288,7 +290,7 @@ class Goto_TAC_Statement : public TAC_Statement
 public:
 	Goto_TAC_Statement(TAC_Label *_label);
 	virtual std::string to_string() const override final;
-	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker, Type lhs_type, Type rhs_type) const override final;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
 };
 
 // Transformed to If_Goto_RTL_Statement
@@ -300,7 +302,7 @@ class If_Goto_TAC_Statement : public TAC_Statement
 public:
 	If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_label);
 	virtual std::string to_string() const override final;
-	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker, Type lhs_type, Type rhs_type) const override final;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
 };
 
 // Transformed to Read_RTL_Statement and Write_RTL_Statement
@@ -312,7 +314,7 @@ class IO_TAC_Statement : public TAC_Statement
 public:
 	IO_TAC_Statement(IO_Kind _kind, TAC_Operand *_opd);
 	virtual std::string to_string() const override final;
-	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker, Type lhs_type, Type rhs_type) const override final;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
 };
 
 // Transformed to Label_RTL_Statement
@@ -323,7 +325,7 @@ class Label_TAC_Statement : public TAC_Statement
 public:
 	Label_TAC_Statement(TAC_Label *_label);
 	virtual std::string to_string() const override final;
-	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker, Type lhs_type, Type rhs_type) const override final;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
 };
 
 class Code

@@ -1,11 +1,21 @@
 #include "Ast.hpp"
 
-Ast::Ast()
+Ast::Ast() : code(nullptr)
 {
 }
 
 Ast::~Ast()
 {
+}
+
+Code *Ast::get_code()
+{
+    if (!code)
+    {
+        code = codegen();
+    }
+
+    return code;
 }
 
 Expression_Ast::Expression_Ast(Type type)
@@ -116,7 +126,7 @@ Code *Unary_Expr_AST::codegen()
 {
     Code *code = new Code();
 
-    code->append_list(opd1->codegen());
+    code->append_list(opd1->get_code());
 
     place = new Temporary_TAC_Operand();
     code->append_statement(new Assignment_TAC_Statement(place, op, opd1->place));
@@ -168,9 +178,9 @@ Code *Binary_Expr_Ast::codegen()
     Code *code = new Code();
 
     // Can evaluate in any order
-    code->append_list(opd1->codegen());
+    code->append_list(opd1->get_code());
 
-    code->append_list(opd2->codegen());
+    code->append_list(opd2->get_code());
 
     place = new Temporary_TAC_Operand();
     code->append_statement(new Assignment_TAC_Statement(place, op, opd1->place, opd2->place));
@@ -359,14 +369,14 @@ Code *Conditional_Expr_Ast::codegen()
     Label_TAC_Statement *c7 = new Label_TAC_Statement(l2);
 
     Code *code = new Code();
-    code->append_list(opd1->codegen());
+    code->append_list(opd1->get_code());
     code->append_statement(c1);
     code->append_statement(c2);
-    code->append_list(opd2->codegen());
+    code->append_list(opd2->get_code());
     code->append_statement(c3);
     code->append_statement(c4);
     code->append_statement(c5);
-    code->append_list(opd3->codegen());
+    code->append_list(opd3->get_code());
     code->append_statement(c6);
     code->append_statement(c7);
 
@@ -385,6 +395,15 @@ Statement_Ast::Statement_Ast(RegisterTracker *register_tracker)
 
 Statement_Ast::~Statement_Ast()
 {
+}
+
+RTL_Code *Statement_Ast::rtlgen()
+{
+    for (auto tac_stmt_ptr : *(get_code()->stmt_list))
+    {
+        
+        // tac_stmt_ptr->to_rtl(register_tracker, )
+    }
 }
 
 Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs, RegisterTracker *register_tracker)
@@ -409,21 +428,21 @@ Code *Assignment_Stmt_Ast::codegen()
     Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(id, rhs->place);
 
     Code *code = new Code();
-    code->append_list(rhs->codegen());
+    code->append_list(rhs->get_code());
     code->append_statement(c1);
 
     return code;
 }
 
-RTL_Code *Assignment_Stmt_Ast::rtlgen()
-{
-    RTL_Code *rtl_code = new RTL_Code();
-    for (auto tac_stmt_ptr : *(codegen()->stmt_list))
-    {
-        RTL_Code *stmt_code = tac_stmt_ptr->to_rtl(register_tracker, lhs->type, rhs->type);
-        rtl_code->append_list(stmt_code);
-    }
-}
+// RTL_Code *Assignment_Stmt_Ast::rtlgen()
+// {
+//     RTL_Code *rtl_code = new RTL_Code();
+//     for (auto tac_stmt_ptr : *(get_code()->stmt_list))
+//     {
+//         RTL_Code *stmt_code = tac_stmt_ptr->to_rtl(register_tracker, lhs->type, rhs->type);
+//         rtl_code->append_list(stmt_code);
+//     }
+// }
 
 std::string Assignment_Stmt_Ast::to_string() const
 {
@@ -452,10 +471,10 @@ Code *Read_Stmt_Ast::codegen()
     return code;
 }
 
-RTL_Code *Read_Stmt_Ast::rtlgen()
-{
-    return codegen()->stmt_list->front()->to_rtl(register_tracker, var->type, Type::VOID);
-}
+// RTL_Code *Read_Stmt_Ast::rtlgen()
+// {
+//     return get_code()->stmt_list->front()->to_rtl(register_tracker, var->type, Type::VOID);
+// }
 
 std::string Read_Stmt_Ast::to_string() const
 {
@@ -478,16 +497,16 @@ Code *Write_Stmt_Ast::codegen()
     IO_TAC_Statement *c1 = new IO_TAC_Statement(IO_Kind::WRITE, expr->place);
 
     Code *code = new Code();
-    code->append_list(expr->codegen());
+    code->append_list(expr->get_code());
     code->append_statement(c1);
 
     return code;
 }
 
-RTL_Code *Write_Stmt_Ast::rtlgen()
-{
-    return codegen()->stmt_list->front()->to_rtl(register_tracker, expr->type, Type::VOID);
-}
+// RTL_Code *Write_Stmt_Ast::rtlgen()
+// {
+//     return get_code()->stmt_list->front()->to_rtl(register_tracker, expr->type, Type::VOID);
+// }
 
 std::string Write_Stmt_Ast::to_string() const
 {
@@ -504,22 +523,22 @@ Code *Compound_Stmt_Ast::codegen()
     Code *code = new Code();
     for (auto stmt : *stmts)
     {
-        code->append_list(stmt->codegen());
+        code->append_list(stmt->get_code());
     }
 
     return code;
 }
 
-RTL_Code *Compound_Stmt_Ast::rtlgen()
-{
-    RTL_Code *rtl_code = new RTL_Code();
-    for (auto stmt : *stmts)
-    {
-        rtl_code->append_list(stmt->rtlgen());
-    }
+// RTL_Code *Compound_Stmt_Ast::rtlgen()
+// {
+//     RTL_Code *rtl_code = new RTL_Code();
+//     for (auto stmt : *stmts)
+//     {
+//         rtl_code->append_list(stmt->rtlgen());
+//     }
 
-    return rtl_code;
-}
+//     return rtl_code;
+// }
 
 std::string Compound_Stmt_Ast::to_string() const
 {
@@ -542,62 +561,45 @@ If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *if_clause, St
         throw_SemanticError("Expected predicate of type BOOL, got: " + type_to_string(predicate->type));
         return;
     }
-
-    // t1 = new Temporary_TAC_Operand();
-
-    // l1 = new TAC_Label();
-
-    // c1 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place);
-    // c2 = new If_Goto_TAC_Statement(t1, l1);
-    // c3 = new Goto_TAC_Statement(l1);
-    // c4 = new Label_TAC_Statement(l1);
-
-    // code = new Code();
-    // code->append_list(predicate->code);
-    // code->append_statement(c1);
-    // code->append_statement(c2);
-    // code->append_list(if_clause->code);
-    // code->append_statement(c3);
-    // code->append_statement(c4);
 }
-
-// If_Stmt_Ast::If_Stmt_Ast(If_Stmt_Ast *unmatched_if, Statement_Ast *_else_clause)
-//     : Statement_Ast(), predicate(unmatched_if->predicate), if_clause(unmatched_if->if_clause), else_clause(_else_clause)
-// {
-//     if (unmatched_if->else_clause)
-//     {
-//         throw_SemanticError("Cannot have 2 else clauses!");
-//     }
-//     if (!elseca)
-//         code = unmatched_if->code;
-//     if (else_clause)
-//     {
-//         TAC_Statement *c0 = code->pop_statement();
-
-//         TAC_Label *l2 = new TAC_Label();
-//         Label_TAC_Statement *c5 = new Label_TAC_Statement(l2);
-//         code->append_statement(c5);
-
-//         code->append_list(else_clause->code);
-
-//         code->append_statement(c0);
-//     }
-// }
 
 Code *If_Stmt_Ast::codegen()
 {
     Code *code = new Code();
 
-    code->append_list(predicate->codegen());
+    code->append_list(predicate->get_code());
 
     TAC_Operand *t = new Temporary_TAC_Operand();
     code->append_statement(new Assignment_TAC_Statement(t, Unary_Operator::LOGICAL_NOT, predicate->place));
 
-    TAC_Label *l = new TAC_Label();
-    code->append_statement(new If_Goto_TAC_Statement(t, l));
+    TAC_Label *l_false = new TAC_Label();
+    code->append_statement(new If_Goto_TAC_Statement(t, l_false));
 
-    code->append_list(if_clause->code);
+    code->append_list(if_clause->get_code());
+
+    if (else_clause)
+    {
+        TAC_Label *l_end = new TAC_Label();
+        code->append_statement(new Goto_TAC_Statement(l_end));
+
+        code->append_statement(new Label_TAC_Statement(l_false));
+
+        code->append_list(else_clause->get_code());
+
+        code->append_statement(new Label_TAC_Statement(l_end));
+    }
+    else
+    {
+        code->append_statement(new Label_TAC_Statement(l_false));
+    }
+
+    return code;
 }
+
+// RTL_Code *If_Stmt_Ast::rtlgen()
+// {
+
+// }
 
 std::string If_Stmt_Ast::to_string() const
 {

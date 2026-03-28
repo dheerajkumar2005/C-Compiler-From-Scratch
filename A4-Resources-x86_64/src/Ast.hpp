@@ -13,10 +13,15 @@ extern std::ostream *tacout;
 
 class Ast
 {
+    Code *code;
+
 public:
     Ast();
     virtual ~Ast() = 0;
+
     virtual Code *codegen() = 0;
+    virtual Code *get_code() final;
+
     virtual std::string to_string() const = 0;
 };
 
@@ -221,7 +226,7 @@ public:
     Statement_Ast(RegisterTracker *register_tracker);
     virtual ~Statement_Ast() = 0;
 
-    virtual RTL_Code *rtlgen() = 0;
+    virtual RTL_Code *rtlgen() final;
 };
 
 class Assignment_Stmt_Ast : public Statement_Ast
@@ -235,7 +240,8 @@ public:
     ~Assignment_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    virtual RTL_Code *rtlgen() override final;
+
+    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -249,7 +255,7 @@ public:
     ~Read_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    virtual RTL_Code *rtlgen() override final;
+    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -263,7 +269,7 @@ public:
     ~Write_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    virtual RTL_Code *rtlgen() override final;
+    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -276,7 +282,7 @@ public:
     ~Compound_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    virtual RTL_Code *rtlgen() override final;
+    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
@@ -290,8 +296,8 @@ public:
     If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause = nullptr);
     ~If_Stmt_Ast() = default;
 
-    virtual Code *If_Stmt_Ast::codegen() override final;
-
+    virtual Code *codegen() override final;
+    // virtual RTL_Code *rtlgen() override final;
     virtual std::string to_string() const override final;
 };
 
