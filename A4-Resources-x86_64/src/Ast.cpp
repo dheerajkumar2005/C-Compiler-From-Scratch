@@ -537,7 +537,6 @@ std::string Compound_Stmt_Ast::to_string() const
     return result;
 }
 
-// TODO
 If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *if_clause, Statement_Ast *else_clause)
     : Statement_Ast(register_tracker), predicate(predicate), if_clause(if_clause), else_clause(else_clause)
 {

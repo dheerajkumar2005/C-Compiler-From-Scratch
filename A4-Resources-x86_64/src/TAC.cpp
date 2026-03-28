@@ -610,7 +610,10 @@ std::string If_Goto_RTL_Statement::to_string() const{
 Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_number)
 {
 }
-
+std::string Label_RTL_Statement::to_string() const{
+	std::string result = "Label" + std::to_string(label_number) + ":";
+	return result;
+}
 RegisterTracker::RegisterTracker()
 	: all_regs(), reg_map(), available_int_regs(), available_float_regs(), reserved_int_regs(), reserved_float_regs()
 {
