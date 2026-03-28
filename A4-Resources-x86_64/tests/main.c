@@ -14,10 +14,8 @@ void main()
     // }
 
     bool a;
-    int x;
-    do{
-        x = 1;
-    }
-    while(a);
+    float x,y;
+    // x = a? x+1:y+1;
+    a = x < y;
     // print a;
 }

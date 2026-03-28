@@ -589,6 +589,37 @@ Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op,
 {
 }
 
+std::string Compute_RTL_Statement::to_string() const
+{
+	std::string result;
+
+	std::string result_name = rtl_priority_to_register(lhs->priority);
+	std::string opd1_name = rtl_priority_to_register(opd1->priority);
+	std::string opd2_name = (opd2) ? rtl_priority_to_register(opd2->priority) : "";
+
+	if (!is_float)
+	{
+		std::string op_name = op_to_string(op);
+
+		if (op == RTL_Operator::NEGATE || op == RTL_Operator::LOGICAL_NOT)
+		{
+			result = op_name + ":\t" + result_name + " <- " + opd1_name;
+		}
+		else
+		{
+			result = op_name + ":\t" + result_name + " <- " + opd1_name + " , " + opd2_name;
+		}
+	}
+	else
+	{
+
+		if (op == RTL_Operator::LT || op == RTL_Operator::LE || op == RTL_Operator::EQ)
+		{
+			result = op_float_to_string(op) + ":\t" + result_name;
+		}
+	}
+}
+
 Goto_RTL_Statement::Goto_RTL_Statement(int label_number)
 	: RTL_Statement(false), label_number(label_number)
 {

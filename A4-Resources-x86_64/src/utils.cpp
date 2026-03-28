@@ -293,6 +293,59 @@ std::string op_to_string(RTL_Operator op)
     return oss.str();
 }
 
+std::string op_float_to_string(RTL_Operator op){
+    std::string result;
+    if(op == RTL_Operator::NEGATE){
+        result = "uminus.d";
+    }
+    else if (op == RTL_Operator::LOGICAL_NOT)
+    {
+        result = "not";
+    }
+    else if (op == RTL_Operator::ADD)
+    {
+        result = "add.d";
+    }
+    else if (op == RTL_Operator::SUBTRACT)
+    {
+        result = "sub.d";
+    }
+    else if (op == RTL_Operator::MULTIPLY)
+    {
+        result = "mul.d";
+    }
+    else if (op == RTL_Operator::DIVIDE)
+    {
+        result = "div.d";
+    }
+    else if (op == RTL_Operator::LOGICAL_AND)
+    {
+        result = "and";
+    }
+    else if (op == RTL_Operator::LOGICAL_OR)
+    {
+        result = "or";
+    }
+    else if (op == RTL_Operator::LT)
+    {
+        result = "slt.d";
+    }
+    else if (op == RTL_Operator::LE)
+    {
+        result = "sle.d";
+    }
+    else if (op == RTL_Operator::EQ)
+    {
+        result = "seq.d";
+    }
+    else
+    {
+        throw_SemanticError("Unexpected RTL float Operator: " + op_to_string(op));
+    }
+    return result;
+
+}
+
 TAC_Operator binary_to_tac(Binary_Operator op)
 {
     if (op == Binary_Operator::ADD)
