@@ -610,7 +610,10 @@ std::string If_Goto_RTL_Statement::to_string() const{
 Label_RTL_Statement::Label_RTL_Statement(int label_number) : label_number(label_number)
 {
 }
-
+std::string Label_RTL_Statement::to_string() const{
+	std::string result = "Label" + std::to_string(label_number) + ":";
+	return result;
+}
 RegisterTracker::RegisterTracker()
 	: reg_map(), available_int_regs(), available_float_regs(), reserved_int_regs(), reserved_float_regs()
 {
@@ -655,6 +658,7 @@ RegisterTracker::RegisterTracker()
 	// The reserved float register is f12
 	// TODO: Write a testcase which requires the use of f12 in something else, then use it for printing a float
 	reserved_float_regs[new RTL_Register(26)] = true; // f12
+	reserved_float_regs[new RTL_Register(20)] = true; // f0
 }
 
 RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
