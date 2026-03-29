@@ -246,6 +246,11 @@ StatementList *accumulate_stmt_list()
     return nullptr;
 }
 
+bool is_empty(StatementList *stmt_list)
+{
+    return !stmt_list || stmt_list->empty();
+}
+
 void ast_print_func_sig(Scope *func)
 {
     if (func->kind != Scope_Kind::FUNCTION)

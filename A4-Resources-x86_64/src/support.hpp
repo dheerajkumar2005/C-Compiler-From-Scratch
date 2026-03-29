@@ -47,6 +47,8 @@ If_Stmt_Ast *add_else_clause(If_Stmt_Ast *unmatched_if, Statement_Ast *else_clau
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
 StatementList *accumulate_stmt_list();
 
+bool is_empty(StatementList *stmt_list);
+
 void ast_print_func_sig(Scope *func);
 void ast_print_stmt_list(StatementList *stmt_list);
 

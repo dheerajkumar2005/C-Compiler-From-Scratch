@@ -17,8 +17,19 @@ CYAN = "\033[36m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
-SA_FLAGS = ["--sa-scan", "--sa-parse", "--sa-ast", "--sa-tac"]
-SHOW_FLAGS = ["--show-tokens", "--show-ast", "--show-tac", "--show-rtl"]
+SA_FLAGS = [
+    # "--sa-scan", 
+    "--sa-parse", 
+    "--sa-ast", 
+    "--sa-tac",
+]
+
+SHOW_FLAGS = [
+    "--show-tokens", 
+    "--show-ast", 
+    "--show-tac", 
+    "--show-rtl",
+]
 
 SHOW_SUBSETS = [
     list(combo)

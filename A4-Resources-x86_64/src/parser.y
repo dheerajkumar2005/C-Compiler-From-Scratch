@@ -185,16 +185,19 @@ func_def
                 ast_print_stmt_list($8);
             }
 
-            if(show_tac) 
+            if(!is_empty($8)) 
             {
-                tac_print_func_sig(curr_scope);
-                tac_print_stmt_list($8);
-            }
+                if(show_tac) 
+                {
+                    tac_print_func_sig(curr_scope);
+                    tac_print_stmt_list($8);
+                }
 
-            if(show_rtl) 
-            {
-                rtl_print_func_sig(curr_scope);
-                rtl_print_stmt_list($8, register_tracker);
+                if(show_rtl) 
+                {
+                    rtl_print_func_sig(curr_scope);
+                    rtl_print_stmt_list($8, register_tracker);
+                }
             }
 
             curr_scope = curr_scope->parent_scope;
@@ -222,16 +225,19 @@ func_def
                 ast_print_stmt_list($7);
             }
 
-            if(show_tac) 
+            if(!is_empty($7)) 
             {
-                tac_print_func_sig(curr_scope);
-                tac_print_stmt_list($7);
-            }
+                if(show_tac) 
+                {
+                    tac_print_func_sig(curr_scope);
+                    tac_print_stmt_list($7);
+                }
 
-            if(show_rtl) 
-            {
-                rtl_print_func_sig(curr_scope);
-                rtl_print_stmt_list($7, register_tracker);
+                if(show_rtl) 
+                {
+                    rtl_print_func_sig(curr_scope);
+                    rtl_print_stmt_list($7, register_tracker);
+                }
             }
 
             curr_scope = curr_scope->parent_scope;
