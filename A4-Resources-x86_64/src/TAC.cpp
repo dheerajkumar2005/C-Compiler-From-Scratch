@@ -593,13 +593,6 @@ void RTL_Code::append_list(RTL_Code *rtl_code)
 	}
 }
 
-std::string Read_RTL_Statement::to_string() const{
-	return "read";
-}
-
-std::string Write_RTL_Statement::to_string() const{
-	return "write";
-}
 
 Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival)
 	: RTL_Statement(false), reg(reg), ival(ival)
@@ -742,21 +735,19 @@ Read_RTL_Statement::Read_RTL_Statement(bool is_float)
 {
 }
 
-std::string Read_RTL_Statement::to_string() const
-{
-	// TODO
-	return "";
-}
+
 
 Write_RTL_Statement::Write_RTL_Statement(bool is_float)
 	: RTL_Statement(is_float)
 {
 }
 
-std::string Write_RTL_Statement::to_string() const
-{
-	// TODO
-	return "";
+std::string Read_RTL_Statement::to_string() const{
+	return "read";
+}
+
+std::string Write_RTL_Statement::to_string() const{
+	return "write";
 }
 
 Label_RTL_Statement::Label_RTL_Statement(int label_number)
