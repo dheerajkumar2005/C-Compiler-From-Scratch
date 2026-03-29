@@ -12,7 +12,8 @@
 #include "Program.hpp"
 #include "utils.hpp"
 
-enum class IO_Kind{
+enum class IO_Kind
+{
 	READ,
 	WRITE
 };
@@ -80,7 +81,6 @@ public:
 
 	Load_Float_RTL_Statement(RTL_Register *reg, float fval);
 	virtual std::string to_string() const override final;
-
 };
 
 
@@ -92,7 +92,6 @@ public:
 
 	Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
 	virtual std::string to_string() const override final;
-
 };
 
 class Store_RTL_Statement : public RTL_Statement
@@ -105,7 +104,6 @@ public:
 	~Store_RTL_Statement() = default;
 
 	virtual std::string to_string() const override final;
-
 };
 
 class Move_RTL_Statement : public RTL_Statement{
@@ -148,7 +146,6 @@ public:
 
 	If_Goto_RTL_Statement(RTL_Register *predicate, int label_number);
 	virtual std::string to_string() const override final;
-
 };
 
 class Read_RTL_Statement : public RTL_Statement
@@ -156,7 +153,6 @@ class Read_RTL_Statement : public RTL_Statement
 public:
 	Read_RTL_Statement(bool is_float);
 	virtual std::string to_string() const override final;
-
 };
 
 // TODO: Note that while printing expressions, need to move and not load
@@ -173,18 +169,17 @@ public:
 	int label_number;
 	Label_RTL_Statement(int label_number);
 	virtual std::string to_string() const override final;
-
 };
 
 class RegisterTracker
 {
 
 public:
-	const static int PRIORITY_V0 = 1;
-	const static int PRIORITY_F12 = 26;
-	const static int PRIORITY_A0 = 100;
-	const static int PRIORITY_V1 = 200;
-	const static int PRIORITY_F0 = 300;
+	inline const static int PRIORITY_V0 = 1;
+	inline const static int PRIORITY_F12 = 26;
+	inline const static int PRIORITY_A0 = 100;
+	inline const static int PRIORITY_V1 = 200;
+	inline const static int PRIORITY_F0 = 300;
 
 	std::map<int, RTL_Register *> all_regs;
 
@@ -291,7 +286,8 @@ public:
 	std::string to_string() const;
 };
 
-class TAC_Statement{
+class TAC_Statement
+{
 public:
 	virtual std::string to_string() const = 0;
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const = 0;
@@ -329,7 +325,7 @@ public:
 // Transformed to If_Goto_RTL_Statement
 class If_Goto_TAC_Statement : public TAC_Statement
 {
-	TAC_Operand* condition;
+	TAC_Operand *condition;
 	TAC_Label *label;
 
 public:
@@ -342,7 +338,7 @@ public:
 class IO_TAC_Statement : public TAC_Statement
 {
 	IO_Kind kind;
-	TAC_Operand* opd;
+	TAC_Operand *opd;
 
 public:
 	IO_TAC_Statement(IO_Kind _kind, TAC_Operand *_opd);

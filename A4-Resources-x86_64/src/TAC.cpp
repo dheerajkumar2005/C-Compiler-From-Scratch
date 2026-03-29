@@ -711,6 +711,8 @@ std::string Compute_RTL_Statement::to_string() const
 	else{
 		result = op_name + ":\t" + result_name + " <- " + opd1_name + " , " + opd2_name;
 	}
+
+	return result;
 }
 
 Goto_RTL_Statement::Goto_RTL_Statement(int label_number)
@@ -740,9 +742,21 @@ Read_RTL_Statement::Read_RTL_Statement(bool is_float)
 {
 }
 
-Write_RTL_Statement::Write_RTL_Statement(bool is_float)
-	: Write_RTL_Statement(is_float)
+std::string Read_RTL_Statement::to_string() const
 {
+	// TODO
+	return "";
+}
+
+Write_RTL_Statement::Write_RTL_Statement(bool is_float)
+	: RTL_Statement(is_float)
+{
+}
+
+std::string Write_RTL_Statement::to_string() const
+{
+	// TODO
+	return "";
 }
 
 Label_RTL_Statement::Label_RTL_Statement(int label_number)
@@ -754,6 +768,7 @@ std::string Label_RTL_Statement::to_string() const
 	std::string result = "Label" + std::to_string(label_number) + ":";
 	return result;
 }
+
 RegisterTracker::RegisterTracker()
 	: all_regs(), reg_map(), available_int_regs(), available_float_regs()
 {

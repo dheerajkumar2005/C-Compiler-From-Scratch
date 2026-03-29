@@ -7,7 +7,7 @@ PARSE = parser.y
 
 OBJ = Ast.o parse.tab.o Program.o scan.o $(TGT).o SemanticError.o support.o Errors.o TAC.o utils.o
 
-CPPSTD = --std=c++0x
+CPPSTD = --std=c++17
 CFLAGS = -g -fpermissive
 
 HEADERS = Ast.hpp Program.hpp SemanticError.hpp support.hpp Errors.hpp TAC.hpp utils.hpp
