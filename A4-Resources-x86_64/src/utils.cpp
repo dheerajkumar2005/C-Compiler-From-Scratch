@@ -549,3 +549,8 @@ std::string rtl_priority_to_register(int priority)
         return "";
     }
 }
+
+bool is_relational_op(RTL_Operator op)
+{
+    return op == RTL_Operator::LT || op == RTL_Operator::LE || op == RTL_Operator::GT || op == RTL_Operator::GE || op == RTL_Operator::EQ || op == RTL_Operator::NE;
+}

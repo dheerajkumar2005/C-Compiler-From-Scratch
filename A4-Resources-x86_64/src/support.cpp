@@ -287,7 +287,6 @@ void ast_print_stmt_list(StatementList *stmt_list)
 
 void tac_print_func_sig(Scope *func)
 {
-    // std::cerr << "HI" << std::endl;
     if (func->kind != Scope_Kind::FUNCTION)
     {
         throw_SemanticError("Not a function!");
@@ -342,7 +341,7 @@ void rtl_print_func_sig(Scope *func)
     *rtlout << "**PROCEDURE: " << func_name << std::endl;
 }
 
-void rtl_print_stmt_list(StatementList *stmt_list)
+void rtl_print_stmt_list(StatementList *stmt_list, RegisterTracker *register_tracker)
 {
     *rtlout << "**BEGIN: RTL Statements" << std::endl;
     if (stmt_list)
@@ -351,7 +350,7 @@ void rtl_print_stmt_list(StatementList *stmt_list)
         {
             if (stmt_ast)
             {
-                RTL_Code *rtl_code = stmt_ast->get_rtl();
+                RTL_Code *rtl_code = stmt_ast->get_rtl(register_tracker);
                 if (rtl_code)
                 {
                     *rtlout << rtl_code->to_string() << std::endl;

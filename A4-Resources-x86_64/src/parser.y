@@ -3,9 +3,9 @@
     #include "Ast.hpp"
     #include "Program.hpp"
     
-    extern "C" int yylex(Scope *);
-    extern "C" int yyparse(Scope *);
-    extern "C" void yyerror(Scope *, const char *);
+    extern "C" int yylex(Scope *, RegisterTracker *);
+    extern "C" int yyparse(Scope *, RegisterTracker *);
+    extern "C" void yyerror(Scope *, RegisterTracker *, const char *);
 }
 %{
     #include "Program.hpp" 
@@ -16,8 +16,8 @@
     extern int show_rtl;
 %}
 
-%parse-param { Scope *curr_scope }
-%lex-param { Scope *curr_scope }
+%parse-param { Scope *curr_scope } { RegisterTracker *register_tracker }
+%lex-param { Scope *curr_scope } { RegisterTracker *register_tracker }
 
 %union {
     StatementList *stmt_list;
@@ -194,7 +194,7 @@ func_def
             if(show_rtl) 
             {
                 rtl_print_func_sig(curr_scope);
-                rtl_print_stmt_list($8);
+                rtl_print_stmt_list($8, register_tracker);
             }
 
             curr_scope = curr_scope->parent_scope;
@@ -231,7 +231,7 @@ func_def
             if(show_rtl) 
             {
                 rtl_print_func_sig(curr_scope);
-                rtl_print_stmt_list($7);
+                rtl_print_stmt_list($7, register_tracker);
             }
 
             curr_scope = curr_scope->parent_scope;
@@ -303,7 +303,7 @@ named_type
 ;
 
 assignment_statement
-    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3, curr_scope->reg_tracker); }
+    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
 ;
 
 if_condition
@@ -332,12 +332,12 @@ compound_statement
 
 /* FIXED */
 print_statement
-    : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast($2, curr_scope->reg_tracker); }
+    : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast($2); }
 ;
 
 /* FIXED */
 read_statement
-    : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast($2, curr_scope->reg_tracker); }
+    : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast($2); }
 ;
 
 /* FIXED */

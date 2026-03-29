@@ -224,13 +224,11 @@ class Statement_Ast : public Ast
     RTL_Code *rtl_code;
 
 public:
-    RegisterTracker *register_tracker;
-
-    Statement_Ast(RegisterTracker *register_tracker);
+    Statement_Ast();
     virtual ~Statement_Ast() = 0;
 
-    virtual RTL_Code *rtlgen();
-    virtual RTL_Code *get_rtl() final;
+    virtual RTL_Code *rtlgen(RegisterTracker *register_tracker) final;
+    virtual RTL_Code *get_rtl(RegisterTracker *register_tracker) final;
 };
 
 class Assignment_Stmt_Ast : public Statement_Ast
@@ -240,7 +238,7 @@ protected:
     Expression_Ast *rhs;
 
 public:
-    Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs, RegisterTracker *reg_tracker);
+    Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs);
     ~Assignment_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -254,7 +252,7 @@ protected:
     Name_Expr_Ast *var;
 
 public:
-    Read_Stmt_Ast(Name_Expr_Ast *var, RegisterTracker *register_tracker);
+    Read_Stmt_Ast(Name_Expr_Ast *var);
     ~Read_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -267,7 +265,7 @@ protected:
     Expression_Ast *expr;
 
 public:
-    Write_Stmt_Ast(Expression_Ast *expr, RegisterTracker *register_tracker);
+    Write_Stmt_Ast(Expression_Ast *expr);
     ~Write_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -283,7 +281,7 @@ public:
     ~Compound_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    virtual RTL_Code *rtlgen() override final; // compound statements are the only special case
+    // virtual RTL_Code *rtlgen() override final; // compound statements are the only special case
     virtual std::string to_string() const override final;
 };
 

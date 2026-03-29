@@ -384,8 +384,8 @@ std::string Conditional_Expr_Ast::to_string() const
     return opd1->to_string() + "\nTrue_Part (" + opd2->to_string() + ")\nFalse_Part (" + opd3->to_string() + ")";
 }
 
-Statement_Ast::Statement_Ast(RegisterTracker *register_tracker)
-    : Ast(), register_tracker(register_tracker)
+Statement_Ast::Statement_Ast()
+    : Ast()
 {
 }
 
@@ -393,7 +393,7 @@ Statement_Ast::~Statement_Ast()
 {
 }
 
-RTL_Code *Statement_Ast::rtlgen()
+RTL_Code *Statement_Ast::rtlgen(RegisterTracker *register_tracker)
 {
     RTL_Code *rtl_code = new RTL_Code();
     for (auto tac_stmt_ptr : *(get_code()->stmt_list))
@@ -404,18 +404,18 @@ RTL_Code *Statement_Ast::rtlgen()
     return rtl_code;
 }
 
-RTL_Code *Statement_Ast::get_rtl()
+RTL_Code *Statement_Ast::get_rtl(RegisterTracker *register_tracker)
 {
     if (!rtl_code)
     {
-        rtl_code = rtlgen();
+        rtl_code = rtlgen(register_tracker);
     }
 
     return rtl_code;
 }
 
-Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs, RegisterTracker *register_tracker)
-    : Statement_Ast(register_tracker), lhs(lhs), rhs(rhs)
+Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs)
+    : Statement_Ast(), lhs(lhs), rhs(rhs)
 {
     if (lhs->get_type() != rhs->get_type())
     {
@@ -446,8 +446,8 @@ std::string Assignment_Stmt_Ast::to_string() const
     return "Asgn:\nLHS (" + lhs->to_string() + ")\nRHS (" + rhs->to_string() + ")";
 }
 
-Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var, RegisterTracker *register_tracker)
-    : Statement_Ast(register_tracker), var(var)
+Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var)
+    : Statement_Ast(), var(var)
 {
     if (var->get_type() != Type::INT && var->get_type() != Type::FLOAT)
     {
@@ -471,8 +471,8 @@ std::string Read_Stmt_Ast::to_string() const
     return "Read: " + var->to_string();
 }
 
-Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr, RegisterTracker *register_tracker)
-    : Statement_Ast(register_tracker), expr(expr)
+Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr)
+    : Statement_Ast(), expr(expr)
 {
     Type type = expr->get_type();
     if (type == Type::VOID || type == Type::BOOL)
@@ -499,7 +499,7 @@ std::string Write_Stmt_Ast::to_string() const
 }
 
 Compound_Stmt_Ast::Compound_Stmt_Ast(std::vector<Statement_Ast *> *stmts)
-    : Statement_Ast(register_tracker), stmts(stmts)
+    : Statement_Ast(), stmts(stmts)
 {
 }
 
@@ -514,17 +514,17 @@ Code *Compound_Stmt_Ast::codegen()
     return code;
 }
 
-RTL_Code *Compound_Stmt_Ast::rtlgen()
-{
-    RTL_Code *rtl_code = new RTL_Code();
-    for (auto stmt_ast_ptr : *stmts)
-    {
-        // Every statement has its own register tracking mechanism
-        rtl_code->append_list(stmt_ast_ptr->rtlgen());
-    }
+// RTL_Code *Compound_Stmt_Ast::rtlgen()
+// {
+//     RTL_Code *rtl_code = new RTL_Code();
+//     for (auto stmt_ast_ptr : *stmts)
+//     {
+//         // Every statement has its own register tracking mechanism
+//         rtl_code->append_list(stmt_ast_ptr->rtlgen());
+//     }
 
-    return rtl_code;
-}
+//     return rtl_code;
+// }
 
 std::string Compound_Stmt_Ast::to_string() const
 {
@@ -539,7 +539,7 @@ std::string Compound_Stmt_Ast::to_string() const
 }
 
 If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *if_clause, Statement_Ast *else_clause)
-    : Statement_Ast(register_tracker), predicate(predicate), if_clause(if_clause), else_clause(else_clause)
+    : Statement_Ast(), predicate(predicate), if_clause(if_clause), else_clause(else_clause)
 {
     if (predicate->type != Type::BOOL)
     {
@@ -601,7 +601,7 @@ std::string If_Stmt_Ast::to_string() const
 }
 
 While_Stmt_Ast::While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body)
-    : Statement_Ast(register_tracker), predicate(_predicate), body(_body)
+    : Statement_Ast(), predicate(_predicate), body(_body)
 {
     if (predicate->type != Type::BOOL)
     {
@@ -644,7 +644,7 @@ std::string While_Stmt_Ast::to_string() const
 }
 
 Do_While_Stmt_Ast::Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *body)
-    : Statement_Ast(register_tracker), predicate(predicate), body(body)
+    : Statement_Ast(), predicate(predicate), body(body)
 {
     if (predicate->type != Type::BOOL)
     {

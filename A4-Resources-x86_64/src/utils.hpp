@@ -7,7 +7,7 @@
 #include "Errors.hpp"
 
 const int PRIORITY_V0 = 1;
-const int PRIORITY_F12 = 26;
+const int PRIORITY_F12 = 25;
 const int PRIORITY_A0 = 100;
 const int PRIORITY_V1 = 200;
 const int PRIORITY_F0 = 300;
@@ -109,5 +109,7 @@ TAC_Operator unary_to_tac(Unary_Operator op);
 RTL_Operator invert_op(RTL_Operator op);
 RTL_Operator tac_to_rtl(TAC_Operator op);
 std::string rtl_priority_to_register(int priority);
+
+bool is_relational_op(RTL_Operator op);
 
 #endif

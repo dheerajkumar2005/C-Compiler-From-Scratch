@@ -17,8 +17,8 @@ CYAN = "\033[36m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
-SA_FLAGS = ["--sa-scan", "--sa-parse", "--sa-ast"]
-SHOW_FLAGS = ["--show-tokens", "--show-ast", "--show-tac"]
+SA_FLAGS = ["--sa-scan", "--sa-parse", "--sa-ast", "--sa-tac"]
+SHOW_FLAGS = ["--show-tokens", "--show-ast", "--show-tac", "--show-rtl"]
 
 SHOW_SUBSETS = [
     list(combo)
@@ -32,6 +32,7 @@ SHOW_EXT = {
     "--show-tokens": ".toks",
     "--show-ast": ".ast",
     "--show-tac": ".tac",
+    "--show-rtl": ".rtl",
 }
 
 def run_combo(binary: Path, sa: str, shows: list[str], testcase: Path, workdir: Path) -> tuple[int, dict[str, Path], Path]:

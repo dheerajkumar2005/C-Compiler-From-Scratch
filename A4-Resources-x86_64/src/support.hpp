@@ -54,6 +54,6 @@ void tac_print_func_sig(Scope *func);
 void tac_print_stmt_list(StatementList *stmt_list);
 
 void rtl_print_func_sig(Scope *func);
-void rtl_print_stmt_list(StatementList *stmt_list);
+void rtl_print_stmt_list(StatementList *stmt_list, RegisterTracker *register_tracker);
 
 #endif

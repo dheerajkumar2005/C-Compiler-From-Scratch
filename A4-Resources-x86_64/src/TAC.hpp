@@ -205,8 +205,6 @@ struct Scope
 	std::unordered_map<std::string, Symbol_Table_Entry *> sym_tab;
 	Func_Signature *func_sig; // nullptr for non-functions
 
-	RegisterTracker *reg_tracker;
-
 	Scope(Scope_Kind kind, Scope *parent_scope = nullptr, Func_Signature *func_sig = nullptr);
 };
 

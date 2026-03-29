@@ -114,7 +114,6 @@ std::string Assignment_TAC_Statement::to_string() const
 
 RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
-	std::cerr << "[DEBUG] Generating RTL for: " << to_string() << std::endl;
 	RTL_Code *rtl_code = new RTL_Code();
 
 	if (lhs->type == Type::FLOAT && opd1->type == Type::FLOAT)
@@ -238,7 +237,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		if (op == TAC_Operator::LE || op == TAC_Operator::LT || op == TAC_Operator::EQ)
 		{
-			// reg for iload
+			// reg for int load
 			RTL_Register *iload_reg;
 			iload_reg = reg_tracker->get_int_register();
 			reg_lhs = reg_tracker->get_int_register();
@@ -291,7 +290,6 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		if (!reg_opd1)
 		{
 			reg_opd1 = reg_tracker->get_int_register();
-			std::cerr << "reg_opd1: " << rtl_priority_to_register(reg_opd1->priority) << std::endl;
 
 			RTL_Statement *load_stmt;
 			if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd1))
@@ -468,6 +466,18 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		RTL_Code *rtl_code = new RTL_Code();
 
+		// TODO: If reg_opd occupies this, move it to some other temp reg
+		if (!reg_tracker->available_int_regs[PRIORITY_V0])
+		{
+			RTL_Register *opd_src_reg = reg_tracker->get_register(opd);
+			RTL_Register *opd_dest_reg = reg_tracker->get_int_register();
+
+			rtl_code->append_statement(new Move_RTL_Statement(opd_dest_reg, opd_src_reg, false, false, is_float));
+
+			reg_tracker->free_register(opd, opd_src_reg);
+			reg_tracker->mark(opd, opd_dest_reg);
+		}
+
 		RTL_Register *reg1 = reg_tracker->get_register(PRIORITY_V0);
 		int signal = is_int ? 1 : (is_float ? 3 : 4);
 		Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg1, signal);
@@ -485,6 +495,16 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			Move_RTL_Statement *move_stmt = new Move_RTL_Statement(reg2, reg_opd, false, false, is_float);
 			rtl_code->append_statement(move_stmt);
 			reg_tracker->free_register(opd, reg_opd);
+		}
+		else if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd))
+		{
+			Load_Int_RTL_Statement *iload_stmt = new Load_Int_RTL_Statement(reg2, o->ival);
+			rtl_code->append_statement(iload_stmt);
+		}
+		else if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd))
+		{
+			Load_Float_RTL_Statement *fload_stmt = new Load_Float_RTL_Statement(reg2, o->fval);
+			rtl_code->append_statement(fload_stmt);
 		}
 		else
 		{
@@ -616,7 +636,7 @@ Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival)
 std::string Load_Int_RTL_Statement::to_string() const
 {
 	std::string result;
-	result = "iload:\t" + rtl_priority_to_register(reg->priority) + " <- " + std::to_string(ival);
+	result = "iLoad:\t" + rtl_priority_to_register(reg->priority) + " <- " + std::to_string(ival);
 	return result;
 }
 
@@ -628,7 +648,7 @@ Load_Float_RTL_Statement::Load_Float_RTL_Statement(RTL_Register *reg, float fval
 std::string Load_Float_RTL_Statement::to_string() const
 {
 	std::string result;
-	result = "iload.d:\t" + rtl_priority_to_register(reg->priority) + " <- ";
+	result = "iLoad.d:\t" + rtl_priority_to_register(reg->priority) + " <- ";
 	std::ostringstream out;
 	out << std::fixed << std::setprecision(2) << fval;
 	result += out.str();
@@ -729,6 +749,10 @@ std::string Compute_RTL_Statement::to_string() const
 	if (op == RTL_Operator::NEGATE || op == RTL_Operator::LOGICAL_NOT)
 	{
 		result = op_name + ":\t" + result_name + " <- " + opd1_name;
+	}
+	else if (is_relational_op(op) && is_float)
+	{
+		result = op_name + ":\t" + opd1_name + " , " + opd2_name;
 	}
 	else
 	{
@@ -837,6 +861,10 @@ RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)
 
 RTL_Register *RegisterTracker::get_register(int priority)
 {
+	if (priority == PRIORITY_A0 || priority == PRIORITY_F0 || priority == PRIORITY_V1)
+	{
+		return all_regs[priority];
+	}
 	if (all_regs.find(priority) != all_regs.end())
 	{
 		if (available_int_regs.find(priority) != available_int_regs.end() && available_int_regs[priority])
@@ -848,20 +876,19 @@ RTL_Register *RegisterTracker::get_register(int priority)
 			return all_regs[priority];
 		}
 	}
-	throw_SemanticError("Expected to find unused register with priority " + std::to_string(priority));
 
-	return all_regs[priority];
+	throw_SemanticError("Expected to find unused register with priority " + std::to_string(priority));
+	return nullptr;
 }
 
 RTL_Register *RegisterTracker::get_int_register()
 {
-	for (auto it = available_int_regs.begin(); it != available_int_regs.end(); ++it)
+	for (auto &[priority, is_available] : available_int_regs)
 	{
-		std::cerr << "register " << rtl_priority_to_register(it->first) << " available: " << it->second << std::endl;
-		if (it->second)
+		if (is_available)
 		{
-			it->second = false;
-			return all_regs[it->first];
+			is_available = false;
+			return all_regs[priority];
 		}
 	}
 
@@ -920,6 +947,6 @@ RTL_Statement::RTL_Statement(bool is_float) : is_float(is_float)
 }
 
 Scope::Scope(Scope_Kind kind, Scope *parent_scope, Func_Signature *func_sig)
-	: kind(kind), parent_scope(parent_scope), func_sig(func_sig), reg_tracker(new RegisterTracker())
+	: kind(kind), parent_scope(parent_scope), func_sig(func_sig)
 {
 }
