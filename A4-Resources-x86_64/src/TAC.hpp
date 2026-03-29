@@ -61,6 +61,7 @@ public:
 
 	void append_statement(RTL_Statement *rtl_statement);
 	void append_list(RTL_Code *rtl_code);
+	std::string to_string() const;
 };
 
 class Load_Int_RTL_Statement : public RTL_Statement
@@ -175,12 +176,6 @@ class RegisterTracker
 {
 
 public:
-	inline const static int PRIORITY_V0 = 1;
-	inline const static int PRIORITY_F12 = 26;
-	inline const static int PRIORITY_A0 = 100;
-	inline const static int PRIORITY_V1 = 200;
-	inline const static int PRIORITY_F0 = 300;
-
 	std::map<int, RTL_Register *> all_regs;
 
 	std::unordered_map<TAC_Operand *, int> reg_map;

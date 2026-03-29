@@ -1,0 +1,8 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+load:	v0 <- b_
+load:	t1 <- c_
+add:	t0 <- v0 , t1
+store:	a_ <- t0
+
+**END: RTL Statements

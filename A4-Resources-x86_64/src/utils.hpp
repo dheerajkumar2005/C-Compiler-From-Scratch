@@ -6,6 +6,12 @@
 
 #include "Errors.hpp"
 
+const int PRIORITY_V0 = 1;
+const int PRIORITY_F12 = 26;
+const int PRIORITY_A0 = 100;
+const int PRIORITY_V1 = 200;
+const int PRIORITY_F0 = 300;
+
 enum class Type
 {
     VOID,

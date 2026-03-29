@@ -13,6 +13,7 @@
     extern int sa_parse;
     extern int show_ast;
     extern int show_tac;
+    extern int show_rtl;
 %}
 
 %parse-param { Scope *curr_scope }
@@ -190,6 +191,12 @@ func_def
                 tac_print_stmt_list($8);
             }
 
+            if(show_rtl) 
+            {
+                rtl_print_func_sig(curr_scope);
+                rtl_print_stmt_list($8);
+            }
+
             curr_scope = curr_scope->parent_scope;
         }
     }
@@ -219,6 +226,12 @@ func_def
             {
                 tac_print_func_sig(curr_scope);
                 tac_print_stmt_list($7);
+            }
+
+            if(show_rtl) 
+            {
+                rtl_print_func_sig(curr_scope);
+                rtl_print_stmt_list($7);
             }
 
             curr_scope = curr_scope->parent_scope;

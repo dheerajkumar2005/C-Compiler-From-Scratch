@@ -404,6 +404,16 @@ RTL_Code *Statement_Ast::rtlgen()
     return rtl_code;
 }
 
+RTL_Code *Statement_Ast::get_rtl()
+{
+    if (!rtl_code)
+    {
+        rtl_code = rtlgen();
+    }
+
+    return rtl_code;
+}
+
 Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs, RegisterTracker *register_tracker)
     : Statement_Ast(register_tracker), lhs(lhs), rhs(rhs)
 {

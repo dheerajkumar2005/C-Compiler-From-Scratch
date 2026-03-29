@@ -293,9 +293,11 @@ std::string op_to_string(RTL_Operator op)
     return oss.str();
 }
 
-std::string op_float_to_string(RTL_Operator op){
+std::string op_float_to_string(RTL_Operator op)
+{
     std::string result;
-    if(op == RTL_Operator::NEGATE){
+    if (op == RTL_Operator::NEGATE)
+    {
         result = "uminus.d";
     }
     else if (op == RTL_Operator::LOGICAL_NOT)
@@ -343,7 +345,6 @@ std::string op_float_to_string(RTL_Operator op){
         throw_SemanticError("Unexpected RTL float Operator: " + op_to_string(op));
     }
     return result;
-
 }
 
 TAC_Operator binary_to_tac(Binary_Operator op)
@@ -420,18 +421,23 @@ TAC_Operator unary_to_tac(Unary_Operator op)
     }
 }
 
-RTL_Operator invert_op(RTL_Operator op){
+RTL_Operator invert_op(RTL_Operator op)
+{
     RTL_Operator result = RTL_Operator::EQ;
-    if(op == RTL_Operator::GE){
+    if (op == RTL_Operator::GE)
+    {
         result = RTL_Operator::LT;
     }
-    else if(op == RTL_Operator::GT){
+    else if (op == RTL_Operator::GT)
+    {
         result = RTL_Operator::LE;
     }
-    else if(op == RTL_Operator::NE){
+    else if (op == RTL_Operator::NE)
+    {
         result = RTL_Operator::EQ;
     }
-    else{
+    else
+    {
         throw_SemanticError("New operator that is not expected here");
     }
     return result;
@@ -507,32 +513,39 @@ RTL_Operator tac_to_rtl(TAC_Operator op)
     return RTL_Operator::ADD; // dummy
 }
 
-std::string rtl_priority_to_register(int priority){
-    std::string result;
-    if(priority == 1){
-        result = "t0"; 
+std::string rtl_priority_to_register(int priority)
+{
+    if (priority == 1)
+    {
+        return "v0";
     }
-    else if(priority > 1 && priority <= 11){
-        result = "t" + std::to_string(priority-2);
+    else if (priority <= 11)
+    {
+        return "t" + std::to_string(priority - 2);
     }
-    else if(priority > 11 && priority <= 19){
-        result = "s" + std::to_string(priority-12);
+    else if (priority <= 19)
+    {
+        return "s" + std::to_string(priority - 12);
     }
-    else if(priority >= 21 && priority <= 35){
-        result = "f" + std::to_string((priority-20)*2);
+    else if (priority <= 34)
+    {
+        return "f" + std::to_string((priority - 19) * 2);
     }
-    else if(priority == 100){
-        result = "a0";
+    else if (priority == PRIORITY_A0)
+    {
+        return "a0";
     }
-    else if(priority == 200){
-        result = "v1";
+    else if (priority == PRIORITY_F0)
+    {
+        return "f0";
     }
-    else if(priority == 300){
-        result = "f0";
+    else if (priority == PRIORITY_V1)
+    {
+        return "v1";
     }
-    else{
+    else
+    {
         throw_SemanticError("This register doesn't exist currently, I have no clue why is it used\n");
+        return "";
     }
-
-    return result;
 }

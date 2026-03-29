@@ -16,6 +16,10 @@ int show_tac;
 std::ostream *tacout = nullptr;
 std::ofstream tacfile;
 
+int show_rtl;
+std::ostream *rtlout = nullptr;
+std::ofstream rtlfile;
+
 extern "C"
 {
     int yyparse(Scope *);
@@ -65,7 +69,7 @@ int main(int argc, char *argv[])
     show_tokens = 0;
     show_ast = 0;
     show_tac = 0;
-    int show_rtl = 0;
+    show_rtl = 0;
     int show_symtab = 0;
     int show_asm = 0;
 
@@ -199,10 +203,16 @@ int main(int argc, char *argv[])
     {
         show_ast = 0;
         show_tac = 0;
+        show_rtl = 0;
     }
     else if (sa_ast)
     {
         show_tac = 0;
+        show_rtl = 0;
+    }
+    else if (sa_tac)
+    {
+        show_rtl = 0;
     }
 
     if (show_tokens)
@@ -243,6 +253,20 @@ int main(int argc, char *argv[])
             std::string outfilename = filename + ".tac";
             tacfile.open(outfilename);
             tacout = &tacfile;
+        }
+    }
+
+    if (show_rtl)
+    {
+        if (demo)
+        {
+            rtlout = &std::cout;
+        }
+        else
+        {
+            std::string outfilename = filename + ".rtl";
+            rtlfile.open(outfilename);
+            rtlout = &rtlfile;
         }
     }
 

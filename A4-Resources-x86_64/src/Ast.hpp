@@ -10,6 +10,7 @@
 
 extern std::ostream *astout;
 extern std::ostream *tacout;
+extern std::ostream *rtlout;
 
 class Ast
 {
@@ -220,6 +221,8 @@ public:
 
 class Statement_Ast : public Ast
 {
+    RTL_Code *rtl_code;
+
 public:
     RegisterTracker *register_tracker;
 
@@ -227,6 +230,7 @@ public:
     virtual ~Statement_Ast() = 0;
 
     virtual RTL_Code *rtlgen();
+    virtual RTL_Code *get_rtl() final;
 };
 
 class Assignment_Stmt_Ast : public Statement_Ast

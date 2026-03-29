@@ -323,3 +323,41 @@ void tac_print_stmt_list(StatementList *stmt_list)
     }
     *tacout << "**END: Three Address Code Statements" << std::endl;
 }
+
+void rtl_print_func_sig(Scope *func)
+{
+    if (func->kind != Scope_Kind::FUNCTION)
+    {
+        throw_SemanticError("Not a function!");
+        return;
+    }
+
+    Func_Signature *func_signature = func->func_sig;
+
+    std::string func_name = func_signature->name;
+    Type return_type = func_signature->return_type;
+    std::vector<std::string> param_names = func_signature->param_names;
+    std::vector<Type> param_types = func_signature->param_types;
+
+    *rtlout << "**PROCEDURE: " << func_name << std::endl;
+}
+
+void rtl_print_stmt_list(StatementList *stmt_list)
+{
+    *rtlout << "**BEGIN: RTL Statements" << std::endl;
+    if (stmt_list)
+    {
+        for (auto stmt_ast : *stmt_list)
+        {
+            if (stmt_ast)
+            {
+                RTL_Code *rtl_code = stmt_ast->get_rtl();
+                if (rtl_code)
+                {
+                    *rtlout << rtl_code->to_string() << std::endl;
+                }
+            }
+        }
+    }
+    *rtlout << "**END: RTL Statements" << std::endl;
+}
