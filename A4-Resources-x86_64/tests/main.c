@@ -13,11 +13,20 @@ void main()
     //     print 3;
     // }
 
-    bool a;
+    bool a,b,c,d,e;
     float x,y;
+    int z;
+    string g;
     // x = a? x+1:y+1;
     // a = x < y;
-    a = x < y;
-    print 1.1+1.2;
+    // z = 1+3;
+    // x = 1.2+22.3;
+    // y = 2.2;
+    // a = x<y;
+    // d = a? b : c;
+    print x+1.1;
+    print z+1;
+    // print y;
+    // print g;
     // print a;
 }

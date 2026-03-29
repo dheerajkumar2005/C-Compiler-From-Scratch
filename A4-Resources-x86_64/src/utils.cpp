@@ -420,6 +420,23 @@ TAC_Operator unary_to_tac(Unary_Operator op)
     }
 }
 
+RTL_Operator invert_op(RTL_Operator op){
+    RTL_Operator result = RTL_Operator::EQ;
+    if(op == RTL_Operator::GE){
+        result = RTL_Operator::LT;
+    }
+    else if(op == RTL_Operator::GT){
+        result = RTL_Operator::LE;
+    }
+    else if(op == RTL_Operator::NE){
+        result = RTL_Operator::EQ;
+    }
+    else{
+        throw_SemanticError("New operator that is not expected here");
+    }
+    return result;
+}
+
 RTL_Operator tac_to_rtl(TAC_Operator op)
 {
     if (op == TAC_Operator::NOP)
@@ -501,11 +518,17 @@ std::string rtl_priority_to_register(int priority){
     else if(priority > 11 && priority <= 19){
         result = "s" + std::to_string(priority-12);
     }
-    else if(priority >= 20 && priority <= 35){
+    else if(priority >= 21 && priority <= 35){
         result = "f" + std::to_string((priority-20)*2);
     }
     else if(priority == 100){
         result = "a0";
+    }
+    else if(priority == 200){
+        result = "v1";
+    }
+    else if(priority == 300){
+        result = "f0";
     }
     else{
         throw_SemanticError("This register doesn't exist currently, I have no clue why is it used\n");
