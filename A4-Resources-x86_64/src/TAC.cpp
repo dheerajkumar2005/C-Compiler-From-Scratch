@@ -565,6 +565,7 @@ std::string Code::to_string() const
 		if (*it)
 		{
 			result += (*it)->to_string() + "\n";
+			// std::cerr << "[DEBUG] result: " << result << std::endl;
 		}
 	}
 	return result;
@@ -684,7 +685,7 @@ std::string Move_RTL_Statement::to_string() const{
 	return result;
 }
 
-Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, bool is_float)
+Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2, bool is_float)
 	: RTL_Statement(is_float), lhs(lhs), op(op), opd1(opd1), opd2(opd2)
 {
 }

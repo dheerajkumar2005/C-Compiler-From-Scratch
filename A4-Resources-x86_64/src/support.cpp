@@ -287,7 +287,7 @@ void ast_print_stmt_list(StatementList *stmt_list)
 
 void tac_print_func_sig(Scope *func)
 {
-    std::cerr << "HI" << std::endl;
+    // std::cerr << "HI" << std::endl;
     if (func->kind != Scope_Kind::FUNCTION)
     {
         throw_SemanticError("Not a function!");

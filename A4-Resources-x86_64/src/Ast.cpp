@@ -354,33 +354,27 @@ Conditional_Expr_Ast::Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast 
 
 Code *Conditional_Expr_Ast::codegen()
 {
+    Code *predicate_expr = opd1->get_code();
+    Code *then_expr = opd2->get_code();
+    Code *else_expr = opd3->get_code();
+
     Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(opd1->type);
-    Shared_Temporary_TAC_Operand *t2 = new Shared_Temporary_TAC_Operand(opd2->type);
+    place = new Shared_Temporary_TAC_Operand(opd2->type);
 
     TAC_Label *l1 = new TAC_Label();
     TAC_Label *l2 = new TAC_Label();
 
-    Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, opd1->place);
-    If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(t1, l1);
-    Assignment_TAC_Statement *c3 = new Assignment_TAC_Statement(t2, opd2->place);
-    Goto_TAC_Statement *c4 = new Goto_TAC_Statement(l2);
-    Label_TAC_Statement *c5 = new Label_TAC_Statement(l1);
-    Assignment_TAC_Statement *c6 = new Assignment_TAC_Statement(t2, opd3->place);
-    Label_TAC_Statement *c7 = new Label_TAC_Statement(l2);
-
     Code *code = new Code();
-    code->append_list(opd1->get_code());
-    code->append_statement(c1);
-    code->append_statement(c2);
-    code->append_list(opd2->get_code());
-    code->append_statement(c3);
-    code->append_statement(c4);
-    code->append_statement(c5);
-    code->append_list(opd3->get_code());
-    code->append_statement(c6);
-    code->append_statement(c7);
-
-    place = t2;
+    code->append_list(predicate_expr);
+    code->append_statement(new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, opd1->place));
+    code->append_statement(new If_Goto_TAC_Statement(t1, l1));
+    code->append_list(then_expr);
+    code->append_statement(new Assignment_TAC_Statement(place, opd2->place));
+    code->append_statement(new Goto_TAC_Statement(l2));
+    code->append_statement(new Label_TAC_Statement(l1));
+    code->append_list(else_expr);
+    code->append_statement(new Assignment_TAC_Statement(place, opd3->place));
+    code->append_statement(new Label_TAC_Statement(l2));
 
     return code;
 }
@@ -427,13 +421,12 @@ Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs
 
 Code *Assignment_Stmt_Ast::codegen()
 {
-    Variable_TAC_Operand *id = new Variable_TAC_Operand(lhs->type, &lhs->var_name, lhs->declaring_scope);
-
-    Assignment_TAC_Statement *c1 = new Assignment_TAC_Statement(id, rhs->place);
-
     Code *code = new Code();
+
     code->append_list(rhs->get_code());
-    code->append_statement(c1);
+
+    Variable_TAC_Operand *id = new Variable_TAC_Operand(lhs->type, &lhs->var_name, lhs->declaring_scope);
+    code->append_statement(new Assignment_TAC_Statement(id, rhs->place));
 
     return code;
 }
@@ -455,12 +448,10 @@ Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var, RegisterTracker *register_track
 
 Code *Read_Stmt_Ast::codegen()
 {
-    Variable_TAC_Operand *id = new Variable_TAC_Operand(var->type, &var->var_name, var->declaring_scope);
-
-    IO_TAC_Statement *c1 = new IO_TAC_Statement(IO_Kind::READ, id);
-
     Code *code = new Code();
-    code->append_statement(c1);
+
+    Variable_TAC_Operand *id = new Variable_TAC_Operand(var->type, &var->var_name, var->declaring_scope);
+    code->append_statement(new IO_TAC_Statement(IO_Kind::READ, id));
 
     return code;
 }
@@ -483,11 +474,11 @@ Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr, RegisterTracker *register_t
 
 Code *Write_Stmt_Ast::codegen()
 {
-    IO_TAC_Statement *c1 = new IO_TAC_Statement(IO_Kind::WRITE, expr->place);
-
     Code *code = new Code();
+
     code->append_list(expr->get_code());
-    code->append_statement(c1);
+
+    code->append_statement(new IO_TAC_Statement(IO_Kind::WRITE, expr->place));
 
     return code;
 }
@@ -553,17 +544,20 @@ Code *If_Stmt_Ast::codegen()
 
     code->append_list(predicate->get_code());
 
+    Code *if_clause_code = if_clause->get_code();
+
     TAC_Operand *t = new Temporary_TAC_Operand(Type::BOOL);
     code->append_statement(new Assignment_TAC_Statement(t, Unary_Operator::LOGICAL_NOT, predicate->place));
-
-    TAC_Label *l_false = new TAC_Label();
-    code->append_statement(new If_Goto_TAC_Statement(t, l_false));
-
-    code->append_list(if_clause->get_code());
 
     if (else_clause)
     {
         TAC_Label *l_end = new TAC_Label();
+        TAC_Label *l_false = new TAC_Label();
+
+        code->append_statement(new If_Goto_TAC_Statement(t, l_false));
+
+        code->append_list(if_clause_code);
+
         code->append_statement(new Goto_TAC_Statement(l_end));
 
         code->append_statement(new Label_TAC_Statement(l_false));
@@ -574,6 +568,12 @@ Code *If_Stmt_Ast::codegen()
     }
     else
     {
+        TAC_Label *l_false = new TAC_Label();
+        code->append_statement(new If_Goto_TAC_Statement(t, l_false));
+
+        code->append_list(if_clause_code);
+
+        code->append_statement(new Goto_TAC_Statement(l_false));
         code->append_statement(new Label_TAC_Statement(l_false));
     }
 
@@ -602,25 +602,27 @@ While_Stmt_Ast::While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body)
 
 Code *While_Stmt_Ast::codegen()
 {
-    Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(Type::BOOL);
-
-    TAC_Label *l1 = new TAC_Label();
-    TAC_Label *l2 = new TAC_Label();
-
-    Label_TAC_Statement *c1 = new Label_TAC_Statement(l1);
-    Assignment_TAC_Statement *c2 = new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place);
-    If_Goto_TAC_Statement *c3 = new If_Goto_TAC_Statement(t1, l2);
-    Goto_TAC_Statement *c4 = new Goto_TAC_Statement(l1);
-    Label_TAC_Statement *c5 = new Label_TAC_Statement(l2);
+    Code *predicate_code = predicate->get_code();
+    Code *body_code = body->get_code();
 
     Code *code = new Code();
-    code->append_statement(c1);
-    code->append_list(predicate->get_code());
-    code->append_statement(c2);
-    code->append_statement(c3);
-    code->append_list(body->get_code());
-    code->append_statement(c4);
-    code->append_statement(c5);
+
+    TAC_Label *l1 = new TAC_Label();
+    code->append_statement(new Label_TAC_Statement(l1));
+
+    code->append_list(predicate_code);
+
+    Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(Type::BOOL);
+    code->append_statement(new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place));
+
+    TAC_Label *l2 = new TAC_Label();
+    code->append_statement(new If_Goto_TAC_Statement(t1, l2));
+
+    code->append_list(body_code);
+
+    code->append_statement(new Goto_TAC_Statement(l1));
+
+    code->append_statement(new Label_TAC_Statement(l2));
 
     return code;
 }
@@ -643,16 +645,20 @@ Do_While_Stmt_Ast::Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *b
 
 Code *Do_While_Stmt_Ast::codegen()
 {
-    TAC_Label *l1 = new TAC_Label();
-    Label_TAC_Statement *c1 = new Label_TAC_Statement(l1);
-    If_Goto_TAC_Statement *c2 = new If_Goto_TAC_Statement(predicate->place, l1);
+    Code *body_code = body->get_code();
+    Code *predicate_code = predicate->get_code();
 
     Code *code = new Code();
-    code->append_statement(c1);
-    code->append_list(body->get_code());
-    code->append_list(predicate->get_code());
-    code->append_statement(c2);
 
+    TAC_Label *l1 = new TAC_Label();
+    code->append_statement(new Label_TAC_Statement(l1));
+
+    code->append_list(body_code);
+
+    code->append_list(predicate_code);
+
+    code->append_statement(new If_Goto_TAC_Statement(predicate->place, l1));
+    
     return code;
 }
 
