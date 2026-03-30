@@ -84,6 +84,16 @@ public:
 	virtual std::string to_string() const override final;
 };
 
+class Load_String_RTL_Statement : public RTL_Statement{
+	public:
+		RTL_Register* reg;
+		static int string_count;
+		static std::unordered_map<std::string, int> s_map;
+		int string_label;
+		std::string sval;
+		Load_String_RTL_Statement(RTL_Register *reg, std::string sval);
+		virtual std::string to_string() const override final;
+};
 
 class Load_RTL_Statement : public RTL_Statement
 {
@@ -239,12 +249,12 @@ public:
 	virtual std::string to_string() const override final;
 };
 
-class String_Const_TAC_operand : public TAC_Operand
-{
-	std::string sval;
-
+class String_Const_TAC_Operand : public TAC_Operand
+{	
+	
 public:
-	String_Const_TAC_operand(char *_sval);
+	std::string sval;
+	String_Const_TAC_Operand(char *_sval);
 	virtual std::string to_string() const override final;
 };
 

@@ -30,9 +30,9 @@ std::string Float_Const_TAC_Operand::to_string() const
 	return out.str();
 }
 
-String_Const_TAC_operand::String_Const_TAC_operand(char *_sval)
+String_Const_TAC_Operand::String_Const_TAC_Operand(char *_sval)
 	: TAC_Operand(Type::STR), sval(_sval) {}
-std::string String_Const_TAC_operand::to_string() const
+std::string String_Const_TAC_Operand::to_string() const
 {
 	return sval;
 }
@@ -296,6 +296,10 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			{
 				load_stmt = new Load_Int_RTL_Statement(reg_opd1, o->ival);
 			}
+			else if(auto o = dynamic_cast<String_Const_TAC_Operand *>(opd1))
+			{
+				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval);
+			}
 			else
 			{
 				load_stmt = new Load_RTL_Statement(reg_opd1, opd1);
@@ -323,6 +327,10 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd2))
 			{
 				load_stmt = new Load_Int_RTL_Statement(reg_opd2, o->ival);
+			}
+			else if(auto o = dynamic_cast<String_Const_TAC_Operand *>(opd2))
+			{
+				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval);
 			}
 			else
 			{
@@ -652,6 +660,27 @@ std::string Load_Float_RTL_Statement::to_string() const
 	std::ostringstream out;
 	out << std::fixed << std::setprecision(2) << fval;
 	result += out.str();
+	return result;
+}
+
+int Load_String_RTL_Statement::string_count = 0;
+std::unordered_map<std::string,int> Load_String_RTL_Statement::s_map;
+
+Load_String_RTL_Statement::Load_String_RTL_Statement(RTL_Register *reg, std::string sval)
+: RTL_Statement(false), reg(reg), sval(sval)
+{	
+	if(s_map.find(sval) == s_map.end()){
+		string_label = string_count++;
+		s_map[sval] = string_label;
+	}
+	else{
+		string_label = s_map[sval];
+	}
+}
+
+std::string Load_String_RTL_Statement::to_string() const {
+	std::string result;
+	result = "load_addr:\t" + rtl_priority_to_register(reg->priority) + " <- " + "_str_" + std::to_string(string_label); 
 	return result;
 }
 

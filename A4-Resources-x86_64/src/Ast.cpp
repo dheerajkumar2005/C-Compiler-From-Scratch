@@ -100,7 +100,7 @@ std::string Float_Expr_Ast::to_string() const
 String_Expr_Ast::String_Expr_Ast(char *_sval)
     : Base_Expr_Ast(Type::STR), sval(_sval)
 {
-    this->place = new String_Const_TAC_operand(_sval);
+    this->place = new String_Const_TAC_Operand(_sval);
 }
 
 Code *String_Expr_Ast::codegen()
