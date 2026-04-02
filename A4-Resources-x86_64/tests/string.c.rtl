@@ -1,0 +1,30 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+load_addr:	v0 <- _str_0
+store:	s_ <- v0
+
+load_addr:	v0 <- _str_0
+store:	r_ <- v0
+
+load_addr:	v0 <- _str_1
+store:	s_ <- v0
+
+load_addr:	v0 <- _str_0
+store:	s_ <- v0
+
+iLoad:	v0 <- 1
+store:	a_ <- v0
+
+iLoad:	v0 <- 1
+store:	a_ <- v0
+
+load:	v0 <- a_
+load:	t1 <- a_
+mul:	t0 <- v0 , t1
+store:	a_ <- t0
+
+iLoad:	v0 <- 4
+load:	a0 <- s_
+write
+
+**END: RTL Statements
