@@ -11,28 +11,13 @@
 #include "Errors.hpp"
 #include "Program.hpp"
 #include "utils.hpp"
+#include "RTL_Code.hpp"
 
 enum class IO_Kind
 {
 	READ,
 	WRITE
 };
-
-class RTL_Register
-{
-public:
-	int priority;
-
-	RTL_Register(int priority);
-};
-
-// struct RTL_Register_Comparator
-// {
-// 	bool operator()(const RTL_Register *lhs, const RTL_Register *rhs)
-// 	{
-// 		return lhs->priority < rhs->priority;
-// 	}
-// };
 
 class TAC_Operand
 {
@@ -41,145 +26,6 @@ public:
 
 	TAC_Operand(Type type);
 	virtual std::string to_string() const = 0;
-};
-
-class RTL_Statement
-{
-public:
-	bool is_float;
-
-	RTL_Statement(bool is_float);
-	virtual std::string to_string() const = 0;
-};
-
-class RTL_Code
-{
-public:
-	std::list<RTL_Statement *> *stmt_list;
-
-	RTL_Code();
-
-	void append_statement(RTL_Statement *rtl_statement);
-	void append_list(RTL_Code *rtl_code);
-	std::string to_string() const;
-};
-
-class Load_Int_RTL_Statement : public RTL_Statement
-{
-public:
-	RTL_Register *reg;
-	int ival;
-
-	Load_Int_RTL_Statement(RTL_Register *reg, int ival);
-	virtual std::string to_string() const override final;
-};
-
-class Load_Float_RTL_Statement : public RTL_Statement
-{
-public:
-	RTL_Register *reg;
-	float fval;
-
-	Load_Float_RTL_Statement(RTL_Register *reg, float fval);
-	virtual std::string to_string() const override final;
-};
-
-class Load_String_RTL_Statement : public RTL_Statement{
-	public:
-		RTL_Register* reg;
-		static int string_count;
-		static std::unordered_map<std::string, int> s_map;
-		int string_label;
-		std::string sval;
-		Load_String_RTL_Statement(RTL_Register *reg, std::string sval);
-		virtual std::string to_string() const override final;
-};
-
-class Load_RTL_Statement : public RTL_Statement
-{
-public:
-	RTL_Register *reg;
-	TAC_Operand *var;
-
-	Load_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
-	virtual std::string to_string() const override final;
-};
-
-class Store_RTL_Statement : public RTL_Statement
-{
-public:
-	RTL_Register *reg;
-	TAC_Operand *var;
-
-	Store_RTL_Statement(RTL_Register *reg, TAC_Operand *var, bool is_float = false);
-	~Store_RTL_Statement() = default;
-
-	virtual std::string to_string() const override final;
-};
-
-class Move_RTL_Statement : public RTL_Statement{
-	public:
-		RTL_Register* dest;
-		RTL_Register* src;
-		bool is_movtf;
-		bool is_movt;
-
-		Move_RTL_Statement(RTL_Register* dest, RTL_Register* src, bool is_movtf, bool is_movt, bool is_float);
-		std::string to_string() const final override;
-};
-
-class Compute_RTL_Statement : public RTL_Statement
-{
-public:
-	RTL_Register *lhs;
-	RTL_Operator op;
-	RTL_Register *opd1;
-	RTL_Register *opd2;
-
-	Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, bool is_float = false);
-	virtual std::string to_string() const override final;
-};
-
-class Goto_RTL_Statement : public RTL_Statement
-{
-public:
-	int label_number;
-
-	Goto_RTL_Statement(int label_number);
-	virtual std::string to_string() const override final;
-};
-
-class If_Goto_RTL_Statement : public RTL_Statement
-{
-public:
-	RTL_Register *predicate;
-	int label_number;
-
-	If_Goto_RTL_Statement(RTL_Register *predicate, int label_number);
-	virtual std::string to_string() const override final;
-};
-
-class Read_RTL_Statement : public RTL_Statement
-{
-public:
-	Read_RTL_Statement(bool is_float);
-	virtual std::string to_string() const override final;
-};
-
-// TODO: Note that while printing expressions, need to move and not load
-class Write_RTL_Statement : public RTL_Statement
-{
-public:
-	Write_RTL_Statement(bool is_float);
-	virtual std::string to_string() const override final;
-};
-
-class Label_RTL_Statement : public RTL_Statement
-{
-public:
-	int label_number;
-	Label_RTL_Statement(int label_number);
-	virtual std::string to_string() const override final;
 };
 
 class RegisterTracker
@@ -203,19 +49,6 @@ public:
 	void mark(TAC_Operand *opd, RTL_Register *reg);
 
 	void free_register(TAC_Operand *opd, RTL_Register *reg);
-};
-
-// std::ostream &operator<<(std::ostream &os, TAC_Operator op);
-
-struct Scope
-{
-	Scope_Kind kind;
-	Scope *parent_scope;
-
-	std::unordered_map<std::string, Symbol_Table_Entry *> sym_tab;
-	Func_Signature *func_sig; // nullptr for non-functions
-
-	Scope(Scope_Kind kind, Scope *parent_scope = nullptr, Func_Signature *func_sig = nullptr);
 };
 
 class Variable_TAC_Operand : public TAC_Operand
@@ -358,19 +191,6 @@ public:
 	Label_TAC_Statement(TAC_Label *_label);
 	virtual std::string to_string() const override final;
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
-};
-
-class Code
-{
-public:
-	std::list<TAC_Statement *> *stmt_list;
-	Code();
-
-	void append_statement(TAC_Statement *s);
-	TAC_Statement *pop_statement();
-	void append_list(Code *c);
-
-	std::string to_string() const;
 };
 
 #endif

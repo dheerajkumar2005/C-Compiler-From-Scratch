@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "TAC.hpp"
+#include "Code.hpp"
 
 extern std::ostream *astout;
 extern std::ostream *tacout;

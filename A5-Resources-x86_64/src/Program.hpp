@@ -55,4 +55,15 @@ struct Symbol_Table_Entry
     Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signature *func_sig = nullptr);
 };
 
+struct Scope
+{
+    Scope_Kind kind;
+    Scope *parent_scope;
+
+    std::unordered_map<std::string, Symbol_Table_Entry *> sym_tab;
+    Func_Signature *func_sig; // nullptr for non-functions
+
+    Scope(Scope_Kind kind, Scope *parent_scope = nullptr, Func_Signature *func_sig = nullptr);
+};
+
 #endif
