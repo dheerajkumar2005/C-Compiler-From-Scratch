@@ -580,5 +580,6 @@ int get_size(Type type)
     else
     {
         throw_SemanticError("Unexpected type: " + type_to_string(type));
+        return 0;
     }
 }

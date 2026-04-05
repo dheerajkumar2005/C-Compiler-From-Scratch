@@ -25,6 +25,7 @@
     Assignment_Stmt_Ast *asgn;
     Read_Stmt_Ast *read;
     Write_Stmt_Ast *write;
+    Return_Stmt_Ast *_return;
     Expression_Ast *expr;
     Name_Expr_Ast *var;
     Relational_Expr_Ast *rel;
@@ -51,6 +52,9 @@
     While_Stmt_Ast *while_stmt;
 
     Do_While_Stmt_Ast *do_while_stmt;
+
+    FunctionDefinition *fd;
+    FunctionDefinitionList *fdl;
 }
 
 // Terminals (and optionally their types)
@@ -87,6 +91,7 @@
 %token ELSE
 %token DO
 %token WHILE
+%token RETURN
 
 %type <func_header> func_header
 %type <formal_param_list> formal_param_list
@@ -109,6 +114,7 @@
 %type <asgn> assignment_statement
 %type <write> print_statement
 %type <read> read_statement
+%type <_return> return_statement
 %type <expr> expression
 %type <rel> rel_expression
 %type <var> variable_as_operand
@@ -119,6 +125,8 @@
 %type <if_stmt> if_statement
 %type <do_while_stmt> do_while_statement
 %type <while_stmt> while_statement
+%type <fd> func_def
+%type <fdl> func_def_list
 
 %start program
 
@@ -138,8 +146,8 @@
 %%
 
 program
-    : global_decl_stmt_list func_def_list
-    | func_def_list
+    : global_decl_stmt_list func_def_list { print_func_def_list($2, show_ast, show_tac, show_rtl); }
+    | func_def_list { print_func_def_list($1, show_ast, show_tac, show_rtl); }
 ;
 
 global_decl_stmt_list
@@ -155,8 +163,8 @@ func_decl
 ;
 
 func_def_list
-    : func_def_list func_def
-    | func_def
+    : func_def_list func_def { $$ = accumulate_func_def($1, $2); } 
+    | func_def { $$ = accumulate_func_def($1); }
 
 /* NOTE: formal param and func header look the same */
 func_header
@@ -169,7 +177,7 @@ func_def
         if(!sa_parse) 
         {
             // Add it to old symtab or match with existing signature
-            Func_Signature *func_sig = process_func_def(curr_scope, $1, $3);
+            Func_Signature *func_sig = make_func_sig(curr_scope, $1, $3);
 
             // Push the new scope
             curr_scope = make_func_scope(curr_scope, func_sig);
@@ -177,31 +185,34 @@ func_def
     }
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
-        if (!sa_parse) 
+        std::string *ast = nullptr;
+        std::string *tac = nullptr;
+        std::string *rtl = nullptr;
+        Scope *func_scope = curr_scope;
+        if (!sa_parse)
         {
-            if(show_ast) 
+            if(show_ast)
             {
-                ast_print_func_sig(curr_scope);
-                ast_print_stmt_list($8);
+                ast = ast_print_func(curr_scope, $8);
             }
 
             if(!is_empty($8)) 
             {
                 if(show_tac) 
                 {
-                    tac_print_func_sig(curr_scope);
-                    tac_print_stmt_list($8);
+                    tac = tac_print_func(curr_scope, $8);
                 }
 
                 if(show_rtl) 
                 {
-                    rtl_print_func_sig(curr_scope);
-                    rtl_print_stmt_list($8, register_tracker);
+                    rtl = rtl_print_func(curr_scope, $8, register_tracker);
                 }
             }
 
             curr_scope = curr_scope->parent_scope;
         }
+
+        $$ = process_func_def(&func_scope->func_sig->name, ast, tac, rtl);
     }
     
     | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET 
@@ -209,7 +220,7 @@ func_def
         if (!sa_parse) 
         {
             // Add it to old symtab or match with existing signature
-            Func_Signature *func_sig = process_func_def(curr_scope, $1);
+            Func_Signature *func_sig = make_func_sig(curr_scope, $1);
 
             // Push the new scope
             curr_scope = make_func_scope(curr_scope, func_sig);
@@ -217,31 +228,34 @@ func_def
     } 
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
+        std::string *ast = nullptr;
+        std::string *tac = nullptr;
+        std::string *rtl = nullptr;
+        Scope *func_scope = curr_scope;
         if (!sa_parse)
         {
             if(show_ast) 
             {
-                ast_print_func_sig(curr_scope);
-                ast_print_stmt_list($7);
+                ast = ast_print_func(curr_scope, $7);
             }
 
             if(!is_empty($7)) 
             {
                 if(show_tac) 
                 {
-                    tac_print_func_sig(curr_scope);
-                    tac_print_stmt_list($7);
+                    tac = tac_print_func(curr_scope, $7);
                 }
 
                 if(show_rtl) 
                 {
-                    rtl_print_func_sig(curr_scope);
-                    rtl_print_stmt_list($7, register_tracker);
+                    rtl = rtl_print_func(curr_scope, $7, register_tracker);
                 }
             }
 
             curr_scope = curr_scope->parent_scope;
         }
+
+        $$ = process_func_def(&func_scope->func_sig->name, ast, tac, rtl);
     }
 ;
 
@@ -274,6 +288,11 @@ statement
     | compound_statement { $$ = $1; }
     | print_statement { $$ = $1; }
     | read_statement { $$ = $1; }
+    | return_statement { $$ = $1; }
+;
+
+return_statement
+    : RETURN expression SEMICOLON { $$ = new Return_Stmt_Ast($2); }
 ;
 
 optional_local_var_decl_stmt_list

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "Ast.hpp"
 
@@ -23,6 +24,9 @@ using FuncHeader = std::pair<Type, std::string *>;
 
 using StatementList = std::vector<Statement_Ast *>;
 
+using FunctionDefinition = std::vector<std::string *>;
+using FunctionDefinitionList = std::vector<FunctionDefinition *>;
+
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier);
 IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::string *identifier);
 
@@ -31,6 +35,7 @@ void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identif
 Name_Expr_Ast *process_variable_name(Scope *curr_scope, std::string *identifier);
 
 FormalParam *accumulate_formal_param(Type type, std::string *id);
+FormalParam *accumulate_func_header(Type type, std::string *id);
 
 FormalParamList *accumulate_formal_param_list(FormalParam *formal_param);
 FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param);
@@ -38,7 +43,7 @@ FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list
 Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig);
 
 void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
-Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
+Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 
 Expression_Ast *process_predicate(Expression_Ast *expr);
 
@@ -49,13 +54,15 @@ StatementList *accumulate_stmt_list();
 
 bool is_empty(StatementList *stmt_list);
 
-void ast_print_func_sig(Scope *func);
-void ast_print_stmt_list(StatementList *stmt_list);
+std::string *ast_print_func(Scope *func, StatementList *stmt_list);
+std::string *tac_print_func(Scope *func, StatementList *stmt_list);
+std::string *rtl_print_func(Scope *func, StatementList *stmt_list, RegisterTracker *register_tracker);
 
-void tac_print_func_sig(Scope *func);
-void tac_print_stmt_list(StatementList *stmt_list);
+FunctionDefinition *process_func_def(std::string *func_name, std::string *ast, std::string *tac, std::string *rtl);
 
-void rtl_print_func_sig(Scope *func);
-void rtl_print_stmt_list(StatementList *stmt_list, RegisterTracker *register_tracker);
+FunctionDefinitionList *accumulate_func_def(FunctionDefinitionList *func_def_list, FunctionDefinition *func_def);
+FunctionDefinitionList *accumulate_func_def(FunctionDefinition *func_def);
+
+void print_func_def_list(FunctionDefinitionList *func_def_list_ptr, int show_ast, int show_tac, int show_rtl);
 
 #endif

@@ -68,6 +68,10 @@ LETTER [a-zA-Z_]
     display_token("WHILE", "while");
     return WHILE;
 }
+"return" {
+    display_token("RETURN", "return");
+    return RETURN;
+}
 
 {LETTER}({LETTER}|{DIGIT})* { 
     // FIXED

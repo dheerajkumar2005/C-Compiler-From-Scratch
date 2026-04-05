@@ -60,6 +60,21 @@ FormalParam *accumulate_formal_param(Type type, std::string *id)
     return nullptr;
 }
 
+FormalParam *accumulate_func_header(Type type, std::string *id)
+{
+    if (!sa_parse)
+    {
+        // For some unfathomable reason, functions other than main are appended with `_` in the nisame
+        // Like what even is this bro
+        if (*id != "main")
+        {
+            *id += "_";
+        }
+        return new std::pair<Type, std::string *>(type, id);
+    }
+    return nullptr;
+}
+
 FormalParamList *accumulate_formal_param_list(FormalParam *formal_param)
 {
     if (!sa_parse)
@@ -136,13 +151,7 @@ void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamLi
             return;
         }
 
-        // NOTE: TEMPORARY
-        // Only the 'void main' function is allowed
-        if (func_name != "main" || return_type != Type::VOID)
-        {
-            throw_SemanticError("Cannot have functions other than 'void main': '" + type_to_string(return_type) + " " + func_name + "'");
-            return;
-        }
+        // All kinds of functions are allowed
 
         Func_Signature *func_sig = get_func_sig(func_name, return_type, formal_param_list);
 
@@ -151,7 +160,7 @@ void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamLi
     }
 }
 
-Func_Signature *process_func_def(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
+Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
 {
     if (!sa_parse)
     {
@@ -228,7 +237,7 @@ bool is_empty(StatementList *stmt_list)
     return !stmt_list || stmt_list->empty();
 }
 
-void ast_print_func_sig(Scope *func)
+std::string ast_print_func_sig(Scope *func)
 {
     if (func->kind != Scope_Kind::FUNCTION)
     {
@@ -242,37 +251,48 @@ void ast_print_func_sig(Scope *func)
     std::vector<std::string> param_names = func_signature->param_names;
     std::vector<Type> param_types = func_signature->param_types;
 
-    *astout << "**PROCEDURE: " << func_name << std::endl;
-    *astout << "Return Type: <" << return_type << ">" << std::endl;
-    *astout << "Formal Parameters: " << std::endl;
+    std::string result;
+    result += "**PROCEDURE: " + func_name + "\n";
+    result += "Return Type: <" + type_to_string(return_type) + ">\n";
+    result += "Formal Parameters: \n";
     for (int i = 0; i < param_names.size(); i++)
     {
-        *astout << param_names[i] << "_ Type:<" << param_types[i] << ">" << std::endl;
+        result += param_names[i] + "_ Type:<" + type_to_string(param_types[i]) + ">\n";
     }
+    return result;
 }
 
-void ast_print_stmt_list(StatementList *stmt_list)
+std::string ast_print_stmt_list(StatementList *stmt_list)
 {
-    *astout << "**BEGIN: Abstract Syntax Tree" << std::endl;
+    std::string result;
+    result += "**BEGIN: Abstract Syntax Tree\n";
     if (stmt_list)
     {
         for (auto stmt_ast : *stmt_list)
         {
             if (stmt_ast)
             {
-                *astout << stmt_ast->to_string() << std::endl;
+                result += stmt_ast->to_string() + "\n";
             }
         }
     }
-    *astout << "**END: Abstract Syntax Tree" << std::endl;
+    result += "**END: Abstract Syntax Tree\n";
+    return result;
 }
 
-void tac_print_func_sig(Scope *func)
+std::string *ast_print_func(Scope *func, StatementList *stmt_list)
+{
+    std::string *ptr = new std::string;
+    *ptr += ast_print_func_sig(func);
+    *ptr += ast_print_stmt_list(stmt_list);
+    return ptr;
+}
+
+std::string tac_print_func_sig(Scope *func)
 {
     if (func->kind != Scope_Kind::FUNCTION)
     {
         throw_SemanticError("Not a function!");
-        return;
     }
 
     Func_Signature *func_signature = func->func_sig;
@@ -282,12 +302,15 @@ void tac_print_func_sig(Scope *func)
     std::vector<std::string> param_names = func_signature->param_names;
     std::vector<Type> param_types = func_signature->param_types;
 
-    *tacout << "**PROCEDURE: " << func_name << std::endl;
+    std::string result;
+    result += "**PROCEDURE: " + func_name + "\n";
+    return result;
 }
 
-void tac_print_stmt_list(StatementList *stmt_list)
+std::string tac_print_stmt_list(StatementList *stmt_list)
 {
-    *tacout << "**BEGIN: Three Address Code Statements" << std::endl;
+    std::string result;
+    result += "**BEGIN: Three Address Code Statements\n";
     if (stmt_list)
     {
         for (auto stmt_ast : *stmt_list)
@@ -297,20 +320,28 @@ void tac_print_stmt_list(StatementList *stmt_list)
                 Code *code = stmt_ast->get_code();
                 if (code)
                 {
-                    *tacout << code->to_string() << std::endl;
+                    result += code->to_string() + "\n";
                 }
             }
         }
     }
-    *tacout << "**END: Three Address Code Statements" << std::endl;
+    result += "**END: Three Address Code Statements\n";
+    return result;
 }
 
-void rtl_print_func_sig(Scope *func)
+std::string *tac_print_func(Scope *func, StatementList *stmt_list)
+{
+    std::string *ptr = new std::string;
+    *ptr += tac_print_func_sig(func);
+    *ptr += tac_print_stmt_list(stmt_list);
+    return ptr;
+}
+
+std::string rtl_print_func_sig(Scope *func)
 {
     if (func->kind != Scope_Kind::FUNCTION)
     {
         throw_SemanticError("Not a function!");
-        return;
     }
 
     Func_Signature *func_signature = func->func_sig;
@@ -320,12 +351,15 @@ void rtl_print_func_sig(Scope *func)
     std::vector<std::string> param_names = func_signature->param_names;
     std::vector<Type> param_types = func_signature->param_types;
 
-    *rtlout << "**PROCEDURE: " << func_name << std::endl;
+    std::string result;
+    result += "**PROCEDURE: " + func_name + "\n";
+    return result;
 }
 
-void rtl_print_stmt_list(StatementList *stmt_list, RegisterTracker *register_tracker)
+std::string rtl_print_stmt_list(StatementList *stmt_list, RegisterTracker *register_tracker)
 {
-    *rtlout << "**BEGIN: RTL Statements" << std::endl;
+    std::string result;
+    result += "**BEGIN: RTL Statements\n";
     if (stmt_list)
     {
         for (auto stmt_ast : *stmt_list)
@@ -335,10 +369,90 @@ void rtl_print_stmt_list(StatementList *stmt_list, RegisterTracker *register_tra
                 RTL_Code *rtl_code = stmt_ast->get_rtl(register_tracker);
                 if (rtl_code)
                 {
-                    *rtlout << rtl_code->to_string() << std::endl;
+                    result += rtl_code->to_string() + "\n";
                 }
             }
         }
     }
-    *rtlout << "**END: RTL Statements" << std::endl;
+    result += "**END: RTL Statements\n";
+    return result;
+}
+
+std::string *rtl_print_func(Scope *func, StatementList *stmt_list, RegisterTracker *register_tracker)
+{
+    std::string *ptr = new std::string;
+    *ptr += rtl_print_func_sig(func);
+    *ptr += rtl_print_stmt_list(stmt_list, register_tracker);
+
+    return ptr;
+}
+
+FunctionDefinition *process_func_def(std::string *func_name, std::string *ast, std::string *tac, std::string *rtl)
+{
+    if (!sa_parse)
+    {
+        return new std::vector<std::string *>{func_name, ast, tac, rtl};
+    }
+    return nullptr;
+}
+
+FunctionDefinitionList *accumulate_func_def(FunctionDefinitionList *func_def_list, FunctionDefinition *func_def)
+{
+    if (!sa_parse)
+    {
+        func_def_list->push_back(func_def);
+        return func_def_list;
+    }
+    return nullptr;
+}
+
+FunctionDefinitionList *accumulate_func_def(FunctionDefinition *func_def)
+{
+    if (!sa_parse)
+    {
+        return new std::vector<FunctionDefinition *>{func_def};
+    }
+    return nullptr;
+}
+
+void print_func_def_list(FunctionDefinitionList *func_def_list_ptr, int show_ast, int show_tac, int show_rtl)
+{
+    std::vector<std::pair<std::string, std::vector<std::string *>>> func_def_list;
+    for (auto func_def_ptr : *func_def_list_ptr)
+    {
+        std::vector<std::string *> func_def;
+        for (int i = 1; i < (*func_def_ptr).size(); i++)
+        {
+            func_def.push_back((*func_def_ptr)[i]);
+        }
+        std::string func_name = *((*func_def_ptr)[0]);
+        func_def_list.emplace_back(func_name, func_def);
+    }
+
+    // Sort by function name
+    std::sort(func_def_list.begin(), func_def_list.end());
+
+    if (show_ast)
+    {
+        for (const auto &[_, func_def] : func_def_list)
+        {
+            *astout << *(func_def[0]);
+        }
+    }
+
+    if (show_tac)
+    {
+        for (const auto &[_, func_def] : func_def_list)
+        {
+            *astout << *(func_def[1]);
+        }
+    }
+
+    if (show_rtl)
+    {
+        for (const auto &[_, func_def] : func_def_list)
+        {
+            *astout << *(func_def[2]);
+        }
+    }
 }

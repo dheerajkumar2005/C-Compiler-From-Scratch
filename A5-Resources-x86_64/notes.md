@@ -15,5 +15,18 @@
 - shared temps: in the order of their id, below the locals.
 - params: above the RA, in REVERSE order as in the function signature.
 
+- --show-asm is set to true by default. 
+
+- return seems to require its own stemp. Standby.
+
+- --show-ast, --show-tac, --show-rtl and --show-asm all show functions in alphabetical order.
+
+- For some unfathomable reason, all functions other than `main` are appended by `_`.
+
 # To-Do
 - Check the SPIM generated for move, different types of compute statements, read and write RTL statements.
+- RTL for return statement.
+- Enforce that the main function must be defined.
+
+# Gameplan
+- Before we even think about function calls, we need to firm up single function, basically return types and return statements.

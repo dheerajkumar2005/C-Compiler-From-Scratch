@@ -1,5 +1,0 @@
-**PROCEDURE: main
-**BEGIN: RTL Statements
-	iLoad:       v0 <- 10       ;; Loading integer number 10
-	store:       a_ <- v0
-**END: RTL Statements

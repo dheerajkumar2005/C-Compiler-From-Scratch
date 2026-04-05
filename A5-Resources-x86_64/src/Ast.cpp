@@ -678,3 +678,19 @@ std::string Do_While_Stmt_Ast::to_string() const
     std::string result = "Do:\nBody (\n" + body->to_string() + ")\nWhile Condition (" + predicate->to_string() + ")";
     return result;
 }
+
+Return_Stmt_Ast::Return_Stmt_Ast(Expression_Ast *_expression)
+    : expression(_expression)
+{
+}
+
+Code *Return_Stmt_Ast::codegen()
+{
+    // TODO
+    return nullptr;
+}
+
+std::string Return_Stmt_Ast::to_string() const
+{
+    return "Return: " + expression->to_string();
+}

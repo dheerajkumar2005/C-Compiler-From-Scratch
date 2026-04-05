@@ -18,4 +18,5 @@ A1-Resources-x86_64/src/sclp
 *.yy.c
 **/scan.c
 **/sclp
+**/.vscode
 

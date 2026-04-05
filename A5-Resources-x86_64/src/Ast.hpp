@@ -326,4 +326,15 @@ public:
     virtual std::string to_string() const override final;
 };
 
+class Return_Stmt_Ast : public Statement_Ast
+{
+public:
+    Expression_Ast *expression;
+
+    Return_Stmt_Ast(Expression_Ast *_expression);
+
+    virtual Code *codegen() override final;
+    virtual std::string to_string() const override final;
+};
+
 #endif
