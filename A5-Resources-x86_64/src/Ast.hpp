@@ -212,8 +212,10 @@ public:
 
 class Conditional_Expr_Ast : public Ternary_Expr_Ast
 {
+    Scope *curr_scope;
+
 public:
-    Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3);
+    Conditional_Expr_Ast(Scope *curr_scope, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3);
     ~Conditional_Expr_Ast() = default;
 
     virtual Code *codegen() override final;

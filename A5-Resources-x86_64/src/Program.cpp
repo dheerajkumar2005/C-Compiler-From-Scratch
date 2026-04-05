@@ -38,10 +38,20 @@
 //     return os;
 // }
 
-Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signature *func_sig)
-    : kind(kind), type(type), size(0), offset(0), func_sig(func_sig)
+Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, int size, int offset)
+    : kind(kind), type(type), size(size), offset(offset), func_sig(nullptr)
 {
 }
+
+Symbol_Table_Entry::Symbol_Table_Entry(Func_Signature *_func_sig)
+    : kind(Entry_Kind::FUNCTION), type(_func_sig->return_type), size(0), offset(0), func_sig(_func_sig)
+{
+}
+
+// Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, int size, int offset, Func_Signature *func_sig)
+//     : kind(kind), type(type), size(0), offset(0), func_sig(func_sig)
+// {
+// }
 
 Func_Signature::Func_Signature(const std::string &name, Type return_type)
     : name(name), return_type(return_type), param_types(), param_names()
@@ -65,6 +75,43 @@ bool Func_Signature::operator!=(const Func_Signature &other) const
 }
 
 Scope::Scope(Scope_Kind kind, Scope *parent_scope, Func_Signature *func_sig)
-    : kind(kind), parent_scope(parent_scope), func_sig(func_sig)
+    : param_offset(8), local_offset(0), kind(kind), parent_scope(parent_scope), func_sig(func_sig)
 {
+}
+
+void Scope::add_param(Type param_type, const std::string &param_name)
+{
+    int param_size = get_size(param_type);
+
+    // No other params with the same name
+    if (sym_tab.find(param_name) != sym_tab.end())
+    {
+        throw_SemanticError("Param name matches previous param: " + param_name);
+        return;
+    }
+
+    sym_tab[param_name] = new Symbol_Table_Entry(Entry_Kind::PARAMETER, param_type, param_size, param_offset);
+    param_offset += param_size;
+}
+
+void Scope::add_local(Type local_type, const std::string &local_name)
+{
+    int local_size = get_size(local_type);
+
+    // Cannot clash with the function name
+    if (kind == Scope_Kind::FUNCTION && local_name == func_sig->name)
+    {
+        throw_SemanticError("Local variable name matches function name: " + local_name);
+        return;
+    }
+
+    // No local variable or params with the same name
+    if (sym_tab.find(local_name) != sym_tab.end())
+    {
+        throw_SemanticError("Local variable name matches previously declared variable: " + local_name);
+        return;
+    }
+
+    local_offset -= local_size;
+    sym_tab[local_name] = new Symbol_Table_Entry(Entry_Kind::VARIABLE, local_type, local_size, local_offset);
 }

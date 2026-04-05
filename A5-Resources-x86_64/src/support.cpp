@@ -26,21 +26,7 @@ void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identif
         auto &sym_tab = curr_scope->sym_tab;
         for (const auto &id : *identifiers)
         {
-            // Cannot clash with the function name
-            if (curr_scope->kind == Scope_Kind::FUNCTION && *id == curr_scope->func_sig->name)
-            {
-                throw_SemanticError("Local variable name matches function name: " + *id);
-                return;
-            }
-
-            // No local variable or params with the same name
-            if (sym_tab.find(*id) != sym_tab.end())
-            {
-                throw_SemanticError("Local variable name matches previously declared variable: " + *id);
-                return;
-            }
-
-            sym_tab[*id] = new Symbol_Table_Entry(Entry_Kind::VARIABLE, type);
+            curr_scope->add_local(type, *id);
         }
     }
 }
@@ -107,16 +93,7 @@ Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig)
         auto &sym_tab = next_scope->sym_tab;
         for (int i = 0; i < num_params; i++)
         {
-            Symbol_Table_Entry *ste = new Symbol_Table_Entry(Entry_Kind::PARAMETER, param_types[i]);
-
-            // No other params with the same name
-            if (sym_tab.find(param_names[i]) != sym_tab.end())
-            {
-                throw_SemanticError("Param name matches previous param: " + param_names[i]);
-                return nullptr;
-            }
-
-            sym_tab[param_names[i]] = ste;
+            next_scope->add_param(param_types[i], param_names[i]);
         }
 
         return next_scope;
@@ -170,7 +147,7 @@ void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamLi
         Func_Signature *func_sig = get_func_sig(func_name, return_type, formal_param_list);
 
         // Add it to the symbol table
-        sym_tab[func_name] = new Symbol_Table_Entry(Entry_Kind::FUNCTION, return_type, func_sig);
+        sym_tab[func_name] = new Symbol_Table_Entry(func_sig);
     }
 }
 

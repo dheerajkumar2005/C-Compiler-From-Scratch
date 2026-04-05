@@ -354,7 +354,7 @@ expression
     | expression DIV expression { $$ = sa_parse ? nullptr : new Div_Expr_Ast($1, $3); }
     | MINUS expression %prec UMINUS { $$ = sa_parse ? nullptr : new UMinus_Expr_Ast($2); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $2; }
-    | expression QUESTION_MARK expression COLON expression { $$ = sa_parse ? nullptr : new Conditional_Expr_Ast($1, $3, $5); }
+    | expression QUESTION_MARK expression COLON expression { $$ = sa_parse ? nullptr : new Conditional_Expr_Ast(curr_scope, $1, $3, $5); }
     | expression AND expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_AND, $1, $3); } 
     | expression OR expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_OR, $1, $3); }
     | NOT expression { $$ = sa_parse ? nullptr : new Logical_Not_Expr_Ast($2); }

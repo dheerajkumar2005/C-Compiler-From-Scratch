@@ -112,4 +112,6 @@ std::string rtl_priority_to_register(int priority);
 
 bool is_relational_op(RTL_Operator op);
 
+int get_size(Type type);
+
 #endif

@@ -52,11 +52,16 @@ struct Symbol_Table_Entry
     int offset;
     Func_Signature *func_sig; // nullptr for non-functions
 
-    Symbol_Table_Entry(Entry_Kind kind, Type type, Func_Signature *func_sig = nullptr);
+    Symbol_Table_Entry(Entry_Kind kind, Type type, int size, int offset); // for params/locals
+    Symbol_Table_Entry(Func_Signature *_func_sig);                        // for functions
 };
 
-struct Scope
+class Scope
 {
+    int param_offset;
+    int local_offset;
+
+public:
     Scope_Kind kind;
     Scope *parent_scope;
 
@@ -64,6 +69,9 @@ struct Scope
     Func_Signature *func_sig; // nullptr for non-functions
 
     Scope(Scope_Kind kind, Scope *parent_scope = nullptr, Func_Signature *func_sig = nullptr);
+
+    void add_param(Type param_type, const std::string &param_name);
+    void add_local(Type local_type, const std::string &local_name);
 };
 
 #endif

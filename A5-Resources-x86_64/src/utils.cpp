@@ -554,3 +554,31 @@ bool is_relational_op(RTL_Operator op)
 {
     return op == RTL_Operator::LT || op == RTL_Operator::LE || op == RTL_Operator::GT || op == RTL_Operator::GE || op == RTL_Operator::EQ || op == RTL_Operator::NE;
 }
+
+int get_size(Type type)
+{
+    if (type == Type::BOOL)
+    {
+        return 4;
+    }
+    else if (type == Type::FLOAT)
+    {
+        return 8;
+    }
+    else if (type == Type::INT)
+    {
+        return 4;
+    }
+    else if (type == Type::STR)
+    {
+        return 4; // pointer to string
+    }
+    else if (type == Type::VOID)
+    {
+        return 0; // ideally this should never happen
+    }
+    else
+    {
+        throw_SemanticError("Unexpected type: " + type_to_string(type));
+    }
+}

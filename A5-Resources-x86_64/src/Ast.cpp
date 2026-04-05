@@ -332,8 +332,8 @@ Ternary_Expr_Ast::~Ternary_Expr_Ast()
 {
 }
 
-Conditional_Expr_Ast::Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3)
-    : Ternary_Expr_Ast(opd2->get_type(), Ternary_Operator::QUESTION_MARK_COLON, opd1, opd2, opd3)
+Conditional_Expr_Ast::Conditional_Expr_Ast(Scope *curr_scope, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3)
+    : Ternary_Expr_Ast(opd2->get_type(), Ternary_Operator::QUESTION_MARK_COLON, opd1, opd2, opd3), curr_scope(curr_scope)
 {
     if (opd1->get_type() != Type::BOOL)
     {
@@ -360,6 +360,7 @@ Code *Conditional_Expr_Ast::codegen()
 
     Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(opd1->type);
     place = new Shared_Temporary_TAC_Operand(opd2->type);
+    curr_scope->add_local(place->type, place->to_string());
 
     TAC_Label *l1 = new TAC_Label();
     TAC_Label *l2 = new TAC_Label();
