@@ -168,7 +168,7 @@ func_def_list
 
 /* NOTE: formal param and func header look the same */
 func_header
-    : named_type NAME { $$ = accumulate_formal_param($1, $2); } 
+    : named_type NAME { $$ = accumulate_func_header($1, $2); } 
 ;
 
 func_def

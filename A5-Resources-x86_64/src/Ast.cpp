@@ -686,11 +686,45 @@ Return_Stmt_Ast::Return_Stmt_Ast(Expression_Ast *_expression)
 
 Code *Return_Stmt_Ast::codegen()
 {
-    // TODO
+    // TODO - Requires label and stemp from func def
     return nullptr;
 }
 
 std::string Return_Stmt_Ast::to_string() const
 {
     return "Return: " + expression->to_string();
+}
+
+Function_Definition_Ast::Function_Definition_Ast(Scope *_func_scope, const std::vector<Statement_Ast *> &_body)
+    : func_scope(_func_scope), body(_body), return_label(nullptr), return_stemp(nullptr)
+{
+}
+
+Code *Function_Definition_Ast::codegen()
+{
+    Type return_type = func_scope->func_sig->return_type;
+    if (return_type == Type::VOID)
+    {
+        Code *code = new Code();
+        for (auto stmt_ptr : body)
+        {
+            code->append_list(stmt_ptr->get_code());
+        }
+        return code;
+    }
+    else
+    {
+        return_label = new TAC_Label();
+        return_stemp = new Shared_Temporary_TAC_Operand(return_type);
+
+        Code *code = new Code();
+        for (const auto &stmt_ptr : body)
+        {
+            // TODO: Need to pass `this` as a param
+            code->append_list(stmt_ptr->get_code());
+        }
+        // TODO
+        // code->append_statement(new Label_TAC_Statement(return_label));
+        // code->append_statement
+    }
 }

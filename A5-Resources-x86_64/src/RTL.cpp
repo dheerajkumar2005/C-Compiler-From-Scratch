@@ -212,3 +212,13 @@ std::string Label_RTL_Statement::to_string() const
     std::string result = "Label" + std::to_string(label_number) + ":";
     return result;
 }
+
+Return_RTL_Statement::Return_RTL_Statement(RTL_Register *_reg, bool _is_float)
+    : RTL_Statement(_is_float), reg(_reg)
+{
+}
+
+std::string Return_RTL_Statement::to_string() const
+{
+    return "return\t" + rtl_priority_to_register(reg->priority);
+}

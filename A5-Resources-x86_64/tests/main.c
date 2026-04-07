@@ -16,15 +16,64 @@
 //     // return a + b;
 // }
 
-int main()
+// int main()
+// {
+//     return 10;
+// }
+
+// int foo()
+// {
+//     return 20;
+// }
+
+// int main();
+// float poo();
+// bool bar();
+
+void main()
 {
-    return 10;
+    // int a;
+    // a = 10;
+
+    // return a + 20;
+    int a;
+    a = 1 > 2 ? 10 : 20;
+    // return 10;
 }
 
-int foo()
+int xyz()
 {
-    return 20;
+    if (1 < 2)
+    {
+        // return 10;
+    }
+    else if (3 < 4)
+    {
+        return 20;
+    }
 }
+
+float foo()
+{
+    return 1 > 2 ? 20.0 : 15.0;
+}
+
+// void bar(int a, int b)
+// {
+//     int c;
+
+//     c = a + b;
+// }
+
+int bar()
+{
+    return 1 > 2 ? 10 : 20;
+}
+
+// string foobar()
+// {
+//     return "ariana grande";
+// }
 
 // void main()
 // {

@@ -582,3 +582,24 @@ RTL_Code *Label_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 	return rtl_code;
 }
+
+Return_TAC_Statement::Return_TAC_Statement(Shared_Temporary_TAC_Operand *_return_stemp)
+	: return_stemp(_return_stemp)
+{
+}
+
+std::string Return_TAC_Statement::to_string() const
+{
+	return "return " + return_stemp->to_string();
+}
+
+RTL_Code *Return_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
+{
+	bool is_float = return_stemp->type == Type::FLOAT;
+	RTL_Register *reg = reg_tracker->get_register(is_float ? PRIORITY_F0 : PRIORITY_V1);
+
+	RTL_Code *rtl_code = new RTL_Code();
+	rtl_code->append_statement(new Load_RTL_Statement(reg, return_stemp->to_string(), is_float));
+	rtl_code->append_statement(new Return_RTL_Statement(reg, is_float));
+	return rtl_code;
+}

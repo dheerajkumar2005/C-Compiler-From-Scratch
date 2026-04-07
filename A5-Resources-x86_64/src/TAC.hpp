@@ -162,4 +162,15 @@ public:
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
 };
 
+class Return_TAC_Statement : public TAC_Statement
+{
+public:
+	Shared_Temporary_TAC_Operand *return_stemp;
+
+	Return_TAC_Statement(Shared_Temporary_TAC_Operand *_return_stemp);
+
+	virtual std::string to_string() const override final;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
+};
+
 #endif

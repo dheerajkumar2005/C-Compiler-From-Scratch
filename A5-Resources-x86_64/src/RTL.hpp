@@ -144,4 +144,13 @@ public:
     virtual std::string to_string() const override final;
 };
 
+class Return_RTL_Statement : public RTL_Statement
+{
+public:
+    RTL_Register *reg;
+
+    Return_RTL_Statement(RTL_Register *_reg, bool _is_float);
+    virtual std::string to_string() const override final;
+};
+
 #endif

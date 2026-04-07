@@ -23,6 +23,11 @@
 
 - For some unfathomable reason, all functions other than `main` are appended by `_`.
 
+- Label allocation order is messed up. First, allocate the return label for all the functions. Then, allocate internal labels per function. 
+- Return label allocation is in the order of DECLARATION of functions.
+- All other labels are allocated in ALPHABETICAL order of function names.
+- `stemp0` is NOT special.  
+
 # To-Do
 - Check the SPIM generated for move, different types of compute statements, read and write RTL statements.
 - RTL for return statement.

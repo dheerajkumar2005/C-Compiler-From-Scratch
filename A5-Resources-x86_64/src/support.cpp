@@ -64,8 +64,8 @@ FormalParam *accumulate_func_header(Type type, std::string *id)
 {
     if (!sa_parse)
     {
-        // For some unfathomable reason, functions other than main are appended with `_` in the nisame
-        // Like what even is this bro
+        // For some unfathomable reason, functions other than main are appended with `_` in the name
+        // Like what even is this shit bro
         if (*id != "main")
         {
             *id += "_";
@@ -444,7 +444,7 @@ void print_func_def_list(FunctionDefinitionList *func_def_list_ptr, int show_ast
     {
         for (const auto &[_, func_def] : func_def_list)
         {
-            *astout << *(func_def[1]);
+            *tacout << *(func_def[1]);
         }
     }
 
@@ -452,7 +452,7 @@ void print_func_def_list(FunctionDefinitionList *func_def_list_ptr, int show_ast
     {
         for (const auto &[_, func_def] : func_def_list)
         {
-            *astout << *(func_def[2]);
+            *rtlout << *(func_def[2]);
         }
     }
 }
