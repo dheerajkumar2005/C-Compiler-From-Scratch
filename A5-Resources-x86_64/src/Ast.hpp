@@ -337,7 +337,7 @@ public:
     virtual std::string to_string() const override final;
 };
 
-class Function_Definition_Ast : public Ast
+class Function_Ast : public Ast
 {
 public:
     Scope *func_scope;
@@ -345,7 +345,8 @@ public:
     TAC_Label *return_label;
     Shared_Temporary_TAC_Operand *return_stemp;
 
-    Function_Definition_Ast(Scope *_func_scope, const std::vector<Statement_Ast *> &_body);
+    Function_Ast(Scope *_func_scope);
+    Function_Ast(Scope *_func_scope, const std::vector<Statement_Ast *> &_body);
 
     virtual Code *codegen() override final;
 

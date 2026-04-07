@@ -24,8 +24,10 @@ using FuncHeader = std::pair<Type, std::string *>;
 
 using StatementList = std::vector<Statement_Ast *>;
 
-using FunctionDefinition = std::vector<std::string *>;
+using FunctionDefinition = std::pair<std::string *, StatementList *>;
 using FunctionDefinitionList = std::vector<FunctionDefinition *>;
+
+using FunctionDeclarationList = std::vector<Function_Ast *>;
 
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier);
 IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::string *identifier);
@@ -42,7 +44,7 @@ FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list
 
 Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig);
 
-void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
+Function_Ast *process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 
 Expression_Ast *process_predicate(Expression_Ast *expr);
@@ -58,11 +60,13 @@ std::string *ast_print_func(Scope *func, StatementList *stmt_list);
 std::string *tac_print_func(Scope *func, StatementList *stmt_list);
 std::string *rtl_print_func(Scope *func, StatementList *stmt_list, RegisterTracker *register_tracker);
 
-FunctionDefinition *process_func_def(std::string *func_name, std::string *ast, std::string *tac, std::string *rtl);
+FunctionDefinition *process_func_def(Func_Signature *func_sig, StatementList *stmt_list);
 
 FunctionDefinitionList *accumulate_func_def(FunctionDefinitionList *func_def_list, FunctionDefinition *func_def);
 FunctionDefinitionList *accumulate_func_def(FunctionDefinition *func_def);
 
-void print_func_def_list(FunctionDefinitionList *func_def_list_ptr, int show_ast, int show_tac, int show_rtl);
+FunctionDeclarationList *accumulate_func_decl(FunctionDeclarationList *func_decl_list, Function_Ast *func_decl);
+
+void print_func_def_list(FunctionDefinitionList *func_def_list, FunctionDeclarationList *func_decl_list = nullptr);
 
 #endif

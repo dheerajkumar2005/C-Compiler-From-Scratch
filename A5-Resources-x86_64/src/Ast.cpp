@@ -593,10 +593,10 @@ Code *If_Stmt_Ast::codegen()
 
 std::string If_Stmt_Ast::to_string() const
 {
-    std::string result = "If:\nCondition (" + predicate->to_string() + ")\nThen (" + if_clause->to_string() + ")";
+    std::string result = "If:\nCondition (" + predicate->to_string() + ")\nThen (\n" + if_clause->to_string() + ")";
     if (else_clause)
     {
-        result += "\nElse (" + else_clause->to_string() + ")";
+        result += "\nElse (\n" + else_clause->to_string() + ")";
     }
     return result;
 }
@@ -695,12 +695,20 @@ std::string Return_Stmt_Ast::to_string() const
     return "Return: " + expression->to_string();
 }
 
-Function_Definition_Ast::Function_Definition_Ast(Scope *_func_scope, const std::vector<Statement_Ast *> &_body)
-    : func_scope(_func_scope), body(_body), return_label(nullptr), return_stemp(nullptr)
+Function_Ast::Function_Ast(Scope *_func_scope)
+    : func_scope(_func_scope), body(), return_label(nullptr), return_stemp(nullptr)
 {
+    return_label = new TAC_Label();
+    return_stemp = new Shared_Temporary_TAC_Operand(func_scope->func_sig->return_type);
 }
 
-Code *Function_Definition_Ast::codegen()
+Function_Ast::Function_Ast(Scope *_func_scope, const std::vector<Statement_Ast *> &_body)
+    : Function_Ast(_func_scope)
+{
+    body = _body;
+}
+
+Code *Function_Ast::codegen()
 {
     Type return_type = func_scope->func_sig->return_type;
     if (return_type == Type::VOID)
@@ -714,8 +722,8 @@ Code *Function_Definition_Ast::codegen()
     }
     else
     {
-        return_label = new TAC_Label();
-        return_stemp = new Shared_Temporary_TAC_Operand(return_type);
+        // return_label = new TAC_Label();
+        // return_stemp = new Shared_Temporary_TAC_Operand(return_type);
 
         Code *code = new Code();
         for (const auto &stmt_ptr : body)

@@ -134,7 +134,7 @@ Func_Signature *get_func_sig(std::string func_name, Type return_type, FormalPara
     return nullptr;
 }
 
-void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
+Function_Ast *process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
 {
     if (!sa_parse)
     {
@@ -157,6 +157,8 @@ void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamLi
 
         // Add it to the symbol table
         sym_tab[func_name] = new Symbol_Table_Entry(func_sig);
+
+        return new Function_Ast(curr_scope);
     }
 }
 
@@ -182,6 +184,7 @@ Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, Formal
         }
         else
         {
+            // TODO: Store the returned result somehow
             process_func_decl(curr_scope, func_header, formal_param_list);
         }
 
@@ -387,11 +390,11 @@ std::string *rtl_print_func(Scope *func, StatementList *stmt_list, RegisterTrack
     return ptr;
 }
 
-FunctionDefinition *process_func_def(std::string *func_name, std::string *ast, std::string *tac, std::string *rtl)
+FunctionDefinition *process_func_def(Func_Signature *func_sig, StatementList *stmt_list)
 {
     if (!sa_parse)
     {
-        return new std::vector<std::string *>{func_name, ast, tac, rtl};
+        return new std::pair<std::string *, StatementList *>(&func_sig->name, stmt_list);
     }
     return nullptr;
 }
@@ -415,44 +418,72 @@ FunctionDefinitionList *accumulate_func_def(FunctionDefinition *func_def)
     return nullptr;
 }
 
-void print_func_def_list(FunctionDefinitionList *func_def_list_ptr, int show_ast, int show_tac, int show_rtl)
+FunctionDeclarationList *accumulate_func_decl(FunctionDeclarationList *func_decl_list, Function_Ast *func_decl)
 {
-    std::vector<std::pair<std::string, std::vector<std::string *>>> func_def_list;
-    for (auto func_def_ptr : *func_def_list_ptr)
+    if (!sa_parse)
     {
-        std::vector<std::string *> func_def;
-        for (int i = 1; i < (*func_def_ptr).size(); i++)
-        {
-            func_def.push_back((*func_def_ptr)[i]);
-        }
-        std::string func_name = *((*func_def_ptr)[0]);
-        func_def_list.emplace_back(func_name, func_def);
+        func_decl_list->push_back(func_decl);
+        return func_decl_list;
+    }
+    return nullptr;
+}
+
+FunctionDeclarationList *accumulate_func_decl(Function_Ast *func_decl)
+{
+    if (!sa_parse)
+    {
+        return new std::vector<Function_Ast *>{func_decl};
+    }
+    return nullptr;
+}
+
+void print_func_def_list(FunctionDefinitionList *_func_def_list, FunctionDeclarationList *_func_decl_list)
+{
+    std::vector<std::pair<std::string, StatementList *>> func_def_list;
+    std::vector<std::pair<std::string, Function_Ast *>> func_decl_list;
+
+    for (auto _func_def : *_func_def_list)
+    {
+        func_def_list.emplace_back(*(_func_def->first), _func_def->second);
+    }
+
+    for (auto func_decl : *_func_decl_list)
+    {
+        func_decl_list.emplace_back(func_decl->func_scope->func_sig->name, func_decl);
+    }
+
+    int m = func_decl_list.size();
+    int n = func_def_list.size();
+
+    if(m != n) {
+        throw_SemanticError("ERROR: Expected the same number of defni")
     }
 
     // Sort by function name
     std::sort(func_def_list.begin(), func_def_list.end());
+    std::sort(func_decl_list.begin(), func_decl_list.end());
 
-    if (show_ast)
-    {
-        for (const auto &[_, func_def] : func_def_list)
-        {
-            *astout << *(func_def[0]);
-        }
-    }
+    // if (show_ast)
+    // {
+    //     for (const auto &[_, func_def] : func_def_list)
+    //     {
+    //         *astout << *(func_def[0]);
+    //     }
+    // }
 
-    if (show_tac)
-    {
-        for (const auto &[_, func_def] : func_def_list)
-        {
-            *tacout << *(func_def[1]);
-        }
-    }
+    // if (show_tac)
+    // {
+    //     for (const auto &[_, func_def] : func_def_list)
+    //     {
+    //         *tacout << *(func_def[1]);
+    //     }
+    // }
 
-    if (show_rtl)
-    {
-        for (const auto &[_, func_def] : func_def_list)
-        {
-            *rtlout << *(func_def[2]);
-        }
-    }
+    // if (show_rtl)
+    // {
+    //     for (const auto &[_, func_def] : func_def_list)
+    //     {
+    //         *rtlout << *(func_def[2]);
+    //     }
+    // }
 }
