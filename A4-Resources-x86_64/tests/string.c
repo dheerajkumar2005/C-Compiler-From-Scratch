@@ -9,5 +9,6 @@ void main(){
     a = 1;
     a = a*a;
     print s;
+    print "ac";
 
 }

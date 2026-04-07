@@ -542,6 +542,10 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			Load_Float_RTL_Statement *fload_stmt = new Load_Float_RTL_Statement(reg2, o->fval);
 			rtl_code->append_statement(fload_stmt);
 		}
+		else if( auto o = dynamic_cast<String_Const_TAC_Operand* >(opd)){
+			Load_String_RTL_Statement *sload_stmt = new Load_String_RTL_Statement(reg2, o->sval);
+			rtl_code->append_statement(sload_stmt);
+		}
 		else if (dynamic_cast<Variable_TAC_Operand *>(opd) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd))
 		{
 			Load_RTL_Statement *load_stmt = new Load_RTL_Statement(reg2, opd->to_string(), is_float);
