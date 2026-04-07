@@ -593,10 +593,10 @@ Code *If_Stmt_Ast::codegen()
 
 std::string If_Stmt_Ast::to_string() const
 {
-    std::string result = "If:\nCondition (" + predicate->to_string() + ")\nThen (" + if_clause->to_string() + ")";
+    std::string result = "If:\nCondition (" + predicate->to_string() + ")\nThen (\n" + if_clause->to_string() + ")";
     if (else_clause)
     {
-        result += "\nElse (" + else_clause->to_string() + ")";
+        result += "\nElse (\n" + else_clause->to_string() + ")";
     }
     return result;
 }

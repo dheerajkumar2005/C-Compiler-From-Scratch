@@ -474,7 +474,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		RTL_Code *rtl_code = new RTL_Code();
 
-		// TODO: If reg_opd occupies this, move it to some other temp reg
+		//If reg_opd occupies this, move it to some other temp reg
 		if (!reg_tracker->available_int_regs[PRIORITY_V0])
 		{
 			RTL_Register *opd_src_reg = reg_tracker->get_register(opd);
@@ -492,7 +492,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		rtl_code->append_statement(iload_stmt);
 
 		RTL_Register *reg2 = reg_tracker->get_register(is_float ? PRIORITY_F12 : PRIORITY_A0);
-		// TODO: Could be either a move (if printing an expression) or a load (if printing a variable)
+		// Could be either a move (if printing an expression) or a load (if printing a variable)
 		if (dynamic_cast<Temporary_TAC_Operand *>(opd))
 		{
 			RTL_Register *reg_opd = reg_tracker->get_register(opd);
@@ -513,6 +513,10 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		{
 			Load_Float_RTL_Statement *fload_stmt = new Load_Float_RTL_Statement(reg2, o->fval);
 			rtl_code->append_statement(fload_stmt);
+		}
+		else if (auto o = dynamic_cast<String_Const_TAC_Operand* >(opd)){
+			Load_String_RTL_Statement *sload_stmt = new Load_String_RTL_Statement(reg2,o->sval);
+			rtl_code->append_statement(sload_stmt);
 		}
 		else
 		{
