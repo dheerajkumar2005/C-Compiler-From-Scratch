@@ -2,7 +2,7 @@
 #define PROGRAM_H
 
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <utility>
 
@@ -48,12 +48,17 @@ struct Symbol_Table_Entry
 
     Entry_Kind kind;
     Type type;
+
+    Symbol_Table_Entry(Entry_Kind _kind, Type _type);
+    virtual ~Symbol_Table_Entry() = 0;
+};
+
+struct Data_Entry : public Symbol_Table_Entry
+{
     int size;
     int offset;
-    Func_Signature *func_sig; // nullptr for non-functions
 
-    Symbol_Table_Entry(Entry_Kind kind, Type type, int size, int offset); // for params/locals
-    Symbol_Table_Entry(Func_Signature *_func_sig);                        // for functions
+    Data_Entry(Entry_Kind _kind, Type _type, int _size, int _offset);
 };
 
 class Scope
@@ -65,7 +70,7 @@ public:
     Scope_Kind kind;
     Scope *parent_scope;
 
-    std::unordered_map<std::string, Symbol_Table_Entry *> sym_tab;
+    std::map<std::string, Symbol_Table_Entry *> sym_tab; // Ordered in alphabetical order of identifier
     Func_Signature *func_sig; // nullptr for non-functions
 
     Scope(Scope_Kind kind, Scope *parent_scope = nullptr, Func_Signature *func_sig = nullptr);

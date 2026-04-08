@@ -3,21 +3,22 @@
     #include "Ast.hpp"
     #include "Program.hpp"
     
-    extern "C" int yylex(Scope *, RegisterTracker *);
-    extern "C" int yyparse(Scope *, RegisterTracker *);
-    extern "C" void yyerror(Scope *, RegisterTracker *, const char *);
+    extern "C" int yylex(Scope *);
+    extern "C" int yyparse(Scope *);
+    extern "C" void yyerror(Scope *, const char *);
 }
 %{
     #include "Program.hpp" 
+    #include "TAC.hpp"
 
     extern int sa_parse;
-    extern int show_ast;
-    extern int show_tac;
-    extern int show_rtl;
+    
+    extern TAC_Label *return_label;
+    extern Shared_Temporary_TAC_Operand *return_stemp;
 %}
 
-%parse-param { Scope *curr_scope } { RegisterTracker *register_tracker }
-%lex-param { Scope *curr_scope } { RegisterTracker *register_tracker }
+%parse-param { Scope *curr_scope }
+%lex-param { Scope *curr_scope }
 
 %union {
     StatementList *stmt_list;
@@ -52,12 +53,6 @@
     While_Stmt_Ast *while_stmt;
 
     Do_While_Stmt_Ast *do_while_stmt;
-
-    FunctionDefinition *fdef;
-    FunctionDefinitionList *fdefs;
-
-    Function_Ast *fdecl;
-    FunctionDeclarationList *fdecls;
 }
 
 // Terminals (and optionally their types)
@@ -128,10 +123,7 @@
 %type <if_stmt> if_statement
 %type <do_while_stmt> do_while_statement
 %type <while_stmt> while_statement
-%type <fdef> func_def
-%type <fdefs> func_def_list
-%type <fdecl> func_decl
-%type <fdecls> global_decl_stmt_list
+
 
 %start program
 
@@ -151,25 +143,25 @@
 %%
 
 program
-    : global_decl_stmt_list func_def_list { print_func_def_list($2, $1); }
-    | func_def_list { print_func_def_list($1); }
+    : global_decl_stmt_list func_def_list { print_func_def_list(curr_scope); }
+    | func_def_list { print_func_def_list(curr_scope); }
 ;
 
 global_decl_stmt_list
-    : global_decl_stmt_list func_decl { $$ = accumulate_func_decl($1, $2); }
+    : global_decl_stmt_list func_decl
     | global_decl_stmt_list var_decl_stmt
     | var_decl_stmt
-    | func_decl { $$ = accumulate_func_decl($1); }
+    | func_decl
 ;
 
 func_decl
-    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { $$ = process_func_decl(curr_scope, $1, $3); }
-    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { $$ = process_func_decl(curr_scope, $1); }
+    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1, $3); }
+    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1); }
 ;
 
 func_def_list
-    : func_def_list func_def { $$ = accumulate_func_def($1, $2); } 
-    | func_def { $$ = accumulate_func_def($1); }
+    : func_def_list func_def  
+    | func_def 
 
 /* NOTE: formal param and func header look the same */
 func_header
@@ -186,39 +178,18 @@ func_def
 
             // Push the new scope
             curr_scope = make_func_scope(curr_scope, func_sig);
+
+            // return_label = func_sig->
         }
     }
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
-        // std::string *ast = nullptr;
-        // std::string *tac = nullptr;
-        // std::string *rtl = nullptr;
-        Func_Signature *func_sig = curr_scope->func_sig;
         if (!sa_parse)
         {
-            // if(show_ast)
-            // {
-            //     ast = ast_print_func(curr_scope, $8);
-            // }
-
-            // TODO: Re-add the is_empty check somewhere
-            // if(!is_empty($8)) 
-            // {
-            //     if(show_tac) 
-            //     {
-            //         tac = tac_print_func(curr_scope, $8);
-            //     }
-
-            //     if(show_rtl) 
-            //     {
-            //         rtl = rtl_print_func(curr_scope, $8, register_tracker);
-            //     }
-            // }
-
-            curr_scope = curr_scope->parent_scope;
+            Scope *parent_scope = curr_scope->parent_scope;
+            process_body(parent_scope, curr_scope, $8);
+            curr_scope = parent_scope;
         }
-
-        $$ = process_func_def(func_sig, $8);
     }
     
     | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET 
@@ -234,36 +205,12 @@ func_def
     } 
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
     {
-        // std::string *ast = nullptr;
-        // std::string *tac = nullptr;
-        // std::string *rtl = nullptr;
-
-        Func_Signature *func_sig = curr_scope->func_sig;
         if (!sa_parse)
         {
-            // if(show_ast) 
-            // {
-            //     ast = ast_print_func(curr_scope, $7);
-            // }
-
-            // TODO: Same as above
-            // if(!is_empty($7)) 
-            // {
-            //     if(show_tac) 
-            //     {
-            //         tac = tac_print_func(curr_scope, $7);
-            //     }
-
-            //     if(show_rtl) 
-            //     {
-            //         rtl = rtl_print_func(curr_scope, $7, register_tracker);
-            //     }
-            // }
-
-            curr_scope = curr_scope->parent_scope;
+            Scope *parent_scope = curr_scope->parent_scope;
+            process_body(parent_scope, curr_scope, $7);
+            curr_scope = parent_scope;
         }
-
-        $$ = process_func_def(func_sig, $7);
     }
 ;
 
@@ -300,7 +247,9 @@ statement
 ;
 
 return_statement
-    : RETURN expression SEMICOLON { $$ = new Return_Stmt_Ast($2); }
+    : RETURN expression SEMICOLON { 
+        $$ = new Return_Stmt_Ast($2, return_label, return_stemp);
+     }
 ;
 
 optional_local_var_decl_stmt_list

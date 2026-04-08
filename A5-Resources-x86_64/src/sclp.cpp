@@ -22,9 +22,9 @@ std::ofstream rtlfile;
 
 extern "C"
 {
-    int yyparse(Scope *, RegisterTracker *);
-    int yylex(Scope *, RegisterTracker *);
-    void yyerror(Scope *, RegisterTracker *, const char *);
+    int yyparse(Scope *);
+    int yylex(Scope *);
+    void yyerror(Scope *, const char *);
 
     // Used by the lexer
     // C++ declarations get name-mangled in the .o file
@@ -271,11 +271,9 @@ int main(int argc, char *argv[])
     }
 
     Scope *global_scope_ptr = nullptr;
-    RegisterTracker *register_tracker_ptr = nullptr;
     if (!sa_parse)
     {
         global_scope_ptr = new Scope(Scope_Kind::GLOBAL);
-        register_tracker_ptr = new RegisterTracker();
     }
 
     if (sa_scan)
@@ -283,10 +281,10 @@ int main(int argc, char *argv[])
         while (true)
         {
             scanner_error = 0;
-            int next_token = yylex(global_scope_ptr, register_tracker_ptr);
+            int next_token = yylex(global_scope_ptr);
             if (scanner_error)
             {
-                yyerror(global_scope_ptr, register_tracker_ptr, "syntax error");
+                yyerror(global_scope_ptr, "syntax error");
                 return 1;
             }
             if (!next_token)
@@ -300,14 +298,14 @@ int main(int argc, char *argv[])
     else if (sa_parse)
     {
         // TODO: Figure out why the error printing got messed up
-        return yyparse(global_scope_ptr, register_tracker_ptr);
+        return yyparse(global_scope_ptr);
     }
 
     else
     {
         try
         {
-            return yyparse(global_scope_ptr, register_tracker_ptr);
+            return yyparse(global_scope_ptr);
         }
         catch (const SemanticError *&e)
         {

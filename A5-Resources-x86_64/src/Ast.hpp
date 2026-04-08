@@ -284,7 +284,6 @@ public:
     ~Compound_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
-    // virtual RTL_Code *rtlgen() override final; // compound statements are the only special case
     virtual std::string to_string() const override final;
 };
 
@@ -330,27 +329,36 @@ class Return_Stmt_Ast : public Statement_Ast
 {
 public:
     Expression_Ast *expression;
+    TAC_Label *return_label;
+    Shared_Temporary_TAC_Operand *return_stemp;
 
-    Return_Stmt_Ast(Expression_Ast *_expression);
+    Return_Stmt_Ast(Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp);
 
     virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
 };
 
-class Function_Ast : public Ast
+class Function_Ast : public Statement_Ast
 {
 public:
-    Scope *func_scope;
+    Func_Signature *func_sig;
     std::vector<Statement_Ast *> body;
     TAC_Label *return_label;
     Shared_Temporary_TAC_Operand *return_stemp;
 
-    Function_Ast(Scope *_func_scope);
-    Function_Ast(Scope *_func_scope, const std::vector<Statement_Ast *> &_body);
+    Function_Ast(Func_Signature *_func_sig);
 
-    virtual Code *codegen() override final;
+    void add_stmt(Statement_Ast *stmt);
+    Code *codegen();
+    std::string to_string() const;
+};
 
-    virtual std::string to_string() const override final;
+struct Function_Entry : public Symbol_Table_Entry
+{
+    Func_Signature *func_sig;
+    Function_Ast *definition;
+
+    Function_Entry(Type _return_type, Func_Signature *_func_sig);
 };
 
 #endif

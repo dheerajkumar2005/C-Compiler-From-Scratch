@@ -39,11 +39,11 @@ void Code::append_list(Code *c)
 std::string Code::to_string() const
 {
     std::string result;
-    for (auto it = stmt_list->begin(); it != stmt_list->end(); ++it)
+    for (auto stmt : *stmt_list)
     {
-        if (*it)
+        if (stmt)
         {
-            result += (*it)->to_string() + "\n";
+            result += stmt->to_string() + "\n";
         }
     }
     return result;

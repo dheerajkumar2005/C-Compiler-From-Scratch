@@ -1,53 +1,37 @@
-**PROCEDURE: bar_
-**BEGIN: RTL Statements
-	iLoad:       v0 <- 1
-	iLoad:       t1 <- 2
-	sgt:         t0 <- v0 , t1
-	store:       stemp0 <- t0
-	goto:        Label2
-
-  Label2:      
-	load:        v1 <- stemp0
-	return      v1
-**END: RTL Statements
 **PROCEDURE: foo_
 **BEGIN: RTL Statements
-	iLoad:       v0 <- 1
-	iLoad:       t1 <- 2
-	sgt:         t0 <- v0 , t1
-	not:         v0 <- t0
-	bgtz:        v0 , Label4
-	iLoad.d:     f2 <- 20.00
-	store.d:     stemp1 <- f2
-	goto:        Label5
-
-  Label4:      
-	iLoad.d:     f2 <- 15.00
-	store.d:     stemp1 <- f2
-
-  Label5:      
-	load.d:      f2 <- stemp1
-	store.d:     stemp0 <- f2
+	iLoad:       v0 <- 100
+	store:       a_ <- v0
+	iLoad:       v0 <- 2
+	load:        t1 <- a_
+	mul:         t0 <- v0 , t1
+	store:       b_ <- t0
+	load:        v0 <- a_
+	load:        t1 <- b_
+	add:         t0 <- v0 , t1
+	store:       c_ <- t0
+	load:        v0 <- a_
+	load:        t1 <- b_
+	mul:         t0 <- v0 , t1
+	load:        t1 <- c_
+	add:         v0 <- t0 , t1
+	store:       stemp0 <- v0
 	goto:        Label1
 
   Label1:      
-	load.d:      f0 <- stemp0
-	return      f0
-**END: RTL Statements
-**PROCEDURE: foobar_
-**BEGIN: RTL Statements
-	load_addr:   v0 <- _str_0
-	store:       stemp0 <- v0
-	goto:        Label3
-
-  Label3:      
 	load:        v1 <- stemp0
 	return      v1
 **END: RTL Statements
 **PROCEDURE: main
 **BEGIN: RTL Statements
-	iLoad:       v0 <- 10
-	store:       stemp0 <- v0
+	iLoad:       v0 <- 1
+	iLoad:       t1 <- 2
+	add:         t0 <- v0 , t1
+	store:       a_ <- t0
+	iLoad:       v0 <- 1
+	iLoad:       t1 <- 2
+	add:         t0 <- v0 , t1
+	store:       stemp0 <- t0
 	goto:        Label0
 
   Label0:      

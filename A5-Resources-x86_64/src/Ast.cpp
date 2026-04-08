@@ -515,18 +515,6 @@ Code *Compound_Stmt_Ast::codegen()
     return code;
 }
 
-// RTL_Code *Compound_Stmt_Ast::rtlgen()
-// {
-//     RTL_Code *rtl_code = new RTL_Code();
-//     for (auto stmt_ast_ptr : *stmts)
-//     {
-//         // Every statement has its own register tracking mechanism
-//         rtl_code->append_list(stmt_ast_ptr->rtlgen());
-//     }
-
-//     return rtl_code;
-// }
-
 std::string Compound_Stmt_Ast::to_string() const
 {
     std::string result;
@@ -669,7 +657,7 @@ Code *Do_While_Stmt_Ast::codegen()
     code->append_list(predicate_code);
 
     code->append_statement(new If_Goto_TAC_Statement(predicate->place, l1));
-    
+
     return code;
 }
 
@@ -679,15 +667,18 @@ std::string Do_While_Stmt_Ast::to_string() const
     return result;
 }
 
-Return_Stmt_Ast::Return_Stmt_Ast(Expression_Ast *_expression)
-    : expression(_expression)
+Return_Stmt_Ast::Return_Stmt_Ast(Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp)
+    : expression(_expression), return_label(_return_label), return_stemp(_return_stemp)
 {
 }
 
 Code *Return_Stmt_Ast::codegen()
 {
-    // TODO - Requires label and stemp from func def
-    return nullptr;
+    Code *code = new Code();
+    code->append_list(expression->get_code());
+    code->append_statement(new Assignment_TAC_Statement(return_stemp, expression->place));
+    code->append_statement(new Goto_TAC_Statement(return_label));
+    return code;
 }
 
 std::string Return_Stmt_Ast::to_string() const
@@ -695,44 +686,65 @@ std::string Return_Stmt_Ast::to_string() const
     return "Return: " + expression->to_string();
 }
 
-Function_Ast::Function_Ast(Scope *_func_scope)
-    : func_scope(_func_scope), body(), return_label(nullptr), return_stemp(nullptr)
+Function_Ast::Function_Ast(Func_Signature *_func_sig)
+    : func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr)
 {
-    return_label = new TAC_Label();
-    return_stemp = new Shared_Temporary_TAC_Operand(func_scope->func_sig->return_type);
+    Type return_type = func_sig->return_type;
+    if (return_type != Type::VOID)
+    {
+        return_label = new TAC_Label();
+        return_stemp = new Shared_Temporary_TAC_Operand(return_type);
+    }
 }
 
-Function_Ast::Function_Ast(Scope *_func_scope, const std::vector<Statement_Ast *> &_body)
-    : Function_Ast(_func_scope)
+void Function_Ast::add_stmt(Statement_Ast *stmt)
 {
-    body = _body;
+    body.push_back(stmt);
 }
 
 Code *Function_Ast::codegen()
 {
-    Type return_type = func_scope->func_sig->return_type;
-    if (return_type == Type::VOID)
+    Code *code = new Code();
+    for (auto stmt : body)
     {
-        Code *code = new Code();
-        for (auto stmt_ptr : body)
-        {
-            code->append_list(stmt_ptr->get_code());
-        }
-        return code;
+        code->append_list(stmt->get_code());
     }
-    else
+    if (func_sig->return_type != Type::VOID)
     {
-        // return_label = new TAC_Label();
-        // return_stemp = new Shared_Temporary_TAC_Operand(return_type);
+        code->append_statement(new Label_TAC_Statement(return_label));
+        code->append_statement(new Return_TAC_Statement(return_stemp));
+    }
+    return code;
+}
 
-        Code *code = new Code();
-        for (const auto &stmt_ptr : body)
-        {
-            // TODO: Need to pass `this` as a param
-            code->append_list(stmt_ptr->get_code());
-        }
-        // TODO
-        // code->append_statement(new Label_TAC_Statement(return_label));
-        // code->append_statement
+std::string Function_Ast::to_string() const
+{
+    std::string result;
+    result += "**PROCEDURE: " + func_sig->name + "\n";
+    result += "Return Type: <" + type_to_string(func_sig->return_type) + ">\n";
+    result += "Formal Parameters: \n";
+
+    int num_params = func_sig->param_types.size();
+    for (int i = 0; i < num_params; i++)
+    {
+        result += func_sig->param_names[i] + "_ Type:<" + type_to_string(func_sig->param_types[i]) + ">\n";
+    }
+
+    result += "**BEGIN: Abstract Syntax Tree\n";
+    for (auto stmt : body)
+    {
+        result += stmt->to_string() + "\n";
+    }
+    result += "**END: Abstract Syntax Tree\n";
+
+    return result;
+}
+
+Function_Entry::Function_Entry(Type _return_type, Func_Signature *_func_sig)
+    : Symbol_Table_Entry(Entry_Kind::FUNCTION, _return_type), func_sig(_func_sig), definition(new Function_Ast(_func_sig))
+{
+    if (!func_sig || _return_type != func_sig->return_type)
+    {
+        throw_SemanticError("Expected consistency of return types");
     }
 }

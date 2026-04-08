@@ -217,11 +217,6 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		// LHS
 		RTL_Register *reg_lhs = nullptr;
-		// if (op != TAC_Operator::NOP)
-		// {
-		// 	reg_lhs = reg_tracker->get_int_register();
-		// 	reg_tracker->mark(lhs, reg_lhs);
-		// }
 
 		// Operand 2 (may be nullptr)
 		RTL_Register *reg_opd2 = reg_tracker->get_register(opd2);
@@ -495,10 +490,6 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		{
 			throw_SemanticError("Expected to read either an int, a float or a string");
 		}
-		// if (!dynamic_cast<Variable_TAC_Operand *>(opd))
-		// {
-		// 	throw_SemanticError("Expected to write a variable");
-		// }
 
 		RTL_Code *rtl_code = new RTL_Code();
 

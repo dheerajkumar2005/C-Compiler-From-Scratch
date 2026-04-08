@@ -38,40 +38,18 @@
 //     return os;
 // }
 
-Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, int size, int offset)
-    : kind(kind), type(type), size(size), offset(offset), func_sig(nullptr)
+Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind _kind, Type _type)
+    : kind(_kind), type(_type)
 {
 }
 
-Symbol_Table_Entry::Symbol_Table_Entry(Func_Signature *_func_sig)
-    : kind(Entry_Kind::FUNCTION), type(_func_sig->return_type), size(0), offset(0), func_sig(_func_sig)
+Symbol_Table_Entry::~Symbol_Table_Entry()
 {
 }
 
-// Symbol_Table_Entry::Symbol_Table_Entry(Entry_Kind kind, Type type, int size, int offset, Func_Signature *func_sig)
-//     : kind(kind), type(type), size(0), offset(0), func_sig(func_sig)
-// {
-// }
-
-Func_Signature::Func_Signature(const std::string &name, Type return_type)
-    : name(name), return_type(return_type), param_types(), param_names()
+Data_Entry::Data_Entry(Entry_Kind _kind, Type _type, int _size, int _offset)
+    : Symbol_Table_Entry(_kind, _type), size(_size), offset(_offset)
 {
-}
-
-void Func_Signature::add_param(const std::string &param_name, Type type)
-{
-    param_types.push_back(type);
-    param_names.push_back(param_name);
-}
-
-bool Func_Signature::operator==(const Func_Signature &other) const
-{
-    return return_type == other.return_type && param_types == other.param_types;
-}
-
-bool Func_Signature::operator!=(const Func_Signature &other) const
-{
-    return !(*this == other);
 }
 
 Scope::Scope(Scope_Kind kind, Scope *parent_scope, Func_Signature *func_sig)
@@ -90,7 +68,7 @@ void Scope::add_param(Type param_type, const std::string &param_name)
         return;
     }
 
-    sym_tab[param_name] = new Symbol_Table_Entry(Entry_Kind::PARAMETER, param_type, param_size, param_offset);
+    sym_tab[param_name] = new Data_Entry(Entry_Kind::PARAMETER, param_type, param_size, param_offset);
     param_offset += param_size;
 }
 
@@ -113,5 +91,26 @@ void Scope::add_local(Type local_type, const std::string &local_name)
     }
 
     local_offset -= local_size;
-    sym_tab[local_name] = new Symbol_Table_Entry(Entry_Kind::VARIABLE, local_type, local_size, local_offset);
+    sym_tab[local_name] = new Data_Entry(Entry_Kind::VARIABLE, local_type, local_size, local_offset);
+}
+
+Func_Signature::Func_Signature(const std::string &name, Type return_type)
+    : name(name), return_type(return_type), param_types(), param_names()
+{
+}
+
+void Func_Signature::add_param(const std::string &param_name, Type type)
+{
+    param_types.push_back(type);
+    param_names.push_back(param_name);
+}
+
+bool Func_Signature::operator==(const Func_Signature &other) const
+{
+    return return_type == other.return_type && param_types == other.param_types;
+}
+
+bool Func_Signature::operator!=(const Func_Signature &other) const
+{
+    return !(*this == other);
 }

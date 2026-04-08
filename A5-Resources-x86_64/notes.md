@@ -35,3 +35,4 @@
 
 # Gameplan
 - Before we even think about function calls, we need to firm up single function, basically return types and return statements.
+- Need to figure out a way to pass the return label and stemp to the return statement in the parser.
