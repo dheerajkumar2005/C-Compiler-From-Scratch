@@ -169,4 +169,18 @@ public:
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
 };
 
+class Call_TAC_Statement : public TAC_Statement
+{
+public:
+	TAC_Operand *lhs;
+	std::string func_name;
+	std::vector<TAC_Operand *> args;
+
+	Call_TAC_Statement(TAC_Operand *lhs, const std::string &name, const std::vector<TAC_Operand *> &args);
+	Call_TAC_Statement(const std::string &name, const std::vector<TAC_Operand *> &args);
+
+	virtual std::string to_string() const override final;
+	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
+};
+
 #endif

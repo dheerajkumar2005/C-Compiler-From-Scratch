@@ -598,3 +598,13 @@ RTL_Code *Return_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	rtl_code->append_statement(new Return_RTL_Statement(reg, is_float));
 	return rtl_code;
 }
+
+Call_TAC_Statement::Call_TAC_Statement(TAC_Operand *lhs, const std::string &name, const std::vector<TAC_Operand *> &args)
+	: TAC_Statement(), lhs(lhs), func_name(name), args(args)
+{
+}
+
+Call_TAC_Statement::Call_TAC_Statement(const std::string &name, const std::vector<TAC_Operand *> &args)
+	: TAC_Statement(), lhs(nullptr), func_name(name), args(args)
+{
+}

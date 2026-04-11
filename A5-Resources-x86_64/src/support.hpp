@@ -56,6 +56,9 @@ If_Stmt_Ast *add_else_clause(If_Stmt_Ast *unmatched_if, Statement_Ast *else_clau
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
 StatementList *accumulate_stmt_list();
 
+Function_Call_Ast *process_func_call(const std::string &name, std::vector<Expression_Ast *> *args);
+Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call);
+
 // TODO: is_empty business
 
 void print_func_def_list(Scope *curr_scope);

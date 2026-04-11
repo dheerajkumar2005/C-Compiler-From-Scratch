@@ -98,6 +98,19 @@ public:
     virtual std::string to_string() const override final;
 };
 
+class Function_Call_Ast : public Base_Expr_Ast
+{
+public:
+    std::string func_name;
+    Func_Signature *func_sig;
+    std::vector<Expression_Ast *> *args;
+
+    Function_Call_Ast(std::string &name, Func_Signature *sig, std::vector<Expression_Ast *> *args);
+
+    virtual Code *codegen() override final;
+    virtual std::string to_string() const override final;
+};
+
 class Unary_Expr_AST : public Expression_Ast
 {
 protected:
@@ -333,6 +346,17 @@ public:
     Shared_Temporary_TAC_Operand *return_stemp;
 
     Return_Stmt_Ast(Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp);
+
+    virtual Code *codegen() override final;
+    virtual std::string to_string() const override final;
+};
+
+class Call_Stmt_Ast : public Statement_Ast
+{
+public:
+    Function_Call_Ast *func_call;
+    Call_Stmt_Ast(Function_Call_Ast *call);
+    ~Call_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
     virtual std::string to_string() const override final;

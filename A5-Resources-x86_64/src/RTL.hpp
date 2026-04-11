@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <iomanip>
+#include <vector>
 
 #include "utils.hpp"
 
@@ -150,6 +151,17 @@ public:
     RTL_Register *reg;
 
     Return_RTL_Statement(RTL_Register *_reg, bool _is_float);
+    virtual std::string to_string() const override final;
+};
+
+class Call_RTL_Statement : public RTL_Statement
+{
+public:
+    std::string func_name;
+    std::vector<std::string> args;
+
+    Call_RTL_Statement(const std::string &name, const std::vector<std::string> &arg_strs);
+
     virtual std::string to_string() const override final;
 };
 
