@@ -1,13 +1,15 @@
 // Nested ternary operator with logical expressions
 int value;
 
-void main()
+int main()
 {
     // IMPORTANT: Prints the stuff in v0
     
-    int x, y, z;
-    int a, b, c, d;
-    bool b1, b2, b3;
+    int x;
+    int y, z;
+    int a, b, c ,d;
+    bool b1;
+    bool b2, b3;
     float p, q, r;
     
     print - (x * (b1 ? b : c));
@@ -41,4 +43,5 @@ void main()
     b1 = p >= q;
     b1 = p != q;
     b1 = p == q;
+    return 2;
 }
