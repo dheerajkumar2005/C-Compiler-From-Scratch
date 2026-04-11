@@ -3,7 +3,8 @@
 
 #include <string>
 #include <unordered_map>
-#include <iomanip>
+#include <iomanip>  
+#include "ASM_Code.hpp"    
 
 #include "utils.hpp"
 
@@ -22,6 +23,7 @@ public:
 
     RTL_Statement(bool is_float);
     virtual std::string to_string() const = 0;
+    virtual ASM_Code* to_asm() const = 0;
 };
 
 class Load_Int_RTL_Statement : public RTL_Statement
@@ -32,6 +34,7 @@ public:
 
     Load_Int_RTL_Statement(RTL_Register *reg, int ival);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Load_Float_RTL_Statement : public RTL_Statement
@@ -42,6 +45,7 @@ public:
 
     Load_Float_RTL_Statement(RTL_Register *reg, float fval);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Load_String_RTL_Statement : public RTL_Statement
@@ -54,6 +58,7 @@ public:
     std::string sval;
     Load_String_RTL_Statement(RTL_Register *reg, std::string sval);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Load_RTL_Statement : public RTL_Statement
@@ -64,6 +69,7 @@ public:
 
     Load_RTL_Statement(RTL_Register *reg, std::string var_name, bool is_float = false);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Store_RTL_Statement : public RTL_Statement
@@ -76,6 +82,7 @@ public:
     ~Store_RTL_Statement() = default;
 
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Move_RTL_Statement : public RTL_Statement
@@ -88,6 +95,7 @@ public:
 
     Move_RTL_Statement(RTL_Register *dest, RTL_Register *src, bool is_movtf, bool is_movt, bool is_float);
     std::string to_string() const final override;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Compute_RTL_Statement : public RTL_Statement
@@ -100,6 +108,7 @@ public:
 
     Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, bool is_float = false);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Goto_RTL_Statement : public RTL_Statement
@@ -109,6 +118,7 @@ public:
 
     Goto_RTL_Statement(int label_number);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class If_Goto_RTL_Statement : public RTL_Statement
@@ -119,6 +129,7 @@ public:
 
     If_Goto_RTL_Statement(RTL_Register *predicate, int label_number);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Read_RTL_Statement : public RTL_Statement
@@ -126,6 +137,7 @@ class Read_RTL_Statement : public RTL_Statement
 public:
     Read_RTL_Statement(bool is_float);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 // TODO: Note that while printing expressions, need to move and not load
@@ -134,6 +146,7 @@ class Write_RTL_Statement : public RTL_Statement
 public:
     Write_RTL_Statement(bool is_float);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Label_RTL_Statement : public RTL_Statement
@@ -142,6 +155,7 @@ public:
     int label_number;
     Label_RTL_Statement(int label_number);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 class Return_RTL_Statement : public RTL_Statement
@@ -151,6 +165,7 @@ public:
 
     Return_RTL_Statement(RTL_Register *_reg, bool _is_float);
     virtual std::string to_string() const override final;
+    virtual ASM_Code* to_asm() const override final;
 };
 
 #endif

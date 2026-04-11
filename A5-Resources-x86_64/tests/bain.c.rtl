@@ -1,0 +1,78 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+	load:        v0 <- b_           ;; Loading variable b_ into register
+	load:        t1 <- c_           ;; Loading variable c_ into register
+	add:         t0 <- v0 , t1
+	store:       a_ <- t0
+	load:        v0 <- b_           ;; Loading variable b_ into register
+	load:        t1 <- c_           ;; Loading variable c_ into register
+	sub:         t0 <- v0 , t1
+	store:       a_ <- t0
+	load:        v0 <- b_           ;; Loading variable b_ into register
+	load:        t1 <- c_           ;; Loading variable c_ into register
+	mul:         t0 <- v0 , t1
+	store:       a_ <- t0
+	load:        v0 <- b_           ;; Loading variable b_ into register
+	load:        t1 <- c_           ;; Loading variable c_ into register
+	div:         t0 <- v0 , t1
+	store:       a_ <- t0
+	load.d:      f2 <- fb_          ;; Loading variable fb_ into register
+	load.d:      f6 <- fc_          ;; Loading variable fc_ into register
+	add.d:       f4 <- f2 , f6
+	store.d:     fa_ <- f4
+	load.d:      f2 <- fb_          ;; Loading variable fb_ into register
+	load.d:      f6 <- fc_          ;; Loading variable fc_ into register
+	sub.d:       f4 <- f2 , f6
+	store.d:     fa_ <- f4
+	load.d:      f2 <- fb_          ;; Loading variable fb_ into register
+	load.d:      f6 <- fc_          ;; Loading variable fc_ into register
+	mul.d:       f4 <- f2 , f6
+	store.d:     fa_ <- f4
+	load.d:      f2 <- fb_          ;; Loading variable fb_ into register
+	load.d:      f6 <- fc_          ;; Loading variable fc_ into register
+	div.d:       f4 <- f2 , f6
+	store.d:     fa_ <- f4
+	iLoad:       v0 <- 10           ;; Loading integer number 10
+	load:        t1 <- c_           ;; Loading variable c_ into register
+	add:         t0 <- v0 , t1
+	store:       a_ <- t0
+	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
+	load.d:      f6 <- fc_          ;; Loading variable fc_ into register
+	add.d:       f4 <- f2 , f6
+	store.d:     fa_ <- f4
+	load:        v0 <- y_           ;; Loading variable y_ into register
+	load:        t1 <- z_           ;; Loading variable z_ into register
+	slt:         t0 <- v0 , t1
+	store:       bb_ <- t0
+	load:        v0 <- y_           ;; Loading variable y_ into register
+	load:        t1 <- z_           ;; Loading variable z_ into register
+	sle:         t0 <- v0 , t1
+	store:       bb_ <- t0
+	load:        v0 <- y_           ;; Loading variable y_ into register
+	load:        t1 <- z_           ;; Loading variable z_ into register
+	sgt:         t0 <- v0 , t1
+	store:       bb_ <- t0
+	load:        v0 <- y_           ;; Loading variable y_ into register
+	load:        t1 <- z_           ;; Loading variable z_ into register
+	sge:         t0 <- v0 , t1
+	store:       bb_ <- t0
+	load:        v0 <- y_           ;; Loading variable y_ into register
+	load:        t1 <- z_           ;; Loading variable z_ into register
+	seq:         t0 <- v0 , t1
+	store:       bb_ <- t0
+	load:        v0 <- y_           ;; Loading variable y_ into register
+	load:        t1 <- z_           ;; Loading variable z_ into register
+	sne:         t0 <- v0 , t1
+	store:       bb_ <- t0
+	load:        v0 <- bb_          ;; Loading variable bb_ into register
+	load:        t1 <- bc_          ;; Loading variable bc_ into register
+	and:         t0 <- v0 , t1
+	store:       ba_ <- t0
+	load:        v0 <- bb_          ;; Loading variable bb_ into register
+	load:        t1 <- bc_          ;; Loading variable bc_ into register
+	or:          t0 <- v0 , t1
+	store:       ba_ <- t0
+	load:        v0 <- bb_          ;; Loading variable bb_ into register
+	not:         t0 <- v0
+	store:       ba_ <- t0
+**END: RTL Statements
