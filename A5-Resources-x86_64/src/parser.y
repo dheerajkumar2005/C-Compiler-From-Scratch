@@ -18,9 +18,6 @@
     extern Scope* curr_scope;
 %}
 
-%parse-param { Scope *curr_scope }
-%lex-param { Scope *curr_scope }
-
 %union {
     StatementList *stmt_list;
     Statement_Ast *stmt;
@@ -28,9 +25,11 @@
     Read_Stmt_Ast *read;
     Write_Stmt_Ast *write;
     Return_Stmt_Ast *_return;
+    Call_Stmt_Ast *call_stmt;
     Expression_Ast *expr;
     Name_Expr_Ast *var;
     Relational_Expr_Ast *rel;
+    Function_Call_Ast *call_ast;
 
     Type type;
     std::string *identifier;
@@ -54,6 +53,8 @@
     While_Stmt_Ast *while_stmt;
 
     Do_While_Stmt_Ast *do_while_stmt;
+
+    std::vector<Expression_Ast *> *arg_list;
 }
 
 // Terminals (and optionally their types)
@@ -113,18 +114,17 @@
 %type <asgn> assignment_statement
 %type <write> print_statement
 %type <read> read_statement
+%type <call_stmt> call_statement
+%type <call_ast> func_call
 %type <_return> return_statement
-%type <expr> expression
+%type <expr> expression if_condition actual_arg
 %type <rel> rel_expression
-%type <var> variable_as_operand
-%type <var> variable_name
+%type <var> variable_as_operand variable_name
 %type <compound_stmt> compound_statement
-%type <expr> if_condition
-%type <if_stmt> unmatched_if
-%type <if_stmt> if_statement
+%type <if_stmt> unmatched_if if_statement
 %type <do_while_stmt> do_while_statement
 %type <while_stmt> while_statement
-
+%type <arg_list> actual_arg_list non_empty_arg_list
 
 %start program
 
@@ -144,8 +144,8 @@
 %%
 
 program
-    : global_decl_stmt_list func_def_list { print_func_def_list(curr_scope); }
-    | func_def_list { print_func_def_list(curr_scope); }
+    : global_decl_stmt_list func_def_list { print_func_def_list(); }
+    | func_def_list { print_func_def_list(); }
 ;
 
 global_decl_stmt_list
@@ -156,8 +156,8 @@ global_decl_stmt_list
 ;
 
 func_decl
-    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1, $3); }
-    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1); }
+    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl($1, $3); }
+    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl($1); }
 ;
 
 func_def_list
@@ -175,10 +175,10 @@ func_def
         if(!sa_parse) 
         {
             // Add it to old symtab or match with existing signature
-            Func_Signature *func_sig = make_func_sig(curr_scope, $1, $3);
+            Func_Signature *func_sig = make_func_sig($1, $3);
 
             // Push the new scope
-            curr_scope = make_func_scope(curr_scope, func_sig);
+            curr_scope = make_func_scope(func_sig);
 
             // return_label = func_sig->
         }
@@ -188,7 +188,7 @@ func_def
         if (!sa_parse)
         {
             Scope *parent_scope = curr_scope->parent_scope;
-            process_body(parent_scope, curr_scope, $8);
+            process_body(parent_scope, $8);
             curr_scope = parent_scope;
         }
     }
@@ -198,10 +198,10 @@ func_def
         if (!sa_parse) 
         {
             // Add it to old symtab or match with existing signature
-            Func_Signature *func_sig = make_func_sig(curr_scope, $1);
+            Func_Signature *func_sig = make_func_sig($1);
 
             // Push the new scope
-            curr_scope = make_func_scope(curr_scope, func_sig);
+            curr_scope = make_func_scope(func_sig);
         }
     } 
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
@@ -209,7 +209,7 @@ func_def
         if (!sa_parse)
         {
             Scope *parent_scope = curr_scope->parent_scope;
-            process_body(parent_scope, curr_scope, $7);
+            process_body(parent_scope, $7);
             curr_scope = parent_scope;
         }
     }
@@ -244,13 +244,54 @@ statement
     | compound_statement { $$ = $1; }
     | print_statement { $$ = $1; }
     | read_statement { $$ = $1; }
+    | call_statement { $$ = $1; }
     | return_statement { $$ = $1; }
 ;
 
+call_statement
+    : func_call SEMICOLON { $$ = sa_parse ? nullptr : process_call_stmt($1); }
+;
+
+func_call
+    : NAME LEFT_ROUND_BRACKET actual_arg_list RIGHT_ROUND_BRACKET { $$ = sa_parse ? nullptr : process_func_call($1, $3); }
+;
+
+actual_arg_list
+    : non_empty_arg_list { $$ = sa_parse ? nullptr : $1; }
+    | { $$ = sa_parse ? nullptr : new std::vector<Expression_Ast *>(); }
+;
+
+non_empty_arg_list
+    : non_empty_arg_list COMMA actual_arg {
+        if(sa_parse) 
+        {
+            $1->push_back($3);
+            $$ = $1;
+        } 
+        else 
+        {
+            $$ = nullptr;
+        }
+    }
+    | actual_arg {
+        if(sa_parse)
+        {
+            $$ = new std::vector<Expression_Ast *>();
+            $$->push_back($1);
+        } 
+        else 
+        {
+            $$ = nullptr;
+        }
+    }
+;
+
+actual_arg
+    : expression { $$ = sa_parse ? nullptr : $1; }
+;
+
 return_statement
-    : RETURN expression SEMICOLON { 
-        $$ = new Return_Stmt_Ast($2, return_label, return_stemp);
-     }
+    : RETURN expression SEMICOLON { $$ = new Return_Stmt_Ast($2, return_label, return_stemp); }
 ;
 
 optional_local_var_decl_stmt_list
@@ -264,7 +305,7 @@ var_decl_stmt_list
 ;
 
 var_decl_stmt
-    : named_type var_decl_item_list SEMICOLON { process_var_decl_stmt(curr_scope, $1, $2); }
+    : named_type var_decl_item_list SEMICOLON { process_var_decl_stmt($1, $2); }
 ;
 
 var_decl_item_list
@@ -287,6 +328,7 @@ named_type
 
 assignment_statement
     : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
+    | variable_as_operand ASSIGN_OP func_call SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
 ;
 
 if_condition
@@ -313,17 +355,14 @@ while_statement
 compound_statement
     : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET { $$ = sa_parse ? nullptr : new Compound_Stmt_Ast($2);  }
 
-/* FIXED */
 print_statement
     : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast($2); }
 ;
 
-/* FIXED */
 read_statement
     : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast($2); }
 ;
 
-/* FIXED */
 expression
     : expression PLUS expression { $$ = sa_parse ? nullptr : new Plus_Expr_Ast($1, $3); }
     | expression MINUS expression { $$ = sa_parse ? nullptr : new Minus_Expr_Ast($1, $3); }
@@ -340,7 +379,6 @@ expression
     | constant_as_operand { $$ = $1; }
 ;
 
-/* FIXED */
 rel_expression
     : expression LESS_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LT, $1, $3); }
     | expression LESS_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LE, $1, $3); }
@@ -350,17 +388,14 @@ rel_expression
     | expression EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3); }
 ;
 
-/* FIXED */
 variable_as_operand
     : variable_name { $$ = $1; }
 ;
 
-/* FIXED */
 variable_name
-    : NAME { $$ = process_variable_name(curr_scope, $1); }
+    : NAME { $$ = process_variable_name($1); }
 ;
 
-/* FIXED */
 constant_as_operand
     : INT_NUM { $$ = $1; }
     | FLOAT_NUM { $$ = $1; }

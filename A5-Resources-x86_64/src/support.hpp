@@ -26,6 +26,9 @@ using DeclStmtList = std::vector<DeclStmt *>;
 using FormalParam = std::pair<Type, std::string *>;
 using FormalParamList = std::vector<FormalParam *>;
 
+using ActualParam = Expression_Ast;
+using ActualParamList = std::vector<ActualParam *>;
+
 using FuncHeader = std::pair<Type, std::string *>;
 
 using StatementList = std::vector<Statement_Ast *>;
@@ -33,9 +36,9 @@ using StatementList = std::vector<Statement_Ast *>;
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier);
 IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::string *identifier);
 
-void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identifiers);
+void process_var_decl_stmt(Type type, IdentifierList *identifiers);
 
-Name_Expr_Ast *process_variable_name(Scope *curr_scope, std::string *identifier);
+Name_Expr_Ast *process_variable_name(std::string *identifier);
 
 FormalParam *accumulate_formal_param(Type type, std::string *id);
 FormalParam *accumulate_func_header(Type type, std::string *id);
@@ -43,12 +46,12 @@ FormalParam *accumulate_func_header(Type type, std::string *id);
 FormalParamList *accumulate_formal_param_list(FormalParam *formal_param);
 FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param);
 
-Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig);
+Scope *make_func_scope(Func_Signature *func_sig);
 
-void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
-Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
+void process_func_decl(FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
+Func_Signature *make_func_sig(FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
 
-void process_body(Scope *parent_scope, Scope *curr_scope, StatementList *body);
+void process_body(Scope *parent_scope, StatementList *body);
 
 Expression_Ast *process_predicate(Expression_Ast *expr);
 
@@ -57,8 +60,11 @@ If_Stmt_Ast *add_else_clause(If_Stmt_Ast *unmatched_if, Statement_Ast *else_clau
 StatementList *accumulate_stmt_list(StatementList *stmt_list, Statement_Ast *stmt);
 StatementList *accumulate_stmt_list();
 
+Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args);
+Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call);
+
 // TODO: is_empty business
 
-void print_func_def_list(Scope *curr_scope);
+void print_func_def_list();
 
 #endif

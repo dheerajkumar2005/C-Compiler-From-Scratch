@@ -113,6 +113,47 @@ std::string String_Expr_Ast::to_string() const
     return "String : " + sval + "<" + type_to_string(get_type()) + ">";
 }
 
+Function_Call_Ast::Function_Call_Ast(std::string name, Func_Signature *sig, std::vector<Expression_Ast *> *a)
+    : Base_Expr_Ast(sig->return_type), func_name(name), func_sig(sig), args(a)
+{
+    if (func_name != func_sig->name)
+    {
+        throw_SemanticError("Expected same function name in both places");
+    }
+}
+
+Code *Function_Call_Ast::codegen()
+{
+    Code *result = new Code();
+
+    Type return_type = func_sig->return_type;
+    if (return_type != Type::VOID)
+    {
+        place = new Temporary_TAC_Operand(return_type);
+    }
+
+    std::vector<TAC_Operand *> operands;
+    for (Expression_Ast *arg : *args)
+    {
+        result->append_list(arg->get_code());
+        operands.push_back(arg->place);
+    }
+
+    result->append_statement(new Call_TAC_Statement(func_name, operands, place));
+    return result;
+}
+
+std::string Function_Call_Ast::to_string() const
+{
+    std::string result = "FN CALL: " + func_name + "(\n";
+    for (Expression_Ast *arg : *args)
+    {
+        result += arg->to_string();
+    }
+    result += ")";
+    return result;
+}
+
 Unary_Expr_AST::Unary_Expr_AST(Type type, Unary_Operator op, Expression_Ast *opd1)
     : Expression_Ast(type), op(op), opd1(opd1)
 {
@@ -695,6 +736,21 @@ Function_Ast::Function_Ast(Func_Signature *_func_sig)
         return_label = new TAC_Label();
         return_stemp = new Shared_Temporary_TAC_Operand(return_type);
     }
+}
+
+Call_Stmt_Ast::Call_Stmt_Ast(Function_Call_Ast *call)
+    : Statement_Ast(), func_call(call)
+{
+}
+
+Code *Call_Stmt_Ast::codegen()
+{
+    return func_call->get_code();
+}
+
+std::string Call_Stmt_Ast::to_string() const
+{
+    return func_call->to_string();
 }
 
 void Function_Ast::add_stmt(Statement_Ast *stmt)
