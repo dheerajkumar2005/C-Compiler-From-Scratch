@@ -289,7 +289,7 @@ public:
 class Syscall_ASM_Statement : public ASM_Statement
 {
 public:
-    Syscall_ASM_Statement(bool is_float);
+    Syscall_ASM_Statement();
     virtual std::string to_string() const override final;
 };
 
