@@ -104,6 +104,9 @@ std::string op_to_string(Ternary_Operator op);
 std::string op_to_string(RTL_Operator op);
 std::string op_float_to_string(RTL_Operator op);
 
+std::string op_to_string_asm(RTL_Operator op);
+std::string op_float_to_string_asm(RTL_Operator op);
+
 TAC_Operator binary_to_tac(Binary_Operator op);
 TAC_Operator unary_to_tac(Unary_Operator op);
 RTL_Operator invert_op(RTL_Operator op);

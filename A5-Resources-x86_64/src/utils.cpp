@@ -292,7 +292,67 @@ std::string op_to_string(RTL_Operator op)
     oss << op;
     return oss.str();
 }
-
+std::string op_to_string_asm(RTL_Operator op){
+    std::string result;
+    if (op == RTL_Operator::NEGATE)
+    {
+        result = "neg";
+    }
+    else if (op == RTL_Operator::LOGICAL_NOT)
+    {
+        result = "xori";
+    }
+    else if (op == RTL_Operator::ADD)
+    {
+        result = "add";
+    }
+    else if (op == RTL_Operator::SUBTRACT)
+    {
+        result = "sub";
+    }
+    else if (op == RTL_Operator::MULTIPLY)
+    {
+        result = "mul";
+    }
+    else if (op == RTL_Operator::DIVIDE)
+    {
+        result = "div";
+    }
+    else if (op == RTL_Operator::LOGICAL_AND)
+    {
+        result = "and";
+    }
+    else if (op == RTL_Operator::LOGICAL_OR)
+    {
+        result = "or";
+    }
+    else if (op == RTL_Operator::LT)
+    {
+        result = "slt";
+    }
+    else if (op == RTL_Operator::LE)
+    {
+        result = "sle";
+    }
+    else if(op == RTL_Operator::GT){
+        result = "sgt";
+    }
+    else if(op == RTL_Operator::GE){
+        result = "sge";
+    }
+    else if (op == RTL_Operator::EQ)
+    {
+        result = "seq";
+    }
+    else if(op == RTL_Operator::NE){
+        result = "sne";
+    }
+    else
+    {
+        throw_SemanticError("Unexpected RTL float Operator: " + op_to_string(op));
+    }
+    return result;
+}
 std::string op_float_to_string(RTL_Operator op)
 {
     std::string result;
@@ -346,6 +406,61 @@ std::string op_float_to_string(RTL_Operator op)
     }
     return result;
 }
+
+std::string op_float_to_string_asm(RTL_Operator op)
+{
+    std::string result;
+    if (op == RTL_Operator::NEGATE)
+    {
+        result = "neg.d";
+    }
+    else if (op == RTL_Operator::LOGICAL_NOT)
+    {
+        result = "xori";
+    }
+    else if (op == RTL_Operator::ADD)
+    {
+        result = "add.d";
+    }
+    else if (op == RTL_Operator::SUBTRACT)
+    {
+        result = "sub.d";
+    }
+    else if (op == RTL_Operator::MULTIPLY)
+    {
+        result = "mul.d";
+    }
+    else if (op == RTL_Operator::DIVIDE)
+    {
+        result = "div.d";
+    }
+    else if (op == RTL_Operator::LOGICAL_AND)
+    {
+        result = "and";
+    }
+    else if (op == RTL_Operator::LOGICAL_OR)
+    {
+        result = "or";
+    }
+    else if (op == RTL_Operator::LT)
+    {
+        result = "c.lt.d";
+    }
+    else if (op == RTL_Operator::LE)
+    {
+        result = "c.le.d";
+    }
+    else if (op == RTL_Operator::EQ)
+    {
+        result = "c.eq.d";
+    }
+    else
+    {
+        throw_SemanticError("Unexpected RTL float Operator: " + op_to_string(op));
+    }
+    return result;
+}
+
 
 TAC_Operator binary_to_tac(Binary_Operator op)
 {

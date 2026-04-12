@@ -267,7 +267,7 @@ std::string Read_RTL_Statement::to_string() const
 ASM_Code *Read_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    ASM_Statement *syscall_stmt = new Syscall_ASM_Statement(is_float);
+    ASM_Statement *syscall_stmt = new Syscall_ASM_Statement();
     asm_code->append_statement(syscall_stmt);
     return asm_code;
 }
@@ -285,7 +285,7 @@ std::string Write_RTL_Statement::to_string() const
 ASM_Code *Write_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    ASM_Statement *syscall_stmt = new Syscall_ASM_Statement(is_float);
+    ASM_Statement *syscall_stmt = new Syscall_ASM_Statement();
     asm_code->append_statement(syscall_stmt);
     return asm_code;
 }

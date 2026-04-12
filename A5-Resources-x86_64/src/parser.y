@@ -15,6 +15,7 @@
     
     extern TAC_Label *return_label;
     extern Shared_Temporary_TAC_Operand *return_stemp;
+    extern Scope* curr_scope;
 %}
 
 %union {
@@ -115,7 +116,7 @@
 %type <read> read_statement
 %type <call_stmt> call_statement
 %type <call_ast> func_call
-%type <_return> return_statement
+%type <return> return_statement
 %type <expr> expression if_condition actual_arg
 %type <rel> rel_expression
 %type <var> variable_as_operand variable_name

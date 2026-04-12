@@ -1,5 +1,8 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
+	load:        v0 <- a_           ;; Loading variable a_ into register
+	uminus:      t0 <- v0
+	store:       a_ <- t0
 	load:        v0 <- b_           ;; Loading variable b_ into register
 	load:        t1 <- c_           ;; Loading variable c_ into register
 	add:         t0 <- v0 , t1
@@ -16,6 +19,9 @@
 	load:        t1 <- c_           ;; Loading variable c_ into register
 	div:         t0 <- v0 , t1
 	store:       a_ <- t0
+	load.d:      f2 <- fa_          ;; Loading variable fa_ into register
+	uminus.d:    f4 <- f2
+	store.d:     fa_ <- f4
 	load.d:      f2 <- fb_          ;; Loading variable fb_ into register
 	load.d:      f6 <- fc_          ;; Loading variable fc_ into register
 	add.d:       f4 <- f2 , f6
@@ -63,6 +69,51 @@
 	load:        v0 <- y_           ;; Loading variable y_ into register
 	load:        t1 <- z_           ;; Loading variable z_ into register
 	sne:         t0 <- v0 , t1
+	store:       bb_ <- t0
+	load.d:      f2 <- fa_          ;; Loading variable fa_ into register
+	load.d:      f4 <- fb_          ;; Loading variable fb_ into register
+	slt.d:       f2 , f4
+	iLoad:       v0 <- 1
+	move:        t0 <- zero
+	movt:        t0 <- v0 , 0
+	store:       bb_ <- t0
+	load.d:      f2 <- fa_          ;; Loading variable fa_ into register
+	load.d:      f4 <- fb_          ;; Loading variable fb_ into register
+	sle.d:       f2 , f4            ;; Negating the condition and using le for gt, lt for ge, and eq for neq, for float values
+	                                ;; because gt, ge, and neq operations are not supported by the coprocessor
+	iLoad:       v0 <- 1
+	move:        t0 <- zero
+	movf:        t0 <- v0 , 0
+	store:       bb_ <- t0
+	load.d:      f2 <- fa_          ;; Loading variable fa_ into register
+	load.d:      f4 <- fb_          ;; Loading variable fb_ into register
+	sle.d:       f2 , f4
+	iLoad:       v0 <- 1
+	move:        t0 <- zero
+	movt:        t0 <- v0 , 0
+	store:       bb_ <- t0
+	load.d:      f2 <- fa_          ;; Loading variable fa_ into register
+	load.d:      f4 <- fb_          ;; Loading variable fb_ into register
+	slt.d:       f2 , f4            ;; Negating the condition and using le for gt, lt for ge, and eq for neq, for float values
+	                                ;; because gt, ge, and neq operations are not supported by the coprocessor
+	iLoad:       v0 <- 1
+	move:        t0 <- zero
+	movf:        t0 <- v0 , 0
+	store:       bb_ <- t0
+	load.d:      f2 <- fa_          ;; Loading variable fa_ into register
+	load.d:      f4 <- fb_          ;; Loading variable fb_ into register
+	seq.d:       f2 , f4
+	iLoad:       v0 <- 1
+	move:        t0 <- zero
+	movt:        t0 <- v0 , 0
+	store:       bb_ <- t0
+	load.d:      f2 <- fa_          ;; Loading variable fa_ into register
+	load.d:      f4 <- fb_          ;; Loading variable fb_ into register
+	seq.d:       f2 , f4            ;; Negating the condition and using le for gt, lt for ge, and eq for neq, for float values
+	                                ;; because gt, ge, and neq operations are not supported by the coprocessor
+	iLoad:       v0 <- 1
+	move:        t0 <- zero
+	movf:        t0 <- v0 , 0
 	store:       bb_ <- t0
 	load:        v0 <- bb_          ;; Loading variable bb_ into register
 	load:        t1 <- bc_          ;; Loading variable bc_ into register

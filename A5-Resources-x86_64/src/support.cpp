@@ -2,7 +2,7 @@
 
 TAC_Label *return_label = nullptr;
 Shared_Temporary_TAC_Operand *return_stemp = nullptr;
-Scope *curr_scope = new Scope(Scope_Kind::GLOBAL);
+Scope* curr_scope = new Scope(Scope_Kind::GLOBAL);
 
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier)
 {
