@@ -3,9 +3,9 @@
     #include "Ast.hpp"
     #include "Program.hpp"
     
-    extern "C" int yylex(Scope *);
-    extern "C" int yyparse(Scope *);
-    extern "C" void yyerror(Scope *, const char *);
+    extern "C" int yylex();
+    extern "C" int yyparse();
+    extern "C" void yyerror(const char *);
 }
 %{
     #include "Program.hpp" 
@@ -16,9 +16,6 @@
     extern TAC_Label *return_label;
     extern Shared_Temporary_TAC_Operand *return_stemp;
 %}
-
-%parse-param { Scope *curr_scope }
-%lex-param { Scope *curr_scope }
 
 %union {
     StatementList *stmt_list;
@@ -146,8 +143,8 @@
 %%
 
 program
-    : global_decl_stmt_list func_def_list { print_func_def_list(curr_scope); }
-    | func_def_list { print_func_def_list(curr_scope); }
+    : global_decl_stmt_list func_def_list { print_func_def_list(); }
+    | func_def_list { print_func_def_list(); }
 ;
 
 global_decl_stmt_list
@@ -158,8 +155,8 @@ global_decl_stmt_list
 ;
 
 func_decl
-    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1, $3); }
-    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl(curr_scope, $1); }
+    : func_header LEFT_ROUND_BRACKET formal_param_list RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl($1, $3); }
+    | func_header LEFT_ROUND_BRACKET RIGHT_ROUND_BRACKET SEMICOLON { process_func_decl($1); }
 ;
 
 func_def_list
@@ -177,10 +174,10 @@ func_def
         if(!sa_parse) 
         {
             // Add it to old symtab or match with existing signature
-            Func_Signature *func_sig = make_func_sig(curr_scope, $1, $3);
+            Func_Signature *func_sig = make_func_sig($1, $3);
 
             // Push the new scope
-            curr_scope = make_func_scope(curr_scope, func_sig);
+            curr_scope = make_func_scope(func_sig);
 
             // return_label = func_sig->
         }
@@ -190,7 +187,7 @@ func_def
         if (!sa_parse)
         {
             Scope *parent_scope = curr_scope->parent_scope;
-            process_body(parent_scope, curr_scope, $8);
+            process_body(parent_scope, $8);
             curr_scope = parent_scope;
         }
     }
@@ -200,10 +197,10 @@ func_def
         if (!sa_parse) 
         {
             // Add it to old symtab or match with existing signature
-            Func_Signature *func_sig = make_func_sig(curr_scope, $1);
+            Func_Signature *func_sig = make_func_sig($1);
 
             // Push the new scope
-            curr_scope = make_func_scope(curr_scope, func_sig);
+            curr_scope = make_func_scope(func_sig);
         }
     } 
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
@@ -211,7 +208,7 @@ func_def
         if (!sa_parse)
         {
             Scope *parent_scope = curr_scope->parent_scope;
-            process_body(parent_scope, curr_scope, $7);
+            process_body(parent_scope, $7);
             curr_scope = parent_scope;
         }
     }
@@ -255,7 +252,7 @@ call_statement
 ;
 
 func_call
-    : NAME LEFT_ROUND_BRACKET actual_arg_list RIGHT_ROUND_BRACKET { $$ = sa_parse ? nullptr : new Function_Call_Ast(*$1, $3); }
+    : NAME LEFT_ROUND_BRACKET actual_arg_list RIGHT_ROUND_BRACKET { $$ = sa_parse ? nullptr : process_func_call($1, $3); }
 ;
 
 actual_arg_list
@@ -307,7 +304,7 @@ var_decl_stmt_list
 ;
 
 var_decl_stmt
-    : named_type var_decl_item_list SEMICOLON { process_var_decl_stmt(curr_scope, $1, $2); }
+    : named_type var_decl_item_list SEMICOLON { process_var_decl_stmt($1, $2); }
 ;
 
 var_decl_item_list
@@ -395,7 +392,7 @@ variable_as_operand
 ;
 
 variable_name
-    : NAME { $$ = process_variable_name(curr_scope, $1); }
+    : NAME { $$ = process_variable_name($1); }
 ;
 
 constant_as_operand

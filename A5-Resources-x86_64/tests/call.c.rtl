@@ -8,9 +8,68 @@
 	load.d:      f0 <- stemp0       ;; Moving the value to be printed into register f0
 	return      f0
 **END: RTL Statements
+**PROCEDURE: foobar_
+**BEGIN: RTL Statements
+	iLoad:       v0 <- 69           ;; Loading integer number 69
+	store:       stemp0 <- v0
+	goto:        Label1
+
+  Label1:      
+	load:        v1 <- stemp0       ;; Moving the value to be printed into register v1
+	return      v1
+**END: RTL Statements
 **PROCEDURE: main
 **BEGIN: RTL Statements
+	iLoad:       v0 <- 1            ;; Loading integer number 1
+	iLoad:       t1 <- 2            ;; Loading integer number 2
+	add:         t0 <- v0 , t1
+	iLoad:       v0 <- 1            ;; Loading integer number 1
+	iLoad:       t2 <- 2            ;; Loading integer number 2
+	slt:         t1 <- v0 , t2
+	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
+	iLoad.d:     f6 <- 20.00        ;; Loading float number 20.000000
+	add.d:       f4 <- f2 , f6
+	push:        f4                 ;; Push parameter onto stack
+	push:        t1                 ;; Push parameter onto stack
+	push:        t0                 ;; Push parameter onto stack
 	f0 = call foo_
+	pop                             ;; Pop parameter temp1 from stack 
+	pop                             ;; Pop parameter temp2 from stack 
+	pop                             ;; Pop parameter temp3 from stack 
 	move.d:      f2 <- f0
 	store.d:     f_ <- f2
+	iLoad:       v0 <- 1            ;; Loading integer number 1
+	iLoad:       t1 <- 2            ;; Loading integer number 2
+	add:         t0 <- v0 , t1
+	iLoad:       v0 <- 1            ;; Loading integer number 1
+	iLoad:       t2 <- 2            ;; Loading integer number 2
+	slt:         t1 <- v0 , t2
+	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
+	iLoad.d:     f6 <- 20.00        ;; Loading float number 20.000000
+	add.d:       f4 <- f2 , f6
+	push:        f4                 ;; Push parameter onto stack
+	push:        t1                 ;; Push parameter onto stack
+	push:        t0                 ;; Push parameter onto stack
+	call bar_
+	pop                             ;; Pop parameter temp4 from stack 
+	pop                             ;; Pop parameter temp5 from stack 
+	pop                             ;; Pop parameter temp6 from stack 
+	iLoad:       v0 <- 1            ;; Loading integer number 1
+	iLoad:       t1 <- 2            ;; Loading integer number 2
+	add:         t0 <- v0 , t1
+	iLoad:       v0 <- 1            ;; Loading integer number 1
+	iLoad:       t2 <- 2            ;; Loading integer number 2
+	slt:         t1 <- v0 , t2
+	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
+	iLoad.d:     f6 <- 20.00        ;; Loading float number 20.000000
+	add.d:       f4 <- f2 , f6
+	push:        f4                 ;; Push parameter onto stack
+	push:        t1                 ;; Push parameter onto stack
+	push:        t0                 ;; Push parameter onto stack
+	v1 = call foobar_
+	pop                             ;; Pop parameter temp8 from stack 
+	pop                             ;; Pop parameter temp9 from stack 
+	pop                             ;; Pop parameter temp10 from stack 
+	move:        v0 <- v1
+	store:       x_ <- v0
 **END: RTL Statements

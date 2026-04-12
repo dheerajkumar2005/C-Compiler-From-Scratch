@@ -2,6 +2,7 @@
 
 TAC_Label *return_label = nullptr;
 Shared_Temporary_TAC_Operand *return_stemp = nullptr;
+Scope *curr_scope = new Scope(Scope_Kind::GLOBAL);
 
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier)
 {
@@ -22,7 +23,7 @@ IdentifierList *accumulate_var_decl_item_list(IdentifierList *identifiers, std::
     return nullptr;
 }
 
-void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identifiers)
+void process_var_decl_stmt(Type type, IdentifierList *identifiers)
 {
     if (!sa_parse)
     {
@@ -34,7 +35,7 @@ void process_var_decl_stmt(Scope *curr_scope, Type type, IdentifierList *identif
     }
 }
 
-Name_Expr_Ast *process_variable_name(Scope *curr_scope, std::string *id)
+Name_Expr_Ast *process_variable_name(std::string *id)
 {
     if (!sa_parse)
     {
@@ -97,7 +98,7 @@ FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list
     return nullptr;
 }
 
-Scope *make_func_scope(Scope *curr_scope, Func_Signature *func_sig)
+Scope *make_func_scope(Func_Signature *func_sig)
 {
     if (!sa_parse)
     {
@@ -137,7 +138,7 @@ Func_Signature *get_func_sig(std::string func_name, Type return_type, FormalPara
     return nullptr;
 }
 
-void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
+void process_func_decl(FuncHeader *func_header, FormalParamList *formal_param_list)
 {
     if (!sa_parse)
     {
@@ -165,7 +166,7 @@ void process_func_decl(Scope *curr_scope, FuncHeader *func_header, FormalParamLi
 }
 
 // TODO
-Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, FormalParamList *formal_param_list)
+Func_Signature *make_func_sig(FuncHeader *func_header, FormalParamList *formal_param_list)
 {
     if (!sa_parse)
     {
@@ -187,7 +188,7 @@ Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, Formal
         }
         else
         {
-            process_func_decl(curr_scope, func_header, formal_param_list);
+            process_func_decl(func_header, formal_param_list);
         }
 
         // Setup the return label and stemp
@@ -200,7 +201,7 @@ Func_Signature *make_func_sig(Scope *curr_scope, FuncHeader *func_header, Formal
     return nullptr;
 }
 
-void process_body(Scope *parent_scope, Scope *curr_scope, StatementList *body)
+void process_body(Scope *parent_scope, StatementList *body)
 {
     const std::string &func_name = curr_scope->func_sig->name;
     auto &sym_tab = parent_scope->sym_tab;
@@ -264,7 +265,54 @@ StatementList *accumulate_stmt_list()
     return nullptr;
 }
 
-void print_func_def_list(Scope *curr_scope)
+Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args)
+{
+    // NOTE: Since I know that the function being called should be in the global scope
+    Scope *parent_scope = curr_scope->parent_scope;
+    if (!parent_scope || parent_scope->kind != Scope_Kind::GLOBAL)
+    {
+        throw_SemanticError("Expected to have a global scope as the parent");
+    }
+
+    auto &sym_tab = parent_scope->sym_tab;
+    if (sym_tab.find(*name) == sym_tab.end() || sym_tab[*name]->kind != Entry_Kind::FUNCTION)
+    {
+        throw_SemanticError("No function declared with the name: " + *name);
+    }
+
+    Function_Entry *fe = dynamic_cast<Function_Entry *>(sym_tab[*name]);
+    if (!fe)
+    {
+        throw_SemanticError("All you had to do was, STAY!");
+    }
+
+    // TODO: Check if the types of the args matches
+    const auto &param_types = fe->func_sig->param_types;
+
+    const int num_params = param_types.size();
+    const int num_args = args->size();
+    if (num_params != num_args)
+    {
+        throw_SemanticError("Number of args passed to " + *name + " is incorrect.");
+    }
+
+    for (int i = 0; i < num_params; i++)
+    {
+        if (param_types[i] != (*args)[i]->type)
+        {
+            throw_SemanticError("Param #" + std::to_string(i + 1) + ": Type mismatch");
+        }
+    }
+
+    return new Function_Call_Ast(*name, fe->func_sig, args);
+}
+
+Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call)
+{
+    return new Call_Stmt_Ast(call);
+}
+
+void print_func_def_list()
 {
     for (const auto &[func_name, symtab_entry] : curr_scope->sym_tab)
     {

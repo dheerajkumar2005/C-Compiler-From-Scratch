@@ -113,7 +113,7 @@ std::string String_Expr_Ast::to_string() const
     return "String : " + sval + "<" + type_to_string(get_type()) + ">";
 }
 
-Function_Call_Ast::Function_Call_Ast(std::string &name, Func_Signature *sig, std::vector<Expression_Ast *> *a)
+Function_Call_Ast::Function_Call_Ast(std::string name, Func_Signature *sig, std::vector<Expression_Ast *> *a)
     : Base_Expr_Ast(sig->return_type), func_name(name), func_sig(sig), args(a)
 {
     if (func_name != func_sig->name)
@@ -126,26 +126,31 @@ Code *Function_Call_Ast::codegen()
 {
     Code *result = new Code();
 
+    Type return_type = func_sig->return_type;
+    if (return_type != Type::VOID)
+    {
+        place = new Temporary_TAC_Operand(return_type);
+    }
+
     std::vector<TAC_Operand *> operands;
     for (Expression_Ast *arg : *args)
     {
-        Code *arg_code = arg->codegen();
-        result->append_list(arg_code);
-
+        result->append_list(arg->get_code());
         operands.push_back(arg->place);
     }
 
-    Type return_type = func_sig->return_type;
-    if (return_type == Type::VOID)
-    {
-        result->append_statement(new Call_TAC_Statement(func_name, operands));
-    }
-    else
-    {
-        place = new Temporary_TAC_Operand(return_type);
-        result->append_statement(new Call_TAC_Statement(place, func_name, operands));
-    }
+    result->append_statement(new Call_TAC_Statement(func_name, operands, place));
+    return result;
+}
 
+std::string Function_Call_Ast::to_string() const
+{
+    std::string result = "FN CALL: " + func_name + "(\n";
+    for (Expression_Ast *arg : *args)
+    {
+        result += arg->to_string();
+    }
+    result += ")";
     return result;
 }
 
@@ -740,8 +745,12 @@ Call_Stmt_Ast::Call_Stmt_Ast(Function_Call_Ast *call)
 
 Code *Call_Stmt_Ast::codegen()
 {
-    return func_call->codegen();
-    // TODO
+    return func_call->get_code();
+}
+
+std::string Call_Stmt_Ast::to_string() const
+{
+    return func_call->to_string();
 }
 
 void Function_Ast::add_stmt(Statement_Ast *stmt)

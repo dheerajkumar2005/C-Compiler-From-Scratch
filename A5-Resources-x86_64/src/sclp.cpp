@@ -22,9 +22,9 @@ std::ofstream rtlfile;
 
 extern "C"
 {
-    int yyparse(Scope *);
-    int yylex(Scope *);
-    void yyerror(Scope *, const char *);
+    int yyparse();
+    int yylex();
+    void yyerror(const char *);
 
     // Used by the lexer
     // C++ declarations get name-mangled in the .o file
@@ -270,21 +270,15 @@ int main(int argc, char *argv[])
         }
     }
 
-    Scope *global_scope_ptr = nullptr;
-    if (!sa_parse)
-    {
-        global_scope_ptr = new Scope(Scope_Kind::GLOBAL);
-    }
-
     if (sa_scan)
     {
         while (true)
         {
             scanner_error = 0;
-            int next_token = yylex(global_scope_ptr);
+            int next_token = yylex();
             if (scanner_error)
             {
-                yyerror(global_scope_ptr, "syntax error");
+                yyerror("syntax error");
                 return 1;
             }
             if (!next_token)
@@ -298,14 +292,14 @@ int main(int argc, char *argv[])
     else if (sa_parse)
     {
         // TODO: Figure out why the error printing got messed up
-        return yyparse(global_scope_ptr);
+        return yyparse();
     }
 
     else
     {
         try
         {
-            return yyparse(global_scope_ptr);
+            return yyparse();
         }
         catch (const SemanticError *&e)
         {

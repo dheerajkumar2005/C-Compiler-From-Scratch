@@ -599,12 +599,38 @@ RTL_Code *Return_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	return rtl_code;
 }
 
-Call_TAC_Statement::Call_TAC_Statement(TAC_Operand *lhs, const std::string &name, const std::vector<TAC_Operand *> &args)
-	: TAC_Statement(), lhs(lhs), func_name(name), args(args)
+Call_TAC_Statement::Call_TAC_Statement(const std::string &name, const std::vector<TAC_Operand *> &args, TAC_Operand *lhs)
+	: TAC_Statement(), func_name(name), args(args), lhs(lhs)
 {
 }
 
-Call_TAC_Statement::Call_TAC_Statement(const std::string &name, const std::vector<TAC_Operand *> &args)
-	: TAC_Statement(), lhs(nullptr), func_name(name), args(args)
+std::string Call_TAC_Statement::to_string() const
 {
+	std::string result;
+	if (lhs)
+	{
+		result += lhs->to_string() + " = ";
+	}
+	result += func_name + "(";
+	for (int i = 0; i < args.size() - 1; i++)
+	{
+		result += args[i]->to_string() + ", ";
+	}
+	result += args.back()->to_string() + ")";
+	return result;
+}
+
+RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
+{
+	RTL_Code *rtl_code = new RTL_Code();
+
+	// Args go on the stack in reverse order
+	const int num_args = args.size();
+	for (int i = num_args - 1; i >= 0; i--)
+	{
+		rtl_code->append_statement(new Push_RTL_Statement(reg_tracker->get_register(args[i])));
+	}
+	rtl_code->append_statement(new Call_RTL_Statement(func_name, reg_tracker->get_register(lhs)));
+
+	return rtl_code;
 }

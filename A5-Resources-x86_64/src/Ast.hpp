@@ -105,7 +105,7 @@ public:
     Func_Signature *func_sig;
     std::vector<Expression_Ast *> *args;
 
-    Function_Call_Ast(std::string &name, Func_Signature *sig, std::vector<Expression_Ast *> *args);
+    Function_Call_Ast(std::string name, Func_Signature *sig, std::vector<Expression_Ast *> *args);
 
     virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
