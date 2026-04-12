@@ -188,7 +188,16 @@ class Push_RTL_Statement : public RTL_Statement
 public:
     RTL_Register *reg;
 
-    Push_RTL_Statement(RTL_Register *_reg);
+    Push_RTL_Statement(bool is_float, RTL_Register *_reg);
+
+    virtual std::string to_string() const override final;
+    virtual ASM_Code *to_asm() const override final;
+};
+
+class Pop_RTL_Statement : public RTL_Statement
+{
+public:
+    Pop_RTL_Statement(bool is_float);
 
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;

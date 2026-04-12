@@ -628,9 +628,17 @@ RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	const int num_args = args.size();
 	for (int i = num_args - 1; i >= 0; i--)
 	{
-		rtl_code->append_statement(new Push_RTL_Statement(reg_tracker->get_register(args[i])));
+		TAC_Operand *opd = args[i];
+		bool is_float = opd->type == Type::FLOAT;
+		RTL_Register *reg = reg_tracker->get_register(opd);
+		rtl_code->append_statement(new Push_RTL_Statement(is_float, reg));
 	}
 	rtl_code->append_statement(new Call_RTL_Statement(func_name, reg_tracker->get_register(lhs)));
+	for (int i = num_args - 1; i >= 0; i--)
+	{
+		rtl_code->append_statement(new )
+		// rtl_code->append_statement(new Pop_RTL_Statement());
+	}
 
 	return rtl_code;
 }
