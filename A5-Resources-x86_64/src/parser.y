@@ -116,7 +116,7 @@
 %type <read> read_statement
 %type <call_stmt> call_statement
 %type <call_ast> func_call
-%type <return> return_statement
+%type <_return> return_statement
 %type <expr> expression if_condition actual_arg
 %type <rel> rel_expression
 %type <var> variable_as_operand variable_name

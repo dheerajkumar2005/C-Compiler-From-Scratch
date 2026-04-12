@@ -318,6 +318,16 @@ public:
     virtual std::string to_string() const override final;
 };
 
+class JAL_ASM_Statement : public ASM_Statement
+{
+public:
+    std::string func_name;
+
+    JAL_ASM_Statement(const std::string &_func_name);
+
+    virtual std::string to_string() const override final;
+};
+
 class ASM_Code
 {
 public:
