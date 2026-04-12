@@ -3,9 +3,9 @@
     #include "Ast.hpp"
     #include "Program.hpp"
     
-    extern "C" int yylex(Scope *);
-    extern "C" int yyparse(Scope *);
-    extern "C" void yyerror(Scope *, const char *);
+    extern "C" int yylex();
+    extern "C" int yyparse();
+    extern "C" void yyerror(const char *);
 }
 %{
     #include "Program.hpp" 
@@ -15,6 +15,7 @@
     
     extern TAC_Label *return_label;
     extern Shared_Temporary_TAC_Operand *return_stemp;
+    extern Scope* curr_scope;
 %}
 
 %parse-param { Scope *curr_scope }

@@ -17,6 +17,7 @@ extern int show_rtl;
 
 extern TAC_Label *return_label;
 extern Shared_Temporary_TAC_Operand *return_stemp;
+extern Scope* curr_scope;
 
 using IdentifierList = std::vector<std::string *>;
 using DeclStmt = std::pair<Type, IdentifierList *>;

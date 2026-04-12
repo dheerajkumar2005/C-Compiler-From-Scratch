@@ -6,6 +6,7 @@
 #include <iomanip>
 #include "RTL.hpp"
 #include "utils.hpp"
+#include "support.hpp"
 
 class ASM_Statement{
     public:
@@ -91,7 +92,7 @@ class If_Goto_ASM_Statement : public ASM_Statement{
 
 class Syscall_ASM_Statement : public ASM_Statement{
     public:
-        Syscall_ASM_Statement(bool is_float);
+        Syscall_ASM_Statement();
         virtual std::string to_string() const override final;
 };
 
