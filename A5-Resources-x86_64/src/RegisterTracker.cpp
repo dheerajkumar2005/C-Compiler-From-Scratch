@@ -37,6 +37,10 @@ RegisterTracker::RegisterTracker()
 
     // The reserved float register is f12
     // TODO: Write a testcase which requires the use of f12 in something else, then use it for printing a float
+
+    // not really RTL registers but what the heck
+    sp = new RTL_Register(PRIORITY_SP);
+    fp = new RTL_Register(PRIORITY_FP);
 }
 
 RTL_Register *RegisterTracker::get_register(TAC_Operand *opd)

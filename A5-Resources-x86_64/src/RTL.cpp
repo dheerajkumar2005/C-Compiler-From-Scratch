@@ -4,19 +4,28 @@ RTL_Register::RTL_Register(int priority) : priority(priority)
 {
 }
 
-RTL_Statement::RTL_Statement(bool is_float) : is_float(is_float)
+RTL_Register *sp = new RTL_Register(PRIORITY_SP);
+RTL_Register *fp = new RTL_Register(PRIORITY_FP);
+
+std::string register_to_string(RTL_Register *reg)
+{
+    return register_to_string(reg);
+}
+
+RTL_Statement::RTL_Statement(Scope *_eval_scope, bool is_float)
+    : eval_scope(_eval_scope), is_float(is_float)
 {
 }
 
 Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival)
-    : RTL_Statement(false), reg(reg), ival(ival)
+    : RTL_Statement(nullptr, false), reg(reg), ival(ival)
 {
 }
 
 std::string Load_Int_RTL_Statement::to_string() const
 {
     std::string result;
-    result = "iLoad:\t" + rtl_priority_to_register(reg->priority) + " <- " + std::to_string(ival);
+    result = "iLoad:\t" + register_to_string(reg) + " <- " + std::to_string(ival);
     return result;
 }
 
@@ -29,14 +38,14 @@ ASM_Code *Load_Int_RTL_Statement::to_asm() const
 }
 
 Load_Float_RTL_Statement::Load_Float_RTL_Statement(RTL_Register *reg, float fval)
-    : RTL_Statement(true), reg(reg), fval(fval)
+    : RTL_Statement(nullptr, true), reg(reg), fval(fval)
 {
 }
 
 std::string Load_Float_RTL_Statement::to_string() const
 {
     std::string result;
-    result = "iLoad.d:\t" + rtl_priority_to_register(reg->priority) + " <- ";
+    result = "iLoad.d:\t" + register_to_string(reg) + " <- ";
     std::ostringstream out;
     out << std::fixed << std::setprecision(2) << fval;
     result += out.str();
@@ -55,7 +64,7 @@ int Load_String_RTL_Statement::string_count = 0;
 std::unordered_map<std::string, int> Load_String_RTL_Statement::s_map;
 
 Load_String_RTL_Statement::Load_String_RTL_Statement(RTL_Register *reg, std::string sval)
-    : RTL_Statement(false), reg(reg), sval(sval)
+    : RTL_Statement(nullptr, false), reg(reg), sval(sval)
 {
     if (s_map.find(sval) == s_map.end())
     {
@@ -71,7 +80,7 @@ Load_String_RTL_Statement::Load_String_RTL_Statement(RTL_Register *reg, std::str
 std::string Load_String_RTL_Statement::to_string() const
 {
     std::string result;
-    result = "load_addr:\t" + rtl_priority_to_register(reg->priority) + " <- " + "_str_" + std::to_string(string_label);
+    result = "load_addr:\t" + register_to_string(reg) + " <- " + "_str_" + std::to_string(string_label);
     return result;
 }
 
@@ -83,35 +92,53 @@ ASM_Code *Load_String_RTL_Statement::to_asm() const
     return asm_code;
 }
 
-// TODO: Removed the "Can load only variables and shared temporaries" check
-Load_RTL_Statement::Load_RTL_Statement(RTL_Register *reg, std::string var_name, bool is_float)
-    : RTL_Statement(is_float), reg(reg), var_name(var_name)
+Load_RTL_Statement::Load_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float)
+    : RTL_Statement(_eval_scope, is_float), reg(reg), var_name(var_name)
 {
+    if (!eval_scope || !eval_scope->parent_scope)
+    {
+        throw_SemanticError("Expected atleast 2 levels of scopage my man");
+    }
 }
 
 std::string Load_RTL_Statement::to_string() const
 {
     if (!is_float)
     {
-        return "load:\t" + rtl_priority_to_register(reg->priority) + " <- " + var_name;
+        return "load:\t" + register_to_string(reg) + " <- " + var_name;
     }
     else
     {
-        return "load.d:\t" + rtl_priority_to_register(reg->priority) + " <- " + var_name;
+        return "load.d:\t" + register_to_string(reg) + " <- " + var_name;
     }
 }
 
 ASM_Code *Load_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    ASM_Statement *load_stmt = new Load_ASM_Statement(reg, this->var_name, is_float);
-    asm_code->append_statement(load_stmt);
+
+    auto &local_sym_tab = eval_scope->sym_tab;
+    if (local_sym_tab.find(var_name) != local_sym_tab.end())
+    {
+        auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
+        if (!de)
+        {
+            throw_SemanticError("Expected it to be a data entry");
+        }
+
+        asm_code->append_statement(new Load_Local_ASM_Statement(reg, de->offset, fp, is_float));
+    }
+    else
+    {
+        // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
+        asm_code->append_statement(new Load_Global_ASM_Statement(reg, var_name, is_float));
+    }
+
     return asm_code;
 }
 
-// TODO: Removed the "Can load only variables and shared temporaries" check
-Store_RTL_Statement::Store_RTL_Statement(RTL_Register *reg, std::string var_name, bool is_float)
-    : RTL_Statement(is_float), reg(reg), var_name(var_name)
+Store_RTL_Statement::Store_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float)
+    : RTL_Statement(_eval_scope, is_float), reg(reg), var_name(var_name)
 {
 }
 
@@ -119,32 +146,48 @@ std::string Store_RTL_Statement::to_string() const
 {
     if (!is_float)
     {
-        return "store:\t" + var_name + " <- " + rtl_priority_to_register(reg->priority);
+        return "store:\t" + var_name + " <- " + register_to_string(reg);
     }
     else
     {
-        return "store.d:\t" + var_name + " <- " + rtl_priority_to_register(reg->priority);
+        return "store.d:\t" + var_name + " <- " + register_to_string(reg);
     }
 }
 
 ASM_Code *Store_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    ASM_Statement *store_stmt = new Store_ASM_Statement(reg, this->var_name, is_float);
-    asm_code->append_statement(store_stmt);
+
+    auto &local_sym_tab = eval_scope->sym_tab;
+    if (local_sym_tab.find(var_name) != local_sym_tab.end())
+    {
+        auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
+        if (!de)
+        {
+            throw_SemanticError("Expected it to be a data entry");
+        }
+
+        asm_code->append_statement(new Store_Local_ASM_Statement(reg, de->offset, fp, is_float));
+    }
+    else
+    {
+        // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
+        asm_code->append_statement(new Store_Global_ASM_Statement(reg, var_name, is_float));
+    }
+
     return asm_code;
 }
 
 Move_RTL_Statement::Move_RTL_Statement(RTL_Register *dest, RTL_Register *src, bool is_movtf, bool is_movt, bool is_float)
-    : RTL_Statement(is_float), dest(dest), src(src), is_movtf(is_movtf), is_movt(is_movt)
+    : RTL_Statement(nullptr, is_float), dest(dest), src(src), is_movtf(is_movtf), is_movt(is_movt)
 {
 }
 
 std::string Move_RTL_Statement::to_string() const
 {
     std::string result;
-    std::string dest_name = rtl_priority_to_register(dest->priority);
-    std::string src_name = (src) ? rtl_priority_to_register(src->priority) : "zero";
+    std::string dest_name = register_to_string(dest);
+    std::string src_name = (src) ? register_to_string(src) : "zero";
     if (is_movtf)
     {
         if (is_movt)
@@ -179,7 +222,7 @@ ASM_Code *Move_RTL_Statement::to_asm() const
 }
 
 Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2, bool is_float)
-    : RTL_Statement(is_float), lhs(lhs), op(op), opd1(opd1), opd2(opd2)
+    : RTL_Statement(nullptr, is_float), lhs(lhs), op(op), opd1(opd1), opd2(opd2)
 {
 }
 
@@ -187,9 +230,9 @@ std::string Compute_RTL_Statement::to_string() const
 {
     std::string result;
 
-    std::string result_name = rtl_priority_to_register(lhs->priority);
-    std::string opd1_name = rtl_priority_to_register(opd1->priority);
-    std::string opd2_name = (opd2) ? rtl_priority_to_register(opd2->priority) : "";
+    std::string result_name = register_to_string(lhs);
+    std::string opd1_name = register_to_string(opd1);
+    std::string opd2_name = (opd2) ? register_to_string(opd2) : "";
     std::string op_name = (is_float) ? op_float_to_string(op) : op_to_string(op);
 
     if (op == RTL_Operator::NEGATE || op == RTL_Operator::LOGICAL_NOT)
@@ -217,7 +260,7 @@ ASM_Code *Compute_RTL_Statement::to_asm() const
 }
 
 Goto_RTL_Statement::Goto_RTL_Statement(int label_number)
-    : RTL_Statement(false), label_number(label_number)
+    : RTL_Statement(nullptr, false), label_number(label_number)
 {
 }
 
@@ -236,13 +279,13 @@ ASM_Code *Goto_RTL_Statement::to_asm() const
 }
 
 If_Goto_RTL_Statement::If_Goto_RTL_Statement(RTL_Register *predicate, int label_number)
-    : RTL_Statement(false), predicate(predicate), label_number(label_number)
+    : RTL_Statement(nullptr, false), predicate(predicate), label_number(label_number)
 {
 }
 
 std::string If_Goto_RTL_Statement::to_string() const
 {
-    std::string result = "bgtz:\t" + rtl_priority_to_register(predicate->priority) + " , " + "Label" + std::to_string(label_number);
+    std::string result = "bgtz:\t" + register_to_string(predicate) + " , " + "Label" + std::to_string(label_number);
     return result;
 }
 
@@ -255,7 +298,7 @@ ASM_Code *If_Goto_RTL_Statement::to_asm() const
 }
 
 Read_RTL_Statement::Read_RTL_Statement(bool is_float)
-    : RTL_Statement(is_float)
+    : RTL_Statement(nullptr, is_float)
 {
 }
 
@@ -273,7 +316,7 @@ ASM_Code *Read_RTL_Statement::to_asm() const
 }
 
 Write_RTL_Statement::Write_RTL_Statement(bool is_float)
-    : RTL_Statement(is_float)
+    : RTL_Statement(nullptr, is_float)
 {
 }
 
@@ -291,7 +334,7 @@ ASM_Code *Write_RTL_Statement::to_asm() const
 }
 
 Label_RTL_Statement::Label_RTL_Statement(int label_number)
-    : RTL_Statement(false), label_number(label_number)
+    : RTL_Statement(nullptr, false), label_number(label_number)
 {
 }
 
@@ -310,25 +353,25 @@ ASM_Code *Label_RTL_Statement::to_asm() const
 }
 
 Return_RTL_Statement::Return_RTL_Statement(RTL_Register *_reg, bool _is_float)
-    : RTL_Statement(_is_float), reg(_reg)
+    : RTL_Statement(nullptr, _is_float), reg(_reg)
 {
 }
 
 std::string Return_RTL_Statement::to_string() const
 {
-    return "return\t" + rtl_priority_to_register(reg->priority);
+    return "return\t" + register_to_string(reg);
 }
 
 ASM_Code *Return_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    ASM_Statement *return_stmt = new Return_ASM_Statement(reg, is_float);
-    asm_code->append_statement(return_stmt);
-    return asm_code;
+    // ASM_Statement *return_stmt = new Return_ASM_Statement(reg, is_float);
+    // asm_code->append_statement(return_stmt);
+    // return asm_code;
 }
 
-Call_RTL_Statement::Call_RTL_Statement(const std::string &func_name, RTL_Register *lhs)
-    : RTL_Statement(false), func_name(func_name), lhs(lhs)
+Call_RTL_Statement::Call_RTL_Statement(Scope *_eval_scope, const std::string &func_name, RTL_Register *lhs)
+    : RTL_Statement(_eval_scope, false), func_name(func_name), lhs(lhs)
 {
 }
 
@@ -337,7 +380,7 @@ std::string Call_RTL_Statement::to_string() const
     std::string result;
     if (lhs)
     {
-        result += rtl_priority_to_register(lhs->priority) + " = ";
+        result += register_to_string(lhs) + " = ";
     }
     result += "call " + func_name;
     return result;
@@ -350,31 +393,29 @@ ASM_Code *Call_RTL_Statement::to_asm() const
     return asm_code;
 }
 
-Push_RTL_Statement::Push_RTL_Statement(bool is_float, RTL_Register *_reg)
-    : RTL_Statement(is_float), reg(_reg)
+Push_RTL_Statement::Push_RTL_Statement(bool is_float, RTL_Register *_reg, int offset)
+    : RTL_Statement(nullptr, is_float), reg(_reg), offset(offset)
 {
 }
 
 std::string Push_RTL_Statement::to_string() const
 {
-    return "push:\t" + rtl_priority_to_register(reg->priority);
+    return "push:\t" + register_to_string(reg);
 }
 
 ASM_Code *Push_RTL_Statement::to_asm() const
 {
-    // TODO
+    int offset = is_float ? -4 : 0;
+    int step = is_float ? 8 : 4;
+
     ASM_Code *asm_code = new ASM_Code();
-    if (is_float)
-    {
-    }
-    else
-    {
-        // Store_ASM_Statement(this->reg, this->is_float);
-    }
+    asm_code->append_statement(new Store_Local_ASM_Statement(reg, offset, sp, is_float));
+    asm_code->append_statement(new Compute_Immediate_Integer_ASM_Statement(sp, RTL_Operator::SUBTRACT, sp, step));
+    return asm_code;
 }
 
 Pop_RTL_Statement::Pop_RTL_Statement(bool is_float)
-    : RTL_Statement(is_float)
+    : RTL_Statement(nullptr, is_float)
 {
 }
 
@@ -385,17 +426,11 @@ std::string Pop_RTL_Statement::to_string() const
 
 ASM_Code *Pop_RTL_Statement::to_asm() const
 {
-    // TODO
-}
+    int step = is_float ? 8 : 4;
 
-ASM_Statement::ASM_Statement(bool is_float)
-    : is_float(is_float)
-{
-}
-
-Load_Int_ASM_Statement::Load_Int_ASM_Statement(RTL_Register *reg, int ival)
-    : ASM_Statement(false), reg(reg), ival(ival)
-{
+    ASM_Code *asm_code = new ASM_Code();
+    asm_code->append_statement(new Compute_Immediate_Integer_ASM_Statement(sp, RTL_Operator::ADD, sp, step));
+    return asm_code;
 }
 
 ASM_Code::ASM_Code() : stmt_list(new std::list<ASM_Statement *>)
@@ -421,7 +456,8 @@ void ASM_Code::append_list(ASM_Code *asm_code)
     }
 }
 
-ASM_Statement::ASM_Statement(bool is_float) : is_float(is_float)
+ASM_Statement::ASM_Statement(bool is_float)
+    : is_float(is_float)
 {
 }
 
@@ -431,7 +467,7 @@ Load_Int_ASM_Statement::Load_Int_ASM_Statement(RTL_Register *reg, int ival)
 std::string Load_Int_ASM_Statement::to_string() const
 {
     std::string result;
-    result = "li $" + rtl_priority_to_register(reg->priority) + ", " + std::to_string(ival);
+    result = "li $" + register_to_string(reg) + ", " + std::to_string(ival);
     return result;
 }
 
@@ -441,7 +477,7 @@ Load_Float_ASM_Statement::Load_Float_ASM_Statement(RTL_Register *reg, float ival
 std::string Load_Float_ASM_Statement::to_string() const
 {
     std::string result;
-    result = "li.d $" + rtl_priority_to_register(reg->priority) + ", ";
+    result = "li.d $" + register_to_string(reg) + ", ";
     std::ostringstream out;
     out << std::fixed << std::setprecision(2) << fval;
     result += out.str();
@@ -454,76 +490,52 @@ Load_String_ASM_Statement::Load_String_ASM_Statement(RTL_Register *reg, std::str
 std::string Load_String_ASM_Statement::to_string() const
 {
     int s_label = Load_String_RTL_Statement::s_map[sval];
-    std::string result = "la $" + rtl_priority_to_register(reg->priority) + ", " + "_str_" + std::to_string(s_label);
+    std::string result = "la $" + register_to_string(reg) + ", " + "_str_" + std::to_string(s_label);
     return result;
 }
 
-Load_ASM_Statement::Load_ASM_Statement(RTL_Register *reg, std::string var_name, bool is_float)
-    : ASM_Statement(is_float), reg(reg), var_name(var_name) {}
-
-std::string Load_ASM_Statement::to_string() const
+Load_Local_ASM_Statement::Load_Local_ASM_Statement(RTL_Register *_data_reg, int _offset, RTL_Register *_base_reg, bool is_float)
+    : ASM_Statement(is_float), data_reg(_data_reg), offset(_offset), base_reg(_base_reg)
 {
-    std::string result;
-    auto local_sym_tab = curr_scope->sym_tab;
-    if (local_sym_tab.find(var_name) != local_sym_tab.end())
-    {
-        int offset = dynamic_cast<Data_Entry *>(local_sym_tab[var_name])->offset;
-        if (!is_float)
-        {
-            result = "lw $" + rtl_priority_to_register(reg->priority) + ", " + std::to_string(offset) + "($fp)";
-        }
-        else
-        {
-            result = "l.d $" + rtl_priority_to_register(reg->priority) + ", " + std::to_string(offset) + "($fp)";
-        }
-    }
-    else
-    {
-        // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
-        if (!is_float)
-        {
-            result = "lw $" + rtl_priority_to_register(reg->priority) + ", " + var_name + "_";
-        }
-        else
-        {
-            result = "l.d $" + rtl_priority_to_register(reg->priority) + ", " + var_name + "_";
-        }
-    }
-    return result;
 }
 
-Store_ASM_Statement::Store_ASM_Statement(RTL_Register *reg, std::string var_name, bool is_float)
-    : ASM_Statement(is_float), reg(reg), var_name(var_name) {}
-
-std::string Store_ASM_Statement::to_string() const
+std::string Load_Local_ASM_Statement::to_string() const
 {
-    std::string result;
-    auto local_sym_tab = curr_scope->sym_tab;
-    if (local_sym_tab.find(var_name) != local_sym_tab.end())
-    {
-        int offset = dynamic_cast<Data_Entry *>(local_sym_tab[var_name])->offset;
-        if (!is_float)
-        {
-            result = "sw $" + rtl_priority_to_register(reg->priority) + ", " + std::to_string(offset) + "($fp)";
-        }
-        else
-        {
-            result = "s.d $" + rtl_priority_to_register(reg->priority) + ", " + std::to_string(offset) + "($fp)";
-        }
-    }
-    else
-    {
-        // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
-        if (!is_float)
-        {
-            result = "sw $" + rtl_priority_to_register(reg->priority) + ", " + var_name + "_";
-        }
-        else
-        {
-            result = "s.d $" + rtl_priority_to_register(reg->priority) + ", " + var_name + "_";
-        }
-    }
-    return result;
+    std::string op_str = is_float ? "l.d" : "lw";
+    return op_str + " $" + register_to_string(data_reg) + ", " + std::to_string(offset) + "($" + register_to_string(base_reg) + ")";
+}
+
+Load_Global_ASM_Statement::Load_Global_ASM_Statement(RTL_Register *_data_reg, const std::string &_var_name, bool is_float)
+    : ASM_Statement(is_float), data_reg(_data_reg), var_name(_var_name)
+{
+}
+
+std::string Load_Global_ASM_Statement::to_string() const
+{
+    std::string op_str = is_float ? "l.d" : "lw";
+    return op_str + " $" + register_to_string(data_reg) + ", " + var_name;
+}
+
+Store_Local_ASM_Statement::Store_Local_ASM_Statement(RTL_Register *_data_reg, int _offset, RTL_Register *_base_reg, bool is_float)
+    : ASM_Statement(is_float), data_reg(_data_reg), offset(_offset), base_reg(_base_reg)
+{
+}
+
+std::string Store_Local_ASM_Statement::to_string() const
+{
+    std::string op_str = is_float ? "s.d" : "sw";
+    return op_str + " $" + register_to_string(data_reg) + ", " + std::to_string(offset) + "($" + register_to_string(base_reg) + ")";
+}
+
+Store_Global_ASM_Statement::Store_Global_ASM_Statement(RTL_Register *_data_reg, const std::string &var_name, bool is_float)
+    : ASM_Statement(is_float), data_reg(_data_reg), var_name(var_name)
+{
+}
+
+std::string Store_Global_ASM_Statement::to_string() const
+{
+    std::string op_str = is_float ? "s.d" : "sw";
+    return op_str + " $" + register_to_string(data_reg) + ", " + var_name;
 }
 
 Move_ASM_Statement::Move_ASM_Statement(RTL_Register *dest, RTL_Register *src, bool is_movtf, bool is_movt, bool is_float)
@@ -532,8 +544,8 @@ Move_ASM_Statement::Move_ASM_Statement(RTL_Register *dest, RTL_Register *src, bo
 std::string Move_ASM_Statement::to_string() const
 {
     std::string result;
-    std::string dest_name = rtl_priority_to_register(dest->priority);
-    std::string src_name = (src) ? rtl_priority_to_register(src->priority) : "zero";
+    std::string dest_name = register_to_string(dest);
+    std::string src_name = (src) ? register_to_string(src) : "zero";
     if (is_movtf)
     {
         if (is_movt)
@@ -566,9 +578,9 @@ std::string Compute_ASM_Statement::to_string() const
 {
     std::string result;
 
-    std::string result_name = rtl_priority_to_register(lhs->priority);
-    std::string opd1_name = rtl_priority_to_register(opd1->priority);
-    std::string opd2_name = (opd2) ? rtl_priority_to_register(opd2->priority) : "";
+    std::string result_name = register_to_string(lhs);
+    std::string opd1_name = register_to_string(opd1);
+    std::string opd2_name = (opd2) ? register_to_string(opd2) : "";
     std::string op_name = (is_float) ? op_float_to_string_asm(op) : op_to_string_asm(op);
 
     if (op == RTL_Operator::NEGATE)
@@ -590,6 +602,38 @@ std::string Compute_ASM_Statement::to_string() const
     return result;
 }
 
+Compute_Immediate_Integer_ASM_Statement::Compute_Immediate_Integer_ASM_Statement(RTL_Register *_lhs, RTL_Operator _op, RTL_Register *_opd1, int _opd2)
+    : ASM_Statement(false), lhs(_lhs), op(_op), opd1(_opd1), opd2(_opd2)
+{
+}
+
+std::string Compute_Immediate_Integer_ASM_Statement::to_string() const
+{
+    std::string lhs_name = register_to_string(lhs);
+    std::string op_name = op_to_string_asm(op);
+    std::string opd1_name = register_to_string(opd1);
+
+    return op_name + " $" + lhs_name + ", $" + opd1_name + ", " + std::to_string(opd2);
+}
+
+Compute_Immediate_Float_ASM_Statement::Compute_Immediate_Float_ASM_Statement(RTL_Register *_lhs, RTL_Operator _op, RTL_Register *_opd1, float _opd2)
+    : ASM_Statement(true), lhs(_lhs), op(_op), opd1(_opd1), opd2(_opd2)
+{
+}
+
+std::string Compute_Immediate_Float_ASM_Statement::to_string() const
+{
+    std::string lhs_name = register_to_string(lhs);
+    std::string op_name = op_float_to_string_asm(op);
+    std::string opd1_name = register_to_string(opd1);
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << opd2;
+    std::string opd2_str = oss.str();
+
+    return op_name + " $" + lhs_name + ", $" + opd1_name + ", " + opd2_str;
+}
+
 Goto_ASM_Statement::Goto_ASM_Statement(int label_number)
     : ASM_Statement(false), label_number(label_number) {}
 
@@ -606,7 +650,7 @@ If_Goto_ASM_Statement::If_Goto_ASM_Statement(RTL_Register *pred, int label_no)
 std::string If_Goto_ASM_Statement::to_string() const
 {
     std::string result;
-    result = "bgtz $" + rtl_priority_to_register(predicate->priority) + ", Label" + std::to_string(label_number);
+    result = "bgtz $" + register_to_string(predicate) + ", Label" + std::to_string(label_number);
     return result;
 }
 
@@ -625,13 +669,14 @@ std::string Label_ASM_Statement::to_string() const
     return "Label" + std::to_string(label_number) + ":";
 }
 
-Return_ASM_Statement::Return_ASM_Statement(RTL_Register *reg, bool is_float)
-    : ASM_Statement(is_float), reg(reg) {}
-
-std::string Return_ASM_Statement::to_string() const
+Jump_ASM_Statement::Jump_ASM_Statement(const std::string &label)
+    : ASM_Statement(false), label(label)
 {
-    std::string func_name = curr_scope->func_sig->name;
-    return "j epilogue_" + func_name;
+}
+
+std::string Jump_ASM_Statement::to_string() const
+{
+    return "j " + label;
 }
 
 JAL_ASM_Statement::JAL_ASM_Statement(const std::string &_func_name)

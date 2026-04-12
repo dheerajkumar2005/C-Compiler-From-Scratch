@@ -1,3 +1,8 @@
+**PROCEDURE: bar_
+**BEGIN: RTL Statements
+	iLoad:       v0 <- 10           ;; Loading integer number 10
+	store:       a_ <- v0
+**END: RTL Statements
 **PROCEDURE: foo_
 **BEGIN: RTL Statements
 	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
@@ -21,13 +26,13 @@
 **PROCEDURE: main
 **BEGIN: RTL Statements
 	iLoad:       v0 <- 1            ;; Loading integer number 1
-	iLoad:       t1 <- 2            ;; Loading integer number 2
+	load:        t1 <- x_           ;; Loading variable x_ into register
 	add:         t0 <- v0 , t1
-	iLoad:       v0 <- 1            ;; Loading integer number 1
+	load:        v0 <- x_           ;; Loading variable x_ into register
 	iLoad:       t2 <- 2            ;; Loading integer number 2
 	slt:         t1 <- v0 , t2
-	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
-	iLoad.d:     f6 <- 20.00        ;; Loading float number 20.000000
+	load.d:      f2 <- f_           ;; Loading variable f_ into register
+	iLoad.d:     f6 <- 20.25        ;; Loading float number 20.249850
 	add.d:       f4 <- f2 , f6
 	push:        f4                 ;; Push parameter onto stack
 	push:        t1                 ;; Push parameter onto stack
@@ -39,13 +44,13 @@
 	move.d:      f2 <- f0
 	store.d:     f_ <- f2
 	iLoad:       v0 <- 1            ;; Loading integer number 1
-	iLoad:       t1 <- 2            ;; Loading integer number 2
+	load:        t1 <- x_           ;; Loading variable x_ into register
 	add:         t0 <- v0 , t1
-	iLoad:       v0 <- 1            ;; Loading integer number 1
+	load:        v0 <- x_           ;; Loading variable x_ into register
 	iLoad:       t2 <- 2            ;; Loading integer number 2
 	slt:         t1 <- v0 , t2
-	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
-	iLoad.d:     f6 <- 20.00        ;; Loading float number 20.000000
+	load.d:      f2 <- f_           ;; Loading variable f_ into register
+	iLoad.d:     f6 <- 20.25        ;; Loading float number 20.249850
 	add.d:       f4 <- f2 , f6
 	push:        f4                 ;; Push parameter onto stack
 	push:        t1                 ;; Push parameter onto stack
@@ -55,13 +60,13 @@
 	pop                             ;; Pop parameter temp5 from stack 
 	pop                             ;; Pop parameter temp6 from stack 
 	iLoad:       v0 <- 1            ;; Loading integer number 1
-	iLoad:       t1 <- 2            ;; Loading integer number 2
+	load:        t1 <- x_           ;; Loading variable x_ into register
 	add:         t0 <- v0 , t1
-	iLoad:       v0 <- 1            ;; Loading integer number 1
+	load:        v0 <- x_           ;; Loading variable x_ into register
 	iLoad:       t2 <- 2            ;; Loading integer number 2
 	slt:         t1 <- v0 , t2
-	iLoad.d:     f2 <- 10.00        ;; Loading float number 10.000000
-	iLoad.d:     f6 <- 20.00        ;; Loading float number 20.000000
+	load.d:      f2 <- f_           ;; Loading variable f_ into register
+	iLoad.d:     f6 <- 20.25        ;; Loading float number 20.249850
 	add.d:       f4 <- f2 , f6
 	push:        f4                 ;; Push parameter onto stack
 	push:        t1                 ;; Push parameter onto stack

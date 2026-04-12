@@ -1,0 +1,11 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+	load:        v0 <- b1_          ;; Loading variable b1_ into register
+	iLoad:       t1 <- 100          ;; Loading integer number 100
+	add:         t0 <- v0 , t1
+	store:       a1_ <- t0
+	load.d:      f2 <- a2_          ;; Loading variable a2_ into register
+	iLoad.d:     f6 <- 200.00       ;; Loading float number 200.000000
+	add.d:       f4 <- f2 , f6
+	store.d:     b2_ <- f4
+**END: RTL Statements

@@ -291,7 +291,7 @@ actual_arg
 ;
 
 return_statement
-    : RETURN expression SEMICOLON { $$ = new Return_Stmt_Ast($2, return_label, return_stemp); }
+    : RETURN expression SEMICOLON { $$ = new Return_Stmt_Ast(curr_scope, $2, return_label, return_stemp); }
 ;
 
 optional_local_var_decl_stmt_list
@@ -327,8 +327,8 @@ named_type
 ;
 
 assignment_statement
-    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
-    | variable_as_operand ASSIGN_OP func_call SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast($1, $3); }
+    : variable_as_operand ASSIGN_OP expression SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast(curr_scope, $1, $3); }
+    | variable_as_operand ASSIGN_OP func_call SEMICOLON { $$ = sa_parse ? nullptr : new Assignment_Stmt_Ast(curr_scope, $1, $3); }
 ;
 
 if_condition
@@ -336,7 +336,7 @@ if_condition
 ;
 
 unmatched_if
-    : IF if_condition statement { $$ = sa_parse ? nullptr : new If_Stmt_Ast($2, $3); }
+    : IF if_condition statement { $$ = sa_parse ? nullptr : new If_Stmt_Ast(curr_scope, $2, $3); }
 ;
 
 if_statement
@@ -345,47 +345,47 @@ if_statement
 ;
 
 do_while_statement
-    : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON { $$ = sa_parse ? nullptr : new Do_While_Stmt_Ast($5, $2); }
+    : DO statement WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET SEMICOLON { $$ = sa_parse ? nullptr : new Do_While_Stmt_Ast(curr_scope, $5, $2); }
 ;
 
 while_statement
-    : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement { $$ = sa_parse ? nullptr : new While_Stmt_Ast($3, $5); }
+    : WHILE LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET statement { $$ = sa_parse ? nullptr : new While_Stmt_Ast(curr_scope, $3, $5); }
 ;
 
 compound_statement
-    : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET { $$ = sa_parse ? nullptr : new Compound_Stmt_Ast($2);  }
+    : LEFT_CURLY_BRACKET statement_list RIGHT_CURLY_BRACKET { $$ = sa_parse ? nullptr : new Compound_Stmt_Ast(curr_scope, $2);  }
 
 print_statement
-    : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast($2); }
+    : WRITE expression SEMICOLON { $$ = sa_parse ? nullptr : new Write_Stmt_Ast(curr_scope, $2); }
 ;
 
 read_statement
-    : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast($2); }
+    : READ variable_name SEMICOLON { $$ = sa_parse ? nullptr : new Read_Stmt_Ast(curr_scope, $2); }
 ;
 
 expression
-    : expression PLUS expression { $$ = sa_parse ? nullptr : new Plus_Expr_Ast($1, $3); }
-    | expression MINUS expression { $$ = sa_parse ? nullptr : new Minus_Expr_Ast($1, $3); }
-    | expression MULT expression { $$ = sa_parse ? nullptr : new Mult_Expr_Ast($1, $3); }
-    | expression DIV expression { $$ = sa_parse ? nullptr : new Div_Expr_Ast($1, $3); }
-    | MINUS expression %prec UMINUS { $$ = sa_parse ? nullptr : new UMinus_Expr_Ast($2); }
+    : expression PLUS expression { $$ = sa_parse ? nullptr : new Plus_Expr_Ast($1, $3, curr_scope); }
+    | expression MINUS expression { $$ = sa_parse ? nullptr : new Minus_Expr_Ast($1, $3, curr_scope); }
+    | expression MULT expression { $$ = sa_parse ? nullptr : new Mult_Expr_Ast($1, $3, curr_scope); }
+    | expression DIV expression { $$ = sa_parse ? nullptr : new Div_Expr_Ast($1, $3, curr_scope); }
+    | MINUS expression %prec UMINUS { $$ = sa_parse ? nullptr : new UMinus_Expr_Ast($2, curr_scope); }
     | LEFT_ROUND_BRACKET expression RIGHT_ROUND_BRACKET { $$ = $2; }
-    | expression QUESTION_MARK expression COLON expression { $$ = sa_parse ? nullptr : new Conditional_Expr_Ast(curr_scope, $1, $3, $5); }
-    | expression AND expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_AND, $1, $3); } 
-    | expression OR expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_OR, $1, $3); }
-    | NOT expression { $$ = sa_parse ? nullptr : new Logical_Not_Expr_Ast($2); }
+    | expression QUESTION_MARK expression COLON expression { $$ = sa_parse ? nullptr : new Conditional_Expr_Ast($1, $3, $5, curr_scope); }
+    | expression AND expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_AND, $1, $3, curr_scope); } 
+    | expression OR expression { $$ = sa_parse ? nullptr : new Boolean_Expr_Ast(Binary_Operator::LOGICAL_OR, $1, $3, curr_scope); }
+    | NOT expression { $$ = sa_parse ? nullptr : new Logical_Not_Expr_Ast($2, curr_scope); }
     | rel_expression { $$ = $1; }
     | variable_as_operand { $$ = $1; }
     | constant_as_operand { $$ = $1; }
 ;
 
 rel_expression
-    : expression LESS_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LT, $1, $3); }
-    | expression LESS_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LE, $1, $3); }
-    | expression GREATER_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GT, $1, $3); }
-    | expression GREATER_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GE, $1, $3); }
-    | expression NOT_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::NE, $1, $3); }
-    | expression EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3); }
+    : expression LESS_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LT, $1, $3, curr_scope); }
+    | expression LESS_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::LE, $1, $3, curr_scope); }
+    | expression GREATER_THAN expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GT, $1, $3, curr_scope); }
+    | expression GREATER_THAN_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::GE, $1, $3, curr_scope); }
+    | expression NOT_EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::NE, $1, $3, curr_scope); }
+    | expression EQUAL expression { $$ = sa_parse ? nullptr : new Relational_Expr_Ast(Binary_Operator::EQ, $1, $3, curr_scope); }
 ;
 
 variable_as_operand

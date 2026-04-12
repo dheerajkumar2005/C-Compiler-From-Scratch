@@ -10,6 +10,8 @@ int foobar(int x, bool y, float z)
 
 void bar(int x, bool y, float z)
 {
+    int a;
+    a = 10;
 }
 
 void main()
@@ -17,7 +19,7 @@ void main()
     float f;
     int x;
 
-    f = foo(1 + 2, 1 < 2, 10. + 20.);
-    bar(1 + 2, 1 < 2, 10. + 20.);
-    x = foobar(1 + 2, 1 < 2, 10. + 20.);
+    f = foo(1 + x, x < 2, f + 20.24985);
+    bar(1 + x, x < 2, f + 20.24985);
+    x = foobar(1 + x, x < 2, f + 20.24985);
 }

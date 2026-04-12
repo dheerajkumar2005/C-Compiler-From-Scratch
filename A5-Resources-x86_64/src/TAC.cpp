@@ -1,5 +1,14 @@
 #include "TAC.hpp"
 
+TAC_Statement::TAC_Statement(Scope *eval_scope)
+	: eval_scope(eval_scope)
+{
+	if (!eval_scope || eval_scope->kind == Scope_Kind::GLOBAL)
+	{
+		throw_SemanticError("Expected a non-global scope");
+	}
+}
+
 Variable_TAC_Operand::Variable_TAC_Operand(Type type, std::string *name, Scope *declaring_scope)
 	: TAC_Operand(type), name(name), declaring_scope(declaring_scope)
 {
@@ -68,18 +77,18 @@ std::string TAC_Label::to_string() const
 	return "Label" + std::to_string(label_number);
 }
 
-Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2)
-	: TAC_Statement(), lhs(lhs), op(binary_to_tac(op)), opd1(opd1), opd2(opd2)
+Assignment_TAC_Statement::Assignment_TAC_Statement(Scope *_eval_scope, TAC_Operand *lhs, Binary_Operator op, TAC_Operand *opd1, TAC_Operand *opd2)
+	: TAC_Statement(_eval_scope), lhs(lhs), op(binary_to_tac(op)), opd1(opd1), opd2(opd2)
 {
 }
 
-Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1)
-	: TAC_Statement(), lhs(lhs), op(unary_to_tac(op)), opd1(opd1), opd2(nullptr)
+Assignment_TAC_Statement::Assignment_TAC_Statement(Scope *_eval_scope, TAC_Operand *lhs, Unary_Operator op, TAC_Operand *opd1)
+	: TAC_Statement(_eval_scope), lhs(lhs), op(unary_to_tac(op)), opd1(opd1), opd2(nullptr)
 {
 }
 
-Assignment_TAC_Statement::Assignment_TAC_Statement(TAC_Operand *lhs, TAC_Operand *opd1)
-	: TAC_Statement(), lhs(lhs), op(TAC_Operator::NOP), opd1(opd1), opd2(nullptr)
+Assignment_TAC_Statement::Assignment_TAC_Statement(Scope *_eval_scope, TAC_Operand *lhs, TAC_Operand *opd1)
+	: TAC_Statement(_eval_scope), lhs(lhs), op(TAC_Operator::NOP), opd1(opd1), opd2(nullptr)
 {
 }
 
@@ -376,7 +385,11 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	}
 }
 
-Goto_TAC_Statement::Goto_TAC_Statement(TAC_Label *_label) : label(_label) {}
+Goto_TAC_Statement::Goto_TAC_Statement(TAC_Label *_label)
+	: TAC_Statement(nullptr), label(_label)
+{
+}
+
 std::string Goto_TAC_Statement::to_string() const
 {
 	return "goto " + label->to_string();
@@ -392,8 +405,8 @@ RTL_Code *Goto_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	return rtl_code;
 }
 
-If_Goto_TAC_Statement::If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_label)
-	: condition(_cond), label(_label)
+If_Goto_TAC_Statement::If_Goto_TAC_Statement(Scope *_eval_scope, TAC_Operand *_cond, TAC_Label *_label)
+	: TAC_Statement(_eval_scope), condition(_cond), label(_label)
 {
 }
 
@@ -424,8 +437,8 @@ std::string If_Goto_TAC_Statement::to_string() const
 	return "if(" + condition->to_string() + ") goto " + label->to_string();
 }
 
-IO_TAC_Statement::IO_TAC_Statement(IO_Kind _kind, TAC_Operand *_opd)
-	: kind(_kind), opd(_opd)
+IO_TAC_Statement::IO_TAC_Statement(Scope *_eval_scope, IO_Kind _kind, TAC_Operand *_opd)
+	: TAC_Statement(_eval_scope), kind(_kind), opd(_opd)
 {
 }
 
@@ -562,7 +575,11 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	}
 }
 
-Label_TAC_Statement::Label_TAC_Statement(TAC_Label *_label) : label(_label) {}
+Label_TAC_Statement::Label_TAC_Statement(TAC_Label *_label)
+	: TAC_Statement(nullptr), label(_label)
+{
+}
+
 std::string Label_TAC_Statement::to_string() const
 {
 	return label->to_string() + ": ";
@@ -578,8 +595,8 @@ RTL_Code *Label_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	return rtl_code;
 }
 
-Return_TAC_Statement::Return_TAC_Statement(Shared_Temporary_TAC_Operand *_return_stemp)
-	: return_stemp(_return_stemp)
+Return_TAC_Statement::Return_TAC_Statement(Scope *_eval_scope, Shared_Temporary_TAC_Operand *_return_stemp)
+	: TAC_Statement(_eval_scope), return_stemp(_return_stemp)
 {
 }
 
@@ -599,8 +616,8 @@ RTL_Code *Return_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	return rtl_code;
 }
 
-Call_TAC_Statement::Call_TAC_Statement(const std::string &name, const std::vector<TAC_Operand *> &args, TAC_Operand *lhs)
-	: TAC_Statement(), func_name(name), args(args), lhs(lhs)
+Call_TAC_Statement::Call_TAC_Statement(Scope *_eval_scope, const std::string &name, const std::vector<TAC_Operand *> &args, TAC_Operand *lhs)
+	: TAC_Statement(_eval_scope), func_name(name), args(args), lhs(lhs)
 {
 }
 

@@ -34,6 +34,7 @@
 - Check the SPIM generated for move, different types of compute statements, read and write RTL statements.
 - RTL for return statement.
 - Enforce that the main function must be defined.
+- NOTE that empty functions have to be handled at the AST/TAC/RTL/ASM levels.
 
 # Gameplan
 - Before we even think about function calls, we need to firm up single function, basically return types and return statements.

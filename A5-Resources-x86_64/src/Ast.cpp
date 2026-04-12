@@ -1,6 +1,6 @@
 #include "Ast.hpp"
 
-Ast::Ast() : code(nullptr)
+Ast::Ast(Scope *_eval_scope) : code(nullptr), eval_scope(_eval_scope)
 {
 }
 
@@ -18,8 +18,8 @@ Code *Ast::get_code()
     return code;
 }
 
-Expression_Ast::Expression_Ast(Type type)
-    : Ast(), type(type), place(nullptr)
+Expression_Ast::Expression_Ast(Type type, Scope *_eval_scope)
+    : Ast(_eval_scope), type(type), place(nullptr)
 {
 }
 
@@ -32,8 +32,8 @@ Type Expression_Ast::get_type() const
     return type;
 }
 
-Base_Expr_Ast::Base_Expr_Ast(Type type)
-    : Expression_Ast(type)
+Base_Expr_Ast::Base_Expr_Ast(Type type, Scope *_eval_scope)
+    : Expression_Ast(type, _eval_scope)
 {
 }
 
@@ -113,8 +113,8 @@ std::string String_Expr_Ast::to_string() const
     return "String : " + sval + "<" + type_to_string(get_type()) + ">";
 }
 
-Function_Call_Ast::Function_Call_Ast(std::string name, Func_Signature *sig, std::vector<Expression_Ast *> *a)
-    : Base_Expr_Ast(sig->return_type), func_name(name), func_sig(sig), args(a)
+Function_Call_Ast::Function_Call_Ast(std::string name, Func_Signature *sig, std::vector<Expression_Ast *> *a, Scope *_eval_scope)
+    : Base_Expr_Ast(sig->return_type, _eval_scope), func_name(name), func_sig(sig), args(a)
 {
     if (func_name != func_sig->name)
     {
@@ -139,7 +139,7 @@ Code *Function_Call_Ast::codegen()
         operands.push_back(arg->place);
     }
 
-    result->append_statement(new Call_TAC_Statement(func_name, operands, place));
+    // result->append_statement(new Call_TAC_Statement(eval_scope, func_name, operands, place));
     return result;
 }
 
@@ -154,8 +154,8 @@ std::string Function_Call_Ast::to_string() const
     return result;
 }
 
-Unary_Expr_AST::Unary_Expr_AST(Type type, Unary_Operator op, Expression_Ast *opd1)
-    : Expression_Ast(type), op(op), opd1(opd1)
+Unary_Expr_AST::Unary_Expr_AST(Type type, Unary_Operator op, Expression_Ast *opd1, Scope *_eval_scope)
+    : Expression_Ast(type, _eval_scope), op(op), opd1(opd1)
 {
 }
 
@@ -170,13 +170,13 @@ Code *Unary_Expr_AST::codegen()
     code->append_list(opd1->get_code());
 
     place = new Temporary_TAC_Operand(type);
-    code->append_statement(new Assignment_TAC_Statement(place, op, opd1->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, place, op, opd1->place));
 
     return code;
 }
 
-UMinus_Expr_Ast::UMinus_Expr_Ast(Expression_Ast *opd1)
-    : Unary_Expr_AST(opd1->get_type(), Unary_Operator::NEGATE, opd1)
+UMinus_Expr_Ast::UMinus_Expr_Ast(Expression_Ast *opd1, Scope *_eval_scope)
+    : Unary_Expr_AST(opd1->get_type(), Unary_Operator::NEGATE, opd1, _eval_scope)
 {
     if (opd1->get_type() != Type::INT && opd1->get_type() != Type::FLOAT)
     {
@@ -190,8 +190,8 @@ std::string UMinus_Expr_Ast::to_string() const
     return "\nArith: Uminus<" + type_to_string(get_type()) + ">\nL_Opd (" + opd1->to_string() + ")";
 }
 
-Logical_Not_Expr_Ast::Logical_Not_Expr_Ast(Expression_Ast *opd1)
-    : Unary_Expr_AST(Type::BOOL, Unary_Operator::LOGICAL_NOT, opd1)
+Logical_Not_Expr_Ast::Logical_Not_Expr_Ast(Expression_Ast *opd1, Scope *_eval_scope)
+    : Unary_Expr_AST(Type::BOOL, Unary_Operator::LOGICAL_NOT, opd1, _eval_scope)
 {
     if (opd1->get_type() != Type::BOOL)
     {
@@ -205,8 +205,8 @@ std::string Logical_Not_Expr_Ast::to_string() const
     return "\nCondition: NOT<bool>\nL_Opd (" + opd1->to_string() + ")";
 }
 
-Binary_Expr_Ast::Binary_Expr_Ast(Type type, Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2)
-    : Expression_Ast(type), op(op), opd1(opd1), opd2(opd2)
+Binary_Expr_Ast::Binary_Expr_Ast(Type type, Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope)
+    : Expression_Ast(type, _eval_scope), op(op), opd1(opd1), opd2(opd2)
 {
 }
 
@@ -224,7 +224,7 @@ Code *Binary_Expr_Ast::codegen()
     code->append_list(opd2->get_code());
 
     place = new Temporary_TAC_Operand(type);
-    code->append_statement(new Assignment_TAC_Statement(place, op, opd1->place, opd2->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, place, op, opd1->place, opd2->place));
 
     return code;
 }
@@ -234,8 +234,8 @@ bool are_same_type(Expression_Ast *opd1, Expression_Ast *opd2)
     return opd1->get_type() == opd2->get_type();
 }
 
-Boolean_Expr_Ast::Boolean_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2)
-    : Binary_Expr_Ast(Type::BOOL, op, opd1, opd2)
+Boolean_Expr_Ast::Boolean_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope)
+    : Binary_Expr_Ast(Type::BOOL, op, opd1, opd2, _eval_scope)
 {
     if (!are_same_type(opd1, opd2))
     {
@@ -259,8 +259,8 @@ bool is_numeric_type(Expression_Ast *opd)
     return opd->get_type() == Type::FLOAT || opd->get_type() == Type::INT;
 }
 
-Div_Expr_Ast::Div_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
-    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::DIVIDE, opd1, opd2)
+Div_Expr_Ast::Div_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope)
+    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::DIVIDE, opd1, opd2, _eval_scope)
 {
     if (!are_same_type(opd1, opd2))
     {
@@ -279,8 +279,8 @@ std::string Div_Expr_Ast::to_string() const
     return "\nArith: Div<" + type_to_string(get_type()) + ">\nL_Opd (" + opd1->to_string() + ")\nR_Opd (" + opd2->to_string() + ")";
 }
 
-Minus_Expr_Ast::Minus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
-    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::SUBTRACT, opd1, opd2)
+Minus_Expr_Ast::Minus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope)
+    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::SUBTRACT, opd1, opd2, _eval_scope)
 {
     if (!are_same_type(opd1, opd2))
     {
@@ -299,8 +299,8 @@ std::string Minus_Expr_Ast::to_string() const
     return "\nArith: Minus<" + type_to_string(get_type()) + ">\nL_Opd (" + opd1->to_string() + ")\nR_Opd (" + opd2->to_string() + ")";
 }
 
-Mult_Expr_Ast::Mult_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
-    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::MULTIPLY, opd1, opd2)
+Mult_Expr_Ast::Mult_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope)
+    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::MULTIPLY, opd1, opd2, _eval_scope)
 {
     if (!are_same_type(opd1, opd2))
     {
@@ -319,8 +319,8 @@ std::string Mult_Expr_Ast::to_string() const
     return "\nArith: Mult<" + type_to_string(get_type()) + ">\nL_Opd (" + opd1->to_string() + ")\nR_Opd (" + opd2->to_string() + ")";
 }
 
-Plus_Expr_Ast::Plus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2)
-    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::ADD, opd1, opd2)
+Plus_Expr_Ast::Plus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope)
+    : Binary_Expr_Ast(opd1->get_type(), Binary_Operator::ADD, opd1, opd2, _eval_scope)
 {
     if (!are_same_type(opd1, opd2))
     {
@@ -339,8 +339,8 @@ std::string Plus_Expr_Ast::to_string() const
     return "\nArith: Plus<" + type_to_string(get_type()) + ">\nL_Opd (" + opd1->to_string() + ")\nR_Opd (" + opd2->to_string() + ")";
 }
 
-Relational_Expr_Ast::Relational_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2)
-    : Binary_Expr_Ast(Type::BOOL, op, opd1, opd2)
+Relational_Expr_Ast::Relational_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope)
+    : Binary_Expr_Ast(Type::BOOL, op, opd1, opd2, _eval_scope)
 {
     if (op != Binary_Operator::LT && op != Binary_Operator::LE && op != Binary_Operator::GT && op != Binary_Operator::GE && op != Binary_Operator::NE && op != Binary_Operator::EQ)
     {
@@ -364,8 +364,8 @@ std::string Relational_Expr_Ast::to_string() const
     return "\nCondition: " + op_to_string(op) + "<bool>\nL_Opd (" + opd1->to_string() + ")\nR_Opd (" + opd2->to_string() + ")";
 }
 
-Ternary_Expr_Ast::Ternary_Expr_Ast(Type type, Ternary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3)
-    : Expression_Ast(type), op(op), opd1(opd1), opd2(opd2), opd3(opd3)
+Ternary_Expr_Ast::Ternary_Expr_Ast(Type type, Ternary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3, Scope *_eval_scope)
+    : Expression_Ast(type, _eval_scope), op(op), opd1(opd1), opd2(opd2), opd3(opd3)
 {
 }
 
@@ -373,8 +373,8 @@ Ternary_Expr_Ast::~Ternary_Expr_Ast()
 {
 }
 
-Conditional_Expr_Ast::Conditional_Expr_Ast(Scope *curr_scope, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3)
-    : Ternary_Expr_Ast(opd2->get_type(), Ternary_Operator::QUESTION_MARK_COLON, opd1, opd2, opd3), curr_scope(curr_scope)
+Conditional_Expr_Ast::Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3, Scope *_eval_scope)
+    : Ternary_Expr_Ast(opd2->get_type(), Ternary_Operator::QUESTION_MARK_COLON, opd1, opd2, opd3, _eval_scope)
 {
     if (opd1->get_type() != Type::BOOL)
     {
@@ -401,21 +401,21 @@ Code *Conditional_Expr_Ast::codegen()
 
     Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(opd1->type);
     place = new Shared_Temporary_TAC_Operand(opd2->type);
-    curr_scope->add_local(place->type, place->to_string());
+    eval_scope->add_local(place->type, place->to_string());
 
     TAC_Label *l1 = new TAC_Label();
     TAC_Label *l2 = new TAC_Label();
 
     Code *code = new Code();
     code->append_list(predicate_expr);
-    code->append_statement(new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, opd1->place));
-    code->append_statement(new If_Goto_TAC_Statement(t1, l1));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, t1, Unary_Operator::LOGICAL_NOT, opd1->place));
+    code->append_statement(new If_Goto_TAC_Statement(eval_scope, t1, l1));
     code->append_list(then_expr);
-    code->append_statement(new Assignment_TAC_Statement(place, opd2->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, place, opd2->place));
     code->append_statement(new Goto_TAC_Statement(l2));
     code->append_statement(new Label_TAC_Statement(l1));
     code->append_list(else_expr);
-    code->append_statement(new Assignment_TAC_Statement(place, opd3->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, place, opd3->place));
     code->append_statement(new Label_TAC_Statement(l2));
 
     return code;
@@ -426,8 +426,8 @@ std::string Conditional_Expr_Ast::to_string() const
     return opd1->to_string() + "\nTrue_Part (" + opd2->to_string() + ")\nFalse_Part (" + opd3->to_string() + ")";
 }
 
-Statement_Ast::Statement_Ast()
-    : Ast()
+Statement_Ast::Statement_Ast(Scope *_eval_scope)
+    : Ast(_eval_scope)
 {
 }
 
@@ -456,8 +456,8 @@ RTL_Code *Statement_Ast::get_rtl(RegisterTracker *register_tracker)
     return rtl_code;
 }
 
-Assignment_Stmt_Ast::Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs)
-    : Statement_Ast(), lhs(lhs), rhs(rhs)
+Assignment_Stmt_Ast::Assignment_Stmt_Ast(Scope *_eval_scope, Name_Expr_Ast *lhs, Expression_Ast *rhs)
+    : Statement_Ast(_eval_scope), lhs(lhs), rhs(rhs)
 {
     if (lhs->get_type() != rhs->get_type())
     {
@@ -478,7 +478,7 @@ Code *Assignment_Stmt_Ast::codegen()
     code->append_list(rhs->get_code());
 
     Variable_TAC_Operand *id = new Variable_TAC_Operand(lhs->type, &lhs->var_name, lhs->declaring_scope);
-    code->append_statement(new Assignment_TAC_Statement(id, rhs->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, id, rhs->place));
 
     return code;
 }
@@ -488,8 +488,8 @@ std::string Assignment_Stmt_Ast::to_string() const
     return "Asgn:\nLHS (" + lhs->to_string() + ")\nRHS (" + rhs->to_string() + ")";
 }
 
-Read_Stmt_Ast::Read_Stmt_Ast(Name_Expr_Ast *var)
-    : Statement_Ast(), var(var)
+Read_Stmt_Ast::Read_Stmt_Ast(Scope *_eval_scope, Name_Expr_Ast *var)
+    : Statement_Ast(_eval_scope), var(var)
 {
     if (var->get_type() != Type::INT && var->get_type() != Type::FLOAT)
     {
@@ -503,7 +503,7 @@ Code *Read_Stmt_Ast::codegen()
     Code *code = new Code();
 
     Variable_TAC_Operand *id = new Variable_TAC_Operand(var->type, &var->var_name, var->declaring_scope);
-    code->append_statement(new IO_TAC_Statement(IO_Kind::READ, id));
+    code->append_statement(new IO_TAC_Statement(eval_scope, IO_Kind::READ, id));
 
     return code;
 }
@@ -513,8 +513,8 @@ std::string Read_Stmt_Ast::to_string() const
     return "Read: " + var->to_string();
 }
 
-Write_Stmt_Ast::Write_Stmt_Ast(Expression_Ast *expr)
-    : Statement_Ast(), expr(expr)
+Write_Stmt_Ast::Write_Stmt_Ast(Scope *_eval_scope, Expression_Ast *expr)
+    : Statement_Ast(_eval_scope), expr(expr)
 {
     Type type = expr->get_type();
     if (type == Type::VOID || type == Type::BOOL)
@@ -530,7 +530,7 @@ Code *Write_Stmt_Ast::codegen()
 
     code->append_list(expr->get_code());
 
-    code->append_statement(new IO_TAC_Statement(IO_Kind::WRITE, expr->place));
+    code->append_statement(new IO_TAC_Statement(eval_scope, IO_Kind::WRITE, expr->place));
 
     return code;
 }
@@ -540,8 +540,8 @@ std::string Write_Stmt_Ast::to_string() const
     return "Write: " + expr->to_string();
 }
 
-Compound_Stmt_Ast::Compound_Stmt_Ast(std::vector<Statement_Ast *> *stmts)
-    : Statement_Ast(), stmts(stmts)
+Compound_Stmt_Ast::Compound_Stmt_Ast(Scope *_eval_scope, std::vector<Statement_Ast *> *stmts)
+    : Statement_Ast(_eval_scope), stmts(stmts)
 {
 }
 
@@ -568,8 +568,8 @@ std::string Compound_Stmt_Ast::to_string() const
     return result;
 }
 
-If_Stmt_Ast::If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *if_clause, Statement_Ast *else_clause)
-    : Statement_Ast(), predicate(predicate), if_clause(if_clause), else_clause(else_clause)
+If_Stmt_Ast::If_Stmt_Ast(Scope *_eval_scope, Expression_Ast *predicate, Statement_Ast *if_clause, Statement_Ast *else_clause)
+    : Statement_Ast(_eval_scope), predicate(predicate), if_clause(if_clause), else_clause(else_clause)
 {
     if (predicate->type != Type::BOOL)
     {
@@ -587,14 +587,14 @@ Code *If_Stmt_Ast::codegen()
     Code *if_clause_code = if_clause->get_code();
 
     TAC_Operand *t = new Temporary_TAC_Operand(Type::BOOL);
-    code->append_statement(new Assignment_TAC_Statement(t, Unary_Operator::LOGICAL_NOT, predicate->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, t, Unary_Operator::LOGICAL_NOT, predicate->place));
 
     if (else_clause)
     {
         TAC_Label *l_end = new TAC_Label();
         TAC_Label *l_false = new TAC_Label();
 
-        code->append_statement(new If_Goto_TAC_Statement(t, l_false));
+        code->append_statement(new If_Goto_TAC_Statement(eval_scope, t, l_false));
 
         code->append_list(if_clause_code);
 
@@ -609,7 +609,7 @@ Code *If_Stmt_Ast::codegen()
     else
     {
         TAC_Label *l_false = new TAC_Label();
-        code->append_statement(new If_Goto_TAC_Statement(t, l_false));
+        code->append_statement(new If_Goto_TAC_Statement(eval_scope, t, l_false));
 
         code->append_list(if_clause_code);
 
@@ -630,8 +630,8 @@ std::string If_Stmt_Ast::to_string() const
     return result;
 }
 
-While_Stmt_Ast::While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body)
-    : Statement_Ast(), predicate(_predicate), body(_body)
+While_Stmt_Ast::While_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_predicate, Statement_Ast *_body)
+    : Statement_Ast(_eval_scope), predicate(_predicate), body(_body)
 {
     if (predicate->type != Type::BOOL)
     {
@@ -653,10 +653,10 @@ Code *While_Stmt_Ast::codegen()
     code->append_list(predicate_code);
 
     Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(Type::BOOL);
-    code->append_statement(new Assignment_TAC_Statement(t1, Unary_Operator::LOGICAL_NOT, predicate->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, t1, Unary_Operator::LOGICAL_NOT, predicate->place));
 
     TAC_Label *l2 = new TAC_Label();
-    code->append_statement(new If_Goto_TAC_Statement(t1, l2));
+    code->append_statement(new If_Goto_TAC_Statement(eval_scope, t1, l2));
 
     code->append_list(body_code);
 
@@ -673,8 +673,8 @@ std::string While_Stmt_Ast::to_string() const
     return result;
 }
 
-Do_While_Stmt_Ast::Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *body)
-    : Statement_Ast(), predicate(predicate), body(body)
+Do_While_Stmt_Ast::Do_While_Stmt_Ast(Scope *_eval_scope, Expression_Ast *predicate, Statement_Ast *body)
+    : Statement_Ast(_eval_scope), predicate(predicate), body(body)
 {
     if (predicate->type != Type::BOOL)
     {
@@ -697,7 +697,7 @@ Code *Do_While_Stmt_Ast::codegen()
 
     code->append_list(predicate_code);
 
-    code->append_statement(new If_Goto_TAC_Statement(predicate->place, l1));
+    code->append_statement(new If_Goto_TAC_Statement(eval_scope, predicate->place, l1));
 
     return code;
 }
@@ -708,8 +708,8 @@ std::string Do_While_Stmt_Ast::to_string() const
     return result;
 }
 
-Return_Stmt_Ast::Return_Stmt_Ast(Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp)
-    : expression(_expression), return_label(_return_label), return_stemp(_return_stemp)
+Return_Stmt_Ast::Return_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp)
+    : Statement_Ast(_eval_scope), expression(_expression), return_label(_return_label), return_stemp(_return_stemp)
 {
 }
 
@@ -717,7 +717,7 @@ Code *Return_Stmt_Ast::codegen()
 {
     Code *code = new Code();
     code->append_list(expression->get_code());
-    code->append_statement(new Assignment_TAC_Statement(return_stemp, expression->place));
+    code->append_statement(new Assignment_TAC_Statement(eval_scope, return_stemp, expression->place));
     code->append_statement(new Goto_TAC_Statement(return_label));
     return code;
 }
@@ -727,19 +727,8 @@ std::string Return_Stmt_Ast::to_string() const
     return "Return: " + expression->to_string();
 }
 
-Function_Ast::Function_Ast(Func_Signature *_func_sig)
-    : func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr)
-{
-    Type return_type = func_sig->return_type;
-    if (return_type != Type::VOID)
-    {
-        return_label = new TAC_Label();
-        return_stemp = new Shared_Temporary_TAC_Operand(return_type);
-    }
-}
-
-Call_Stmt_Ast::Call_Stmt_Ast(Function_Call_Ast *call)
-    : Statement_Ast(), func_call(call)
+Call_Stmt_Ast::Call_Stmt_Ast(Scope *_eval_scope, Function_Call_Ast *call)
+    : Statement_Ast(_eval_scope), func_call(call)
 {
 }
 
@@ -751,6 +740,17 @@ Code *Call_Stmt_Ast::codegen()
 std::string Call_Stmt_Ast::to_string() const
 {
     return func_call->to_string();
+}
+
+Function_Ast::Function_Ast(Func_Signature *_func_sig)
+    : Statement_Ast(nullptr), func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr)
+{
+    Type return_type = func_sig->return_type;
+    if (return_type != Type::VOID)
+    {
+        return_label = new TAC_Label();
+        return_stemp = new Shared_Temporary_TAC_Operand(return_type);
+    }
 }
 
 void Function_Ast::add_stmt(Statement_Ast *stmt)
@@ -768,7 +768,7 @@ Code *Function_Ast::codegen()
     if (func_sig->return_type != Type::VOID)
     {
         code->append_statement(new Label_TAC_Statement(return_label));
-        code->append_statement(new Return_TAC_Statement(return_stemp));
+        code->append_statement(new Return_TAC_Statement(eval_scope, return_stemp));
     }
     return code;
 }

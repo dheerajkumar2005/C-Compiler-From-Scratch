@@ -8,6 +8,7 @@
 #include <list>
 
 #include "utils.hpp"
+#include "Program.hpp"
 
 class RTL_Register
 {
@@ -17,14 +18,21 @@ public:
     RTL_Register(int priority);
 };
 
+// Not really registers but what the heck
+RTL_Register *sp;
+RTL_Register *fp;
+
+std::string register_to_string(RTL_Register *reg);
+
 class ASM_Code;
 
 class RTL_Statement
 {
 public:
+    Scope *eval_scope;
     bool is_float;
 
-    RTL_Statement(bool is_float);
+    RTL_Statement(Scope *_eval_scope, bool is_float);
     virtual std::string to_string() const = 0;
     virtual ASM_Code *to_asm() const = 0;
 };
@@ -70,7 +78,7 @@ public:
     RTL_Register *reg;
     std::string var_name;
 
-    Load_RTL_Statement(RTL_Register *reg, std::string var_name, bool is_float = false);
+    Load_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float = false);
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;
 };
@@ -81,7 +89,7 @@ public:
     RTL_Register *reg;
     std::string var_name;
 
-    Store_RTL_Statement(RTL_Register *reg, std::string var_name, bool is_float = false);
+    Store_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float = false);
     ~Store_RTL_Statement() = default;
 
     virtual std::string to_string() const override final;
@@ -177,7 +185,7 @@ public:
     std::string func_name;
     RTL_Register *lhs;
 
-    Call_RTL_Statement(const std::string &func_name, RTL_Register *lhs = nullptr);
+    Call_RTL_Statement(Scope *_eval_scope, const std::string &func_name, RTL_Register *lhs = nullptr);
 
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;
@@ -187,8 +195,9 @@ class Push_RTL_Statement : public RTL_Statement
 {
 public:
     RTL_Register *reg;
+    int offset;
 
-    Push_RTL_Statement(bool is_float, RTL_Register *_reg);
+    Push_RTL_Statement(bool is_float, RTL_Register *_reg, int offset);
 
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;
@@ -207,6 +216,7 @@ class ASM_Statement
 {
 public:
     bool is_float;
+
     ASM_Statement(bool is_float);
     virtual std::string to_string() const = 0;
 };
@@ -238,21 +248,45 @@ public:
     virtual std::string to_string() const override final;
 };
 
-class Load_ASM_Statement : public ASM_Statement
+class Load_Local_ASM_Statement : public ASM_Statement
 {
 public:
-    RTL_Register *reg;
-    std::string var_name;
-    Load_ASM_Statement(RTL_Register *reg, std::string var_name, bool is_float = false);
+    RTL_Register *data_reg;
+    int offset;
+    RTL_Register *base_reg;
+
+    Load_Local_ASM_Statement(RTL_Register *_data_reg, int _offset, RTL_Register *_base_reg, bool is_float = false);
     virtual std::string to_string() const override final;
 };
 
-class Store_ASM_Statement : public ASM_Statement
+class Load_Global_ASM_Statement : public ASM_Statement
 {
 public:
-    RTL_Register *reg;
+    RTL_Register *data_reg;
     std::string var_name;
-    Store_ASM_Statement(RTL_Register *reg, std::string var_name, bool is_float = false);
+
+    Load_Global_ASM_Statement(RTL_Register *_data_reg, const std::string &_var_name, bool is_float = false);
+    virtual std::string to_string() const override final;
+};
+
+class Store_Local_ASM_Statement : public ASM_Statement
+{
+public:
+    RTL_Register *data_reg;
+    int offset;
+    RTL_Register *base_reg;
+
+    Store_Local_ASM_Statement(RTL_Register *_data_reg, int _offset, RTL_Register *_base_reg, bool is_float = false);
+    virtual std::string to_string() const override final;
+};
+
+class Store_Global_ASM_Statement : public ASM_Statement
+{
+public:
+    RTL_Register *data_reg;
+    std::string var_name;
+
+    Store_Global_ASM_Statement(RTL_Register *_data_reg, const std::string &var_name, bool is_float = false);
     virtual std::string to_string() const override final;
 };
 
@@ -275,6 +309,30 @@ public:
     RTL_Register *opd1;
     RTL_Register *opd2;
     Compute_ASM_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2 = nullptr, bool is_float = false);
+    virtual std::string to_string() const override final;
+};
+
+class Compute_Immediate_Integer_ASM_Statement : public ASM_Statement
+{
+public:
+    RTL_Register *lhs;
+    RTL_Operator op;
+    RTL_Register *opd1;
+    int opd2;
+
+    Compute_Immediate_Integer_ASM_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, int opd2);
+    virtual std::string to_string() const override final;
+};
+
+class Compute_Immediate_Float_ASM_Statement : public ASM_Statement
+{
+public:
+    RTL_Register *lhs;
+    RTL_Operator op;
+    RTL_Register *opd1;
+    float opd2;
+
+    Compute_Immediate_Float_ASM_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, float opd2);
     virtual std::string to_string() const override final;
 };
 
@@ -310,11 +368,12 @@ public:
     virtual std::string to_string() const override final;
 };
 
-class Return_ASM_Statement : public ASM_Statement
+class Jump_ASM_Statement : public ASM_Statement
 {
 public:
-    RTL_Register *reg;
-    Return_ASM_Statement(RTL_Register *_reg, bool _is_float);
+    std::string label;
+
+    Jump_ASM_Statement(const std::string &label);
     virtual std::string to_string() const override final;
 };
 

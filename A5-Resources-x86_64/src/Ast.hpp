@@ -18,7 +18,9 @@ class Ast
     Code *code;
 
 public:
-    Ast();
+    Scope *eval_scope;
+
+    Ast(Scope *_eval_scope = nullptr);
     virtual ~Ast() = 0;
 
     virtual Code *codegen() = 0;
@@ -33,7 +35,7 @@ public:
     Type type;
     TAC_Operand *place;
 
-    Expression_Ast(Type type);
+    Expression_Ast(Type type, Scope *_eval_scope = nullptr);
     virtual ~Expression_Ast() = 0;
 
     Type get_type() const;
@@ -42,7 +44,7 @@ public:
 class Base_Expr_Ast : public Expression_Ast
 {
 public:
-    Base_Expr_Ast(Type type);
+    Base_Expr_Ast(Type type, Scope *_eval_scope = nullptr);
     virtual ~Base_Expr_Ast() = 0;
 };
 
@@ -105,7 +107,7 @@ public:
     Func_Signature *func_sig;
     std::vector<Expression_Ast *> *args;
 
-    Function_Call_Ast(std::string name, Func_Signature *sig, std::vector<Expression_Ast *> *args);
+    Function_Call_Ast(std::string name, Func_Signature *sig, std::vector<Expression_Ast *> *args, Scope *_eval_scope);
 
     virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
@@ -118,7 +120,7 @@ protected:
     Expression_Ast *opd1;
 
 public:
-    Unary_Expr_AST(Type type, Unary_Operator op, Expression_Ast *opd1);
+    Unary_Expr_AST(Type type, Unary_Operator op, Expression_Ast *opd1, Scope *_eval_scope);
     virtual ~Unary_Expr_AST() = 0;
 
     virtual Code *codegen() override final;
@@ -127,7 +129,7 @@ public:
 class UMinus_Expr_Ast : public Unary_Expr_AST
 {
 public:
-    UMinus_Expr_Ast(Expression_Ast *opd1);
+    UMinus_Expr_Ast(Expression_Ast *opd1, Scope *_eval_scope);
     ~UMinus_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -136,7 +138,7 @@ public:
 class Logical_Not_Expr_Ast : public Unary_Expr_AST
 {
 public:
-    Logical_Not_Expr_Ast(Expression_Ast *opd1);
+    Logical_Not_Expr_Ast(Expression_Ast *opd1, Scope *_eval_scope);
     ~Logical_Not_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -150,7 +152,7 @@ protected:
     Expression_Ast *opd2;
 
 public:
-    Binary_Expr_Ast(Type type, Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2);
+    Binary_Expr_Ast(Type type, Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope);
     virtual ~Binary_Expr_Ast() = 0;
 
     virtual Code *codegen() override final;
@@ -159,7 +161,7 @@ public:
 class Boolean_Expr_Ast : public Binary_Expr_Ast
 {
 public:
-    Boolean_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2);
+    Boolean_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope);
     ~Boolean_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -168,7 +170,7 @@ public:
 class Div_Expr_Ast : public Binary_Expr_Ast
 {
 public:
-    Div_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
+    Div_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope);
     ~Div_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -177,7 +179,7 @@ public:
 class Minus_Expr_Ast : public Binary_Expr_Ast
 {
 public:
-    Minus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
+    Minus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope);
     ~Minus_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -186,7 +188,7 @@ public:
 class Mult_Expr_Ast : public Binary_Expr_Ast
 {
 public:
-    Mult_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
+    Mult_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope);
     ~Mult_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -195,7 +197,7 @@ public:
 class Plus_Expr_Ast : public Binary_Expr_Ast
 {
 public:
-    Plus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2);
+    Plus_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope);
     ~Plus_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -204,7 +206,7 @@ public:
 class Relational_Expr_Ast : public Binary_Expr_Ast
 {
 public:
-    Relational_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2);
+    Relational_Expr_Ast(Binary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Scope *_eval_scope);
     ~Relational_Expr_Ast() = default;
 
     virtual std::string to_string() const override final;
@@ -219,16 +221,14 @@ protected:
     Expression_Ast *opd3;
 
 public:
-    Ternary_Expr_Ast(Type type, Ternary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3);
+    Ternary_Expr_Ast(Type type, Ternary_Operator op, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3, Scope *_eval_scope);
     virtual ~Ternary_Expr_Ast() = 0;
 };
 
 class Conditional_Expr_Ast : public Ternary_Expr_Ast
 {
-    Scope *curr_scope;
-
 public:
-    Conditional_Expr_Ast(Scope *curr_scope, Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3);
+    Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast *opd2, Expression_Ast *opd3, Scope *_eval_scope);
     ~Conditional_Expr_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -240,7 +240,7 @@ class Statement_Ast : public Ast
     RTL_Code *rtl_code;
 
 public:
-    Statement_Ast();
+    Statement_Ast(Scope *_eval_scope);
     virtual ~Statement_Ast() = 0;
 
     virtual RTL_Code *rtlgen(RegisterTracker *register_tracker) final;
@@ -254,7 +254,7 @@ protected:
     Expression_Ast *rhs;
 
 public:
-    Assignment_Stmt_Ast(Name_Expr_Ast *lhs, Expression_Ast *rhs);
+    Assignment_Stmt_Ast(Scope *_eval_scope, Name_Expr_Ast *lhs, Expression_Ast *rhs);
     ~Assignment_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -268,7 +268,7 @@ protected:
     Name_Expr_Ast *var;
 
 public:
-    Read_Stmt_Ast(Name_Expr_Ast *var);
+    Read_Stmt_Ast(Scope *_eval_scope, Name_Expr_Ast *var);
     ~Read_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -281,7 +281,7 @@ protected:
     Expression_Ast *expr;
 
 public:
-    Write_Stmt_Ast(Expression_Ast *expr);
+    Write_Stmt_Ast(Scope *_eval_scope, Expression_Ast *expr);
     ~Write_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -293,7 +293,7 @@ class Compound_Stmt_Ast : public Statement_Ast
 public:
     std::vector<Statement_Ast *> *stmts;
 
-    Compound_Stmt_Ast(std::vector<Statement_Ast *> *stmts);
+    Compound_Stmt_Ast(Scope *_eval_scope, std::vector<Statement_Ast *> *stmts);
     ~Compound_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -307,7 +307,7 @@ public:
     Statement_Ast *if_clause;
     Statement_Ast *else_clause;
 
-    If_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause = nullptr);
+    If_Stmt_Ast(Scope *_eval_scope, Expression_Ast *predicate, Statement_Ast *_if_clause, Statement_Ast *_else_clause = nullptr);
     ~If_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;
@@ -320,7 +320,7 @@ public:
     Expression_Ast *predicate;
     Statement_Ast *body;
 
-    While_Stmt_Ast(Expression_Ast *_predicate, Statement_Ast *_body);
+    While_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_predicate, Statement_Ast *_body);
 
     virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
@@ -332,7 +332,7 @@ public:
     Expression_Ast *predicate;
     Statement_Ast *body;
 
-    Do_While_Stmt_Ast(Expression_Ast *predicate, Statement_Ast *body);
+    Do_While_Stmt_Ast(Scope *_eval_scope, Expression_Ast *predicate, Statement_Ast *body);
 
     virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
@@ -345,7 +345,7 @@ public:
     TAC_Label *return_label;
     Shared_Temporary_TAC_Operand *return_stemp;
 
-    Return_Stmt_Ast(Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp);
+    Return_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp);
 
     virtual Code *codegen() override final;
     virtual std::string to_string() const override final;
@@ -355,7 +355,7 @@ class Call_Stmt_Ast : public Statement_Ast
 {
 public:
     Function_Call_Ast *func_call;
-    Call_Stmt_Ast(Function_Call_Ast *call);
+    Call_Stmt_Ast(Scope *_eval_scope, Function_Call_Ast *call);
     ~Call_Stmt_Ast() = default;
 
     virtual Code *codegen() override final;

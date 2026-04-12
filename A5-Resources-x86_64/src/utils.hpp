@@ -11,6 +11,8 @@ const int PRIORITY_F12 = 25;
 const int PRIORITY_A0 = 100;
 const int PRIORITY_V1 = 200;
 const int PRIORITY_F0 = 300;
+const int PRIORITY_SP = 1000;
+const int PRIORITY_FP = 2000;
 
 enum class Type
 {

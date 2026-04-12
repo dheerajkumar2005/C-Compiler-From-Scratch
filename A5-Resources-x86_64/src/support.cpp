@@ -304,12 +304,12 @@ Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args)
         }
     }
 
-    return new Function_Call_Ast(*name, fe->func_sig, args);
+    return new Function_Call_Ast(*name, fe->func_sig, args, curr_scope);
 }
 
 Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call)
 {
-    return new Call_Stmt_Ast(call);
+    return new Call_Stmt_Ast(curr_scope, call);
 }
 
 void print_func_def_list()
