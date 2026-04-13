@@ -174,13 +174,13 @@ func_def
     { 
         if(!sa_parse) 
         {
+            reset_temps();
+
             // Add it to old symtab or match with existing signature
             Func_Signature *func_sig = make_func_sig($1, $3);
 
             // Push the new scope
             curr_scope = make_func_scope(func_sig);
-
-            // return_label = func_sig->
         }
     }
     LEFT_CURLY_BRACKET optional_local_var_decl_stmt_list statement_list RIGHT_CURLY_BRACKET 
@@ -197,6 +197,8 @@ func_def
     {
         if (!sa_parse) 
         {
+            reset_temps();
+            
             // Add it to old symtab or match with existing signature
             Func_Signature *func_sig = make_func_sig($1);
 
@@ -262,28 +264,8 @@ actual_arg_list
 ;
 
 non_empty_arg_list
-    : non_empty_arg_list COMMA actual_arg {
-        if(sa_parse) 
-        {
-            $1->push_back($3);
-            $$ = $1;
-        } 
-        else 
-        {
-            $$ = nullptr;
-        }
-    }
-    | actual_arg {
-        if(sa_parse)
-        {
-            $$ = new std::vector<Expression_Ast *>();
-            $$->push_back($1);
-        } 
-        else 
-        {
-            $$ = nullptr;
-        }
-    }
+    : non_empty_arg_list COMMA actual_arg { $$ = accumulate_actual_param_list($1, $3); }
+    | actual_arg { $$ = accumulate_actual_param_list($1); }
 ;
 
 actual_arg

@@ -46,6 +46,9 @@ FormalParam *accumulate_func_header(Type type, std::string *id);
 FormalParamList *accumulate_formal_param_list(FormalParam *formal_param);
 FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list, FormalParam *formal_param);
 
+ActualParamList *accumulate_actual_param_list(ActualParam *arg);
+ActualParamList *accumulate_actual_param_list(ActualParamList *args, ActualParam *arg);
+
 Scope *make_func_scope(Func_Signature *func_sig);
 
 void process_func_decl(FuncHeader *func_header, FormalParamList *formal_param_list = nullptr);
@@ -62,6 +65,8 @@ StatementList *accumulate_stmt_list();
 
 Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args);
 Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call);
+
+void reset_temps();
 
 // TODO: is_empty business
 

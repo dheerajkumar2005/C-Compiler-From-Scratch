@@ -19,8 +19,8 @@ public:
 };
 
 // Not really registers but what the heck
-RTL_Register *sp;
-RTL_Register *fp;
+extern RTL_Register *sp;
+extern RTL_Register *fp;
 
 std::string register_to_string(RTL_Register *reg);
 
@@ -29,10 +29,10 @@ class ASM_Code;
 class RTL_Statement
 {
 public:
-    Scope *eval_scope;
     bool is_float;
+    Scope *eval_scope;
 
-    RTL_Statement(Scope *_eval_scope, bool is_float);
+    RTL_Statement(bool is_float, Scope *_eval_scope = nullptr);
     virtual std::string to_string() const = 0;
     virtual ASM_Code *to_asm() const = 0;
 };
@@ -173,8 +173,9 @@ class Return_RTL_Statement : public RTL_Statement
 {
 public:
     RTL_Register *reg;
+    std::string func_name;
 
-    Return_RTL_Statement(RTL_Register *_reg, bool _is_float);
+    Return_RTL_Statement(RTL_Register *_reg, const std::string &func_name, bool _is_float);
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;
 };
@@ -185,7 +186,7 @@ public:
     std::string func_name;
     RTL_Register *lhs;
 
-    Call_RTL_Statement(Scope *_eval_scope, const std::string &func_name, RTL_Register *lhs = nullptr);
+    Call_RTL_Statement(const std::string &func_name, RTL_Register *lhs = nullptr);
 
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;
@@ -195,9 +196,8 @@ class Push_RTL_Statement : public RTL_Statement
 {
 public:
     RTL_Register *reg;
-    int offset;
 
-    Push_RTL_Statement(bool is_float, RTL_Register *_reg, int offset);
+    Push_RTL_Statement(bool is_float, RTL_Register *_reg);
 
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;

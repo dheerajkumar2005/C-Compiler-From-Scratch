@@ -12,13 +12,13 @@ std::string register_to_string(RTL_Register *reg)
     return register_to_string(reg);
 }
 
-RTL_Statement::RTL_Statement(Scope *_eval_scope, bool is_float)
-    : eval_scope(_eval_scope), is_float(is_float)
+RTL_Statement::RTL_Statement(bool is_float, Scope *_eval_scope)
+    : is_float(is_float), eval_scope(_eval_scope)
 {
 }
 
 Load_Int_RTL_Statement::Load_Int_RTL_Statement(RTL_Register *reg, int ival)
-    : RTL_Statement(nullptr, false), reg(reg), ival(ival)
+    : RTL_Statement(false), reg(reg), ival(ival)
 {
 }
 
@@ -38,7 +38,7 @@ ASM_Code *Load_Int_RTL_Statement::to_asm() const
 }
 
 Load_Float_RTL_Statement::Load_Float_RTL_Statement(RTL_Register *reg, float fval)
-    : RTL_Statement(nullptr, true), reg(reg), fval(fval)
+    : RTL_Statement(true), reg(reg), fval(fval)
 {
 }
 
@@ -64,7 +64,7 @@ int Load_String_RTL_Statement::string_count = 0;
 std::unordered_map<std::string, int> Load_String_RTL_Statement::s_map;
 
 Load_String_RTL_Statement::Load_String_RTL_Statement(RTL_Register *reg, std::string sval)
-    : RTL_Statement(nullptr, false), reg(reg), sval(sval)
+    : RTL_Statement(false), reg(reg), sval(sval)
 {
     if (s_map.find(sval) == s_map.end())
     {
@@ -93,7 +93,7 @@ ASM_Code *Load_String_RTL_Statement::to_asm() const
 }
 
 Load_RTL_Statement::Load_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float)
-    : RTL_Statement(_eval_scope, is_float), reg(reg), var_name(var_name)
+    : RTL_Statement(is_float, _eval_scope), reg(reg), var_name(var_name)
 {
     if (!eval_scope || !eval_scope->parent_scope)
     {
@@ -138,7 +138,7 @@ ASM_Code *Load_RTL_Statement::to_asm() const
 }
 
 Store_RTL_Statement::Store_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float)
-    : RTL_Statement(_eval_scope, is_float), reg(reg), var_name(var_name)
+    : RTL_Statement(is_float, _eval_scope), reg(reg), var_name(var_name)
 {
 }
 
@@ -179,7 +179,7 @@ ASM_Code *Store_RTL_Statement::to_asm() const
 }
 
 Move_RTL_Statement::Move_RTL_Statement(RTL_Register *dest, RTL_Register *src, bool is_movtf, bool is_movt, bool is_float)
-    : RTL_Statement(nullptr, is_float), dest(dest), src(src), is_movtf(is_movtf), is_movt(is_movt)
+    : RTL_Statement(is_float), dest(dest), src(src), is_movtf(is_movtf), is_movt(is_movt)
 {
 }
 
@@ -222,7 +222,7 @@ ASM_Code *Move_RTL_Statement::to_asm() const
 }
 
 Compute_RTL_Statement::Compute_RTL_Statement(RTL_Register *lhs, RTL_Operator op, RTL_Register *opd1, RTL_Register *opd2, bool is_float)
-    : RTL_Statement(nullptr, is_float), lhs(lhs), op(op), opd1(opd1), opd2(opd2)
+    : RTL_Statement(is_float), lhs(lhs), op(op), opd1(opd1), opd2(opd2)
 {
 }
 
@@ -260,7 +260,7 @@ ASM_Code *Compute_RTL_Statement::to_asm() const
 }
 
 Goto_RTL_Statement::Goto_RTL_Statement(int label_number)
-    : RTL_Statement(nullptr, false), label_number(label_number)
+    : RTL_Statement(false), label_number(label_number)
 {
 }
 
@@ -279,7 +279,7 @@ ASM_Code *Goto_RTL_Statement::to_asm() const
 }
 
 If_Goto_RTL_Statement::If_Goto_RTL_Statement(RTL_Register *predicate, int label_number)
-    : RTL_Statement(nullptr, false), predicate(predicate), label_number(label_number)
+    : RTL_Statement(false), predicate(predicate), label_number(label_number)
 {
 }
 
@@ -298,7 +298,7 @@ ASM_Code *If_Goto_RTL_Statement::to_asm() const
 }
 
 Read_RTL_Statement::Read_RTL_Statement(bool is_float)
-    : RTL_Statement(nullptr, is_float)
+    : RTL_Statement(is_float)
 {
 }
 
@@ -316,7 +316,7 @@ ASM_Code *Read_RTL_Statement::to_asm() const
 }
 
 Write_RTL_Statement::Write_RTL_Statement(bool is_float)
-    : RTL_Statement(nullptr, is_float)
+    : RTL_Statement(is_float)
 {
 }
 
@@ -334,7 +334,7 @@ ASM_Code *Write_RTL_Statement::to_asm() const
 }
 
 Label_RTL_Statement::Label_RTL_Statement(int label_number)
-    : RTL_Statement(nullptr, false), label_number(label_number)
+    : RTL_Statement(false), label_number(label_number)
 {
 }
 
@@ -352,8 +352,8 @@ ASM_Code *Label_RTL_Statement::to_asm() const
     return asm_code;
 }
 
-Return_RTL_Statement::Return_RTL_Statement(RTL_Register *_reg, bool _is_float)
-    : RTL_Statement(nullptr, _is_float), reg(_reg)
+Return_RTL_Statement::Return_RTL_Statement(RTL_Register *_reg, const std::string &func_name, bool _is_float)
+    : RTL_Statement(_is_float), reg(_reg), func_name(func_name)
 {
 }
 
@@ -365,13 +365,12 @@ std::string Return_RTL_Statement::to_string() const
 ASM_Code *Return_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    // ASM_Statement *return_stmt = new Return_ASM_Statement(reg, is_float);
-    // asm_code->append_statement(return_stmt);
-    // return asm_code;
+    asm_code->append_statement(new Jump_ASM_Statement("epilogue_" + func_name));
+    return asm_code;
 }
 
-Call_RTL_Statement::Call_RTL_Statement(Scope *_eval_scope, const std::string &func_name, RTL_Register *lhs)
-    : RTL_Statement(_eval_scope, false), func_name(func_name), lhs(lhs)
+Call_RTL_Statement::Call_RTL_Statement(const std::string &func_name, RTL_Register *lhs)
+    : RTL_Statement(false), func_name(func_name), lhs(lhs)
 {
 }
 
@@ -393,8 +392,8 @@ ASM_Code *Call_RTL_Statement::to_asm() const
     return asm_code;
 }
 
-Push_RTL_Statement::Push_RTL_Statement(bool is_float, RTL_Register *_reg, int offset)
-    : RTL_Statement(nullptr, is_float), reg(_reg), offset(offset)
+Push_RTL_Statement::Push_RTL_Statement(bool is_float, RTL_Register *_reg)
+    : RTL_Statement(is_float), reg(_reg)
 {
 }
 
@@ -415,7 +414,7 @@ ASM_Code *Push_RTL_Statement::to_asm() const
 }
 
 Pop_RTL_Statement::Pop_RTL_Statement(bool is_float)
-    : RTL_Statement(nullptr, is_float)
+    : RTL_Statement(is_float)
 {
 }
 

@@ -1,24 +1,20 @@
 **PROCEDURE: foo_
 **BEGIN: Three Address Code Statements
-	a_ = 100
-	temp0 = 2 * a_
-	b_ = temp0
-	temp1 = a_ + b_
-	c_ = temp1
-	temp2 = a_ * b_
-	temp3 = temp2 + c_
-	stemp0 = temp3
-	goto Label1
+	temp0 = ! y_
+	if(temp0) goto Label1
+	stemp1 = 10.00
+	goto Label2
 Label1:
+	stemp1 = 20.00
+Label2:
+	stemp0 = stemp1
+	goto Label0
+Label0:
 	 return stemp0
 **END: Three Address Code Statements
 **PROCEDURE: main
 **BEGIN: Three Address Code Statements
-	temp0 = 1 + 2
-	a_ = temp0
-	temp1 = 1 + 2
-	stemp0 = temp1
-	goto Label0
-Label0:
-	 return stemp0
+	temp1 = 1 < 2
+	temp0 = foo_(1, temp1, 20.00)
+	f_ = temp0
 **END: Three Address Code Statements

@@ -98,6 +98,17 @@ FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list
     return nullptr;
 }
 
+ActualParamList *accumulate_actual_param_list(ActualParam *arg)
+{
+    return new std::vector<ActualParam *>{arg};
+}
+
+ActualParamList *accumulate_actual_param_list(ActualParamList *args, ActualParam *arg)
+{
+    args->push_back(arg);
+    return args;
+}
+
 Scope *make_func_scope(Func_Signature *func_sig)
 {
     if (!sa_parse)
@@ -265,8 +276,14 @@ StatementList *accumulate_stmt_list()
     return nullptr;
 }
 
-Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args)
+Function_Call_Ast *process_func_call(std::string *name_ptr, ActualParamList *args)
 {
+    std::string name = *name_ptr;
+    if (name != "main")
+    {
+        name += "_";
+    }
+
     // NOTE: Since I know that the function being called should be in the global scope
     Scope *parent_scope = curr_scope->parent_scope;
     if (!parent_scope || parent_scope->kind != Scope_Kind::GLOBAL)
@@ -275,12 +292,12 @@ Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args)
     }
 
     auto &sym_tab = parent_scope->sym_tab;
-    if (sym_tab.find(*name) == sym_tab.end() || sym_tab[*name]->kind != Entry_Kind::FUNCTION)
+    if (sym_tab.find(name) == sym_tab.end() || sym_tab[name]->kind != Entry_Kind::FUNCTION)
     {
-        throw_SemanticError("No function declared with the name: " + *name);
+        throw_SemanticError("No function declared with the name: " + name);
     }
 
-    Function_Entry *fe = dynamic_cast<Function_Entry *>(sym_tab[*name]);
+    Function_Entry *fe = dynamic_cast<Function_Entry *>(sym_tab[name]);
     if (!fe)
     {
         throw_SemanticError("All you had to do was, STAY!");
@@ -293,7 +310,7 @@ Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args)
     const int num_args = args->size();
     if (num_params != num_args)
     {
-        throw_SemanticError("Number of args passed to " + *name + " is incorrect.");
+        throw_SemanticError("Number of args passed to " + name + " is incorrect.");
     }
 
     for (int i = 0; i < num_params; i++)
@@ -304,12 +321,18 @@ Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args)
         }
     }
 
-    return new Function_Call_Ast(*name, fe->func_sig, args, curr_scope);
+    return new Function_Call_Ast(name, fe->func_sig, args, curr_scope);
 }
 
 Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call)
 {
     return new Call_Stmt_Ast(curr_scope, call);
+}
+
+void reset_temps()
+{
+    Temporary_TAC_Operand::reset_temp_count();
+    Shared_Temporary_TAC_Operand::reset_stemp_count();
 }
 
 void print_func_def_list()
