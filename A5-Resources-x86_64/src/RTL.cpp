@@ -9,7 +9,7 @@ RTL_Register *fp = new RTL_Register(PRIORITY_FP);
 
 std::string register_to_string(RTL_Register *reg)
 {
-    return register_to_string(reg);
+    return rtl_priority_to_register(reg->priority);
 }
 
 RTL_Statement::RTL_Statement(bool is_float, Scope *_eval_scope)

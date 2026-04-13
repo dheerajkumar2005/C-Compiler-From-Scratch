@@ -601,8 +601,8 @@ RTL_Code *Label_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	return rtl_code;
 }
 
-Return_TAC_Statement::Return_TAC_Statement(Shared_Temporary_TAC_Operand *_return_stemp)
-	: TAC_Statement(), return_stemp(_return_stemp)
+Return_TAC_Statement::Return_TAC_Statement(Scope *_eval_scope, Shared_Temporary_TAC_Operand *_return_stemp)
+	: TAC_Statement(_eval_scope), return_stemp(_return_stemp)
 {
 }
 
@@ -635,11 +635,15 @@ std::string Call_TAC_Statement::to_string() const
 		result += lhs->to_string() + " = ";
 	}
 	result += func_name + "(";
-	for (int i = 0; i < args.size() - 1; i++)
+	if (!args.empty())
 	{
-		result += args[i]->to_string() + ", ";
+		for (int i = 0; i < args.size() - 1; i++)
+		{
+			result += args[i]->to_string() + ", ";
+		}
+		result += args.back()->to_string();
 	}
-	result += args.back()->to_string() + ")";
+	result += ")";
 	return result;
 }
 

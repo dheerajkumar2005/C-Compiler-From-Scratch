@@ -1,15 +1,20 @@
-void f()
+void f(int a, int b)
 {
-    int a;
-    a = 5;
+    int c;
+    c = 5;
+
+    print a + b + c;
 }
-void g()
+
+int g(int x, int y)
 {
-    int b;
+    int z;
+    z = x + y;
+    return z;
 }
+
 void main()
 {
-
-    f();
-    g();
+    // f(g(10, 20), 10);
+    g(10, 20);
 }

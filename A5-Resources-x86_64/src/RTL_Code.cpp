@@ -23,6 +23,11 @@ void RTL_Code::append_list(RTL_Code *rtl_code)
     }
 }
 
+bool RTL_Code::is_empty() const
+{
+    return !stmt_list || stmt_list->empty();
+}
+
 std::string RTL_Code::to_string() const
 {
     std::string result;

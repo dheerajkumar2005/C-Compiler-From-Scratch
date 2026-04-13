@@ -1,0 +1,10 @@
+**PROCEDURE: foo_
+**BEGIN: RTL Statements
+iLoad:	v0 <- 10
+store:	stemp0 <- v0
+goto:	Label0
+Label0:
+load:	v1 <- stemp0
+return	v1
+
+**END: RTL Statements

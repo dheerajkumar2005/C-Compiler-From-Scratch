@@ -240,7 +240,7 @@ class Statement_Ast : public Ast
     RTL_Code *rtl_code;
 
 public:
-    Statement_Ast(Scope *_eval_scope);
+    Statement_Ast(Scope *_eval_scope = nullptr);
     virtual ~Statement_Ast() = 0;
 
     virtual RTL_Code *rtlgen(RegisterTracker *register_tracker) final;
@@ -372,6 +372,7 @@ public:
 
     Function_Ast(Func_Signature *_func_sig);
 
+    void set_scope(Scope *_eval_scope);
     void add_stmt(Statement_Ast *stmt);
     Code *codegen();
     std::string to_string() const;

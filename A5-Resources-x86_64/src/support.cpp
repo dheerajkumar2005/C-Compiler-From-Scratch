@@ -118,16 +118,29 @@ Scope *make_func_scope(Func_Signature *func_sig)
         Scope *next_scope = new Scope(Scope_Kind::FUNCTION, curr_scope, func_sig);
 
         // Add the params to the new symtab
+        std::string func_name = func_sig->name;
         const auto &param_types = func_sig->param_types;
         const auto &param_names = func_sig->param_names;
         const int num_params = param_types.size();
 
-        auto &sym_tab = next_scope->sym_tab;
         for (int i = 0; i < num_params; i++)
         {
             next_scope->add_param(param_types[i], param_names[i]);
         }
 
+        // Add the func scope to the symtab entry of the parent
+        auto &sym_tab = curr_scope->sym_tab;
+        if (sym_tab.find(func_name) == sym_tab.end())
+        {
+            throw_SemanticError("Expected to find " + func_name + " function in the current scope");
+        }
+        auto fe = dynamic_cast<Function_Entry *>(sym_tab[func_name]);
+        if (!fe)
+        {
+            throw_SemanticError("Expected to find a function dummy, not a variable!");
+        }
+
+        fe->definition->set_scope(next_scope);
         return next_scope;
     }
     return nullptr;
@@ -357,13 +370,20 @@ void print_func_def_list()
             {
                 *tacout << "**PROCEDURE: " + func_name + "\n";
                 *tacout << "**BEGIN: Three Address Code Statements\n";
-                *tacout << func_entry->definition->get_code()->to_string() << "\n";
+                *tacout << code->to_string() << "\n";
                 *tacout << "**END: Three Address Code Statements\n";
             }
         }
         if (show_rtl)
         {
-            *rtlout << func_entry->definition->get_rtl(new RegisterTracker())->to_string() << "\n";
+            RTL_Code *rtl_code = func_entry->definition->get_rtl(new RegisterTracker());
+            // if (!rtl_code->is_empty())
+            // {
+            // }
+            *rtlout << "**PROCEDURE: " + func_name + "\n";
+            *rtlout << "**BEGIN: RTL Statements\n";
+            *rtlout << rtl_code->to_string() << "\n";
+            *rtlout << "**END: RTL Statements\n";
         }
     }
 }

@@ -745,7 +745,7 @@ std::string Call_Stmt_Ast::to_string() const
 }
 
 Function_Ast::Function_Ast(Func_Signature *_func_sig)
-    : Statement_Ast(nullptr), func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr)
+    : Statement_Ast(), func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr)
 {
     Type return_type = func_sig->return_type;
     if (return_type != Type::VOID)
@@ -753,6 +753,11 @@ Function_Ast::Function_Ast(Func_Signature *_func_sig)
         return_label = new TAC_Label();
         return_stemp = new Shared_Temporary_TAC_Operand(return_type);
     }
+}
+
+void Function_Ast::set_scope(Scope *_eval_scope)
+{
+    eval_scope = _eval_scope;
 }
 
 void Function_Ast::add_stmt(Statement_Ast *stmt)
@@ -770,7 +775,7 @@ Code *Function_Ast::codegen()
     if (func_sig->return_type != Type::VOID)
     {
         code->append_statement(new Label_TAC_Statement(return_label));
-        code->append_statement(new Return_TAC_Statement(return_stemp));
+        code->append_statement(new Return_TAC_Statement(eval_scope, return_stemp));
     }
     return code;
 }
