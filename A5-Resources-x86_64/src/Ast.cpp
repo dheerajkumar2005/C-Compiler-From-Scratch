@@ -396,15 +396,17 @@ Conditional_Expr_Ast::Conditional_Expr_Ast(Expression_Ast *opd1, Expression_Ast 
 Code *Conditional_Expr_Ast::codegen()
 {
     Code *predicate_expr = opd1->get_code();
-    Code *then_expr = opd2->get_code();
-    Code *else_expr = opd3->get_code();
 
-    Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(opd1->type);
     place = new Shared_Temporary_TAC_Operand(opd2->type);
     eval_scope->add_local(place->type, place->to_string());
 
     TAC_Label *l1 = new TAC_Label();
     TAC_Label *l2 = new TAC_Label();
+
+    Code *then_expr = opd2->get_code();
+    Code *else_expr = opd3->get_code();
+
+    Temporary_TAC_Operand *t1 = new Temporary_TAC_Operand(opd1->type);
 
     Code *code = new Code();
     code->append_list(predicate_expr);

@@ -18,6 +18,7 @@ extern int show_rtl;
 extern TAC_Label *return_label;
 extern Shared_Temporary_TAC_Operand *return_stemp;
 extern Scope* curr_scope;
+extern bool non_void_func_exists;
 
 using IdentifierList = std::vector<std::string *>;
 using DeclStmt = std::pair<Type, IdentifierList *>;
@@ -65,10 +66,6 @@ StatementList *accumulate_stmt_list();
 
 Function_Call_Ast *process_func_call(std::string *name, ActualParamList *args);
 Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call);
-
-void reset_temps();
-
-// TODO: is_empty business
 
 void print_func_def_list();
 

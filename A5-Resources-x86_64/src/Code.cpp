@@ -13,18 +13,6 @@ void Code::append_statement(TAC_Statement *s)
     }
 }
 
-TAC_Statement *Code::pop_statement()
-{
-    if (!stmt_list || stmt_list->empty())
-    {
-        return nullptr;
-    }
-
-    TAC_Statement *stmt = stmt_list->back();
-    stmt_list->pop_back();
-    return stmt;
-}
-
 void Code::append_list(Code *c)
 {
     if (c && c->stmt_list)
@@ -34,6 +22,11 @@ void Code::append_list(Code *c)
             append_statement(*it);
         }
     }
+}
+
+bool Code::is_empty() const
+{
+    return !stmt_list || stmt_list->empty();
 }
 
 std::string Code::to_string() const

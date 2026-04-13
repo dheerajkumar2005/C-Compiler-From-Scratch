@@ -3,6 +3,7 @@
 TAC_Label *return_label = nullptr;
 Shared_Temporary_TAC_Operand *return_stemp = nullptr;
 Scope* curr_scope = new Scope(Scope_Kind::GLOBAL);
+bool non_void_func_exists = false;
 
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier)
 {
@@ -39,15 +40,16 @@ Name_Expr_Ast *process_variable_name(std::string *id)
 {
     if (!sa_parse)
     {
-        while (curr_scope)
+        Scope *s = curr_scope;
+        while (s)
         {
-            auto &sym_tab = curr_scope->sym_tab;
+            auto &sym_tab = s->sym_tab;
             if (sym_tab.find(*id) != sym_tab.end() && sym_tab[*id]->kind != Entry_Kind::FUNCTION)
             {
-                return new Name_Expr_Ast(id, curr_scope, sym_tab[*id]->type);
+                return new Name_Expr_Ast(id, s, sym_tab[*id]->type);
             }
 
-            curr_scope = curr_scope->parent_scope;
+            s = s->parent_scope;
         }
 
         throw_SemanticError("Expected variable declaration before usage: " + *id);
@@ -173,6 +175,8 @@ void process_func_decl(FuncHeader *func_header, FormalParamList *formal_param_li
         // Add it to the symbol table
         // This will immediately allocate a return label and stemp for non-void functions
         sym_tab[func_name] = new Function_Entry(return_type, func_sig);
+
+        non_void_func_exists = non_void_func_exists || return_type != Type::VOID;
     }
 }
 
@@ -329,12 +333,6 @@ Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call)
     return new Call_Stmt_Ast(curr_scope, call);
 }
 
-void reset_temps()
-{
-    Temporary_TAC_Operand::reset_temp_count();
-    Shared_Temporary_TAC_Operand::reset_stemp_count();
-}
-
 void print_func_def_list()
 {
     for (const auto &[func_name, symtab_entry] : curr_scope->sym_tab)
@@ -345,16 +343,23 @@ void print_func_def_list()
             continue;
         }
 
+        Temporary_TAC_Operand::reset_temp_count();
+        Shared_Temporary_TAC_Operand::reset_stemp_count(non_void_func_exists);
+
         if (show_ast)
         {
             *astout << func_entry->definition->to_string() << "\n";
         }
         if (show_tac)
         {
-            *tacout << "**PROCEDURE: " + func_name + "\n";
-            *tacout << "**BEGIN: Three Address Code Statements\n";
-            *tacout << func_entry->definition->get_code()->to_string() << "\n";
-            *tacout << "**END: Three Address Code Statements\n";
+            Code *code = func_entry->definition->get_code();
+            if (!code->is_empty())
+            {
+                *tacout << "**PROCEDURE: " + func_name + "\n";
+                *tacout << "**BEGIN: Three Address Code Statements\n";
+                *tacout << func_entry->definition->get_code()->to_string() << "\n";
+                *tacout << "**END: Three Address Code Statements\n";
+            }
         }
         if (show_rtl)
         {

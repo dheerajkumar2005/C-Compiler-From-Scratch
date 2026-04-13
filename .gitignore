@@ -19,4 +19,5 @@ A1-Resources-x86_64/src/sclp
 **/scan.c
 **/sclp
 **/.vscode
-
+**/Testcases
+**/failed-logs

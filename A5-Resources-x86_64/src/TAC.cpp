@@ -40,9 +40,9 @@ std::string String_Const_TAC_Operand::to_string() const
 
 int Temporary_TAC_Operand::tac_temp_count = 0;
 
-void Temporary_TAC_Operand::reset_temp_count()
+void Temporary_TAC_Operand::reset_temp_count(int cnt)
 {
-	tac_temp_count = 0;
+	tac_temp_count = cnt;
 }
 
 Temporary_TAC_Operand::Temporary_TAC_Operand(Type type)
@@ -57,9 +57,9 @@ std::string Temporary_TAC_Operand::to_string() const
 
 int Shared_Temporary_TAC_Operand::tac_stemp_count = 0;
 
-void Shared_Temporary_TAC_Operand::reset_stemp_count()
+void Shared_Temporary_TAC_Operand::reset_stemp_count(int cnt)
 {
-	tac_stemp_count = 0;
+	tac_stemp_count = cnt;
 }
 
 Shared_Temporary_TAC_Operand::Shared_Temporary_TAC_Operand(Type type)

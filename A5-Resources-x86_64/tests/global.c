@@ -7,5 +7,6 @@ void main()
     float b2;
 
     a1 = b1 + 100;
+    print a1;
     b2 = a2 + 200.;
 }

@@ -66,7 +66,7 @@ class Temporary_TAC_Operand : public TAC_Operand
 	int temp_number;
 
 public:
-	static void reset_temp_count();
+	static void reset_temp_count(int cnt = 0);
 
 	Temporary_TAC_Operand(Type type);
 
@@ -80,7 +80,7 @@ private:
 	int stemp_number;
 
 public:
-	static void reset_stemp_count();
+	static void reset_stemp_count(int cnt = 0);
 
 	Shared_Temporary_TAC_Operand(Type type);
 	virtual std::string to_string() const override final;

@@ -13,8 +13,8 @@ public:
     Code();
 
     void append_statement(TAC_Statement *s);
-    TAC_Statement *pop_statement();
     void append_list(Code *c);
+    bool is_empty() const;
 
     std::string to_string() const;
 };

@@ -16,6 +16,7 @@
     extern TAC_Label *return_label;
     extern Shared_Temporary_TAC_Operand *return_stemp;
     extern Scope* curr_scope;
+    extern bool non_void_func_exists;
 %}
 
 %union {
@@ -174,7 +175,7 @@ func_def
     { 
         if(!sa_parse) 
         {
-            reset_temps();
+            Shared_Temporary_TAC_Operand::reset_stemp_count();
 
             // Add it to old symtab or match with existing signature
             Func_Signature *func_sig = make_func_sig($1, $3);
@@ -197,8 +198,8 @@ func_def
     {
         if (!sa_parse) 
         {
-            reset_temps();
-            
+            Shared_Temporary_TAC_Operand::reset_stemp_count();
+
             // Add it to old symtab or match with existing signature
             Func_Signature *func_sig = make_func_sig($1);
 
