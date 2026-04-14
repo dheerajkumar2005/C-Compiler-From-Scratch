@@ -1,8 +1,18 @@
-//Local and global variable declaration
+// Non-void function with parameters
 
-int a;
-bool b;
-float c;
-string s;
+int mul(int m, int n);
 
-void main(){}
+int mul(int m, int n){
+    int multiplication;
+
+    multiplication = m * n;
+
+    return multiplication;
+}
+
+void main(int z){
+    int multiplication;
+
+    multiplication = mul(z,45);
+    print multiplication;
+}
