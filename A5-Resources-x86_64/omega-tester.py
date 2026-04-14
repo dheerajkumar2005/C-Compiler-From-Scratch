@@ -18,10 +18,10 @@ BOLD = "\033[1m"
 RESET = "\033[0m"
 
 SA_FLAGS = [
-    # "--sa-scan", 
+    "--sa-scan", 
     # "--sa-parse", 
-    # "--sa-ast", 
-    # "--sa-tac",
+    "--sa-ast", 
+    "--sa-tac",
     "--sa-rtl",
 ]
 
@@ -30,7 +30,7 @@ SHOW_FLAGS = [
     "--show-ast", 
     "--show-tac", 
     "--show-rtl",
-    # "--show-asm",
+    "--show-asm",
 ]
 
 SHOW_SUBSETS = [
@@ -46,6 +46,7 @@ SHOW_EXT = {
     "--show-ast": ".ast",
     "--show-tac": ".tac",
     "--show-rtl": ".rtl",
+    "--show-asm": ".spim",
 }
 
 def run_combo(binary: Path, sa: str, shows: list[str], testcase: Path, workdir: Path) -> tuple[int, dict[str, Path], Path]:

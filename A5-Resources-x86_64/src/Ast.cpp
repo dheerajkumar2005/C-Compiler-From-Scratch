@@ -789,11 +789,7 @@ void Function_Ast::add_stmt(Statement_Ast *stmt)
 
 void Function_Ast::check_correctness() const
 {
-    if (!eval_scope)
-    {
-        throw_SemanticError("Why is eval_scope not yet set???");
-    }
-    if (eval_scope->func_sig->return_type != Type::VOID && !eval_scope->func_sig->has_return)
+    if (eval_scope && eval_scope->func_sig->return_type != Type::VOID && !eval_scope->func_sig->has_return)
     {
         throw_SemanticError("Expected a return statement homie buddy");
     }

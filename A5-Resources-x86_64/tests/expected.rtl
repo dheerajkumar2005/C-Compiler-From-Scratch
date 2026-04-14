@@ -1,32 +1,16 @@
 **PROCEDURE: foo_
 **BEGIN: RTL Statements
-	iLoad:       v0 <- 10
-	store:       stemp0 <- v0
+	iLoad.d:     f2 <- 10.00
+	store.d:     stemp0 <- f2
 	goto:        Label0
 
   Label0:      
-	load:        v1 <- stemp0
-	return      v1
+	load.d:      f0 <- stemp0
+	return      f0
 **END: RTL Statements
 **PROCEDURE: main
 **BEGIN: RTL Statements
-	load_addr:   v0 <- _str_1
-	push:        v0
-	load_addr:   v0 <- _str_0
-	push:        v0
-	iLoad:       v0 <- 10
-	push:        v0
-	iLoad.d:     f2 <- 10.00
-	push:        f2
-	iLoad.d:     f2 <- 10.00
-	push:        f2
-	iLoad:       v0 <- 10
-	push:        v0
-	call bar_
-	pop          
-	pop          
-	pop          
-	pop          
-	pop          
-	pop          
+	f0 = call foo_
+	move.d:      f2 <- f0
+	store.d:     f_ <- f2
 **END: RTL Statements

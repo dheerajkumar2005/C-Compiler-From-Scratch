@@ -396,22 +396,49 @@ void print_func_def_list()
         Shared_Temporary_TAC_Operand::reset_stemp_count(func_entry->type != Type::VOID);
 
         Function_Ast *def = func_entry->definition;
-        Code *code = def->get_code();
-        RTL_Code *rtl_code = def->get_rtl(new RegisterTracker());
-        ASM_Code *asm_code = rtl_code->get_asm();
+        bool is_defined = def->eval_scope;
+
+        Code *code = is_defined ? def->get_code() : nullptr;
+        RTL_Code *rtl_code = is_defined ? def->get_rtl(new RegisterTracker()) : nullptr;
+        ASM_Code *asm_code = is_defined ? rtl_code->get_asm() : nullptr;
 
         if (show_ast)
         {
-            *astout << def->to_string() << "\n";
+            // TODO: What if the function is declared but never defined???
+            if (!is_defined)
+            {
+                // Func_Signature *func_sig = eval_scope->func_sig;
+                Func_Signature *func_sig = func_entry->func_sig;
+
+                std::string result;
+                result += "**PROCEDURE: " + func_sig->name + "\n";
+                result += "Return Type: <" + type_to_string(func_sig->return_type) + ">\n";
+                result += "Formal Parameters: \n";
+
+                int num_params = func_sig->param_types.size();
+                for (int i = 0; i < num_params; i++)
+                {
+                    result += func_sig->param_names[i] + "_ Type:<" + type_to_string(func_sig->param_types[i]) + ">\n";
+                }
+
+                result += "**BEGIN: Abstract Syntax Tree\n";
+                result += "**END: Abstract Syntax Tree\n";
+
+                *astout << result << "\n";
+            }
+            else
+            {
+                *astout << def->to_string() << "\n";
+            }
         }
-        if (show_tac && !code->is_empty())
+        if (show_tac && code && !code->is_empty())
         {
             *tacout << "**PROCEDURE: " + func_name + "\n";
             *tacout << "**BEGIN: Three Address Code Statements\n";
             *tacout << code->to_string() << "\n";
             *tacout << "**END: Three Address Code Statements\n";
         }
-        if (show_rtl && !rtl_code->is_empty())
+        if (show_rtl && rtl_code && !rtl_code->is_empty())
         {
             *rtlout << "**PROCEDURE: " + func_name + "\n";
             *rtlout << "**BEGIN: RTL Statements\n";
@@ -426,14 +453,17 @@ void print_func_def_list()
             header += func_name + ":\n";
 
             std::string prologue;
-            int locals_size = func_entry->definition->eval_scope->get_size_of_locals();
+            int locals_size = is_defined ? func_entry->definition->eval_scope->get_size_of_locals() : get_size(func_entry->type);
             prologue += "sw $ra, 0($sp)\n";
             prologue += "sw $fp, -4($sp)\n";
             prologue += "sub $fp, $sp, 4\n";
             prologue += "sub $sp, $sp, " + std::to_string(8+locals_size) + "\n";
 
             std::string actual_code;
-            actual_code = asm_code->to_string();
+            if (asm_code)
+            {
+                actual_code = asm_code->to_string();
+            }
 
             std::string epilogue;
             epilogue += "epilogue_" + func_name + ":\n";
