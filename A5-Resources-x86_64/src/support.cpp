@@ -345,7 +345,15 @@ Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call)
 
 void print_func_def_list()
 {
-    for (const auto &[func_name, symtab_entry] : curr_scope->sym_tab)
+    auto &sym_tab = curr_scope->sym_tab;
+
+    // main function needs to be defined
+    if (sym_tab.find("main") == sym_tab.end() || sym_tab["main"]->kind != Entry_Kind::FUNCTION)
+    {
+        throw_SemanticError("What you doin' without a main function buddy?");
+    }
+
+    for (const auto &[func_name, symtab_entry] : sym_tab)
     {
         auto func_entry = dynamic_cast<Function_Entry *>(symtab_entry);
         if (!func_entry)

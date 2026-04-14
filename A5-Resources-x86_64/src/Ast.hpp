@@ -369,6 +369,7 @@ public:
     std::vector<Statement_Ast *> body;
     TAC_Label *return_label;
     Shared_Temporary_TAC_Operand *return_stemp;
+    bool has_return;
 
     Function_Ast(Func_Signature *_func_sig);
 

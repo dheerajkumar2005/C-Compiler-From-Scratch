@@ -713,6 +713,15 @@ std::string Do_While_Stmt_Ast::to_string() const
 Return_Stmt_Ast::Return_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_expression, TAC_Label *_return_label, Shared_Temporary_TAC_Operand *_return_stemp)
     : Statement_Ast(_eval_scope), expression(_expression), return_label(_return_label), return_stemp(_return_stemp)
 {
+    Type declared_return_type = eval_scope->func_sig->return_type;
+    if (declared_return_type == Type::VOID)
+    {
+        throw_SemanticError("Cannot have return statements inside a void function");
+    }
+    else if (declared_return_type != expression->type)
+    {
+        throw_SemanticError("Return statement has a type different than the return type of the function");
+    }
 }
 
 Code *Return_Stmt_Ast::codegen()
@@ -732,6 +741,11 @@ std::string Return_Stmt_Ast::to_string() const
 Call_Stmt_Ast::Call_Stmt_Ast(Scope *_eval_scope, Function_Call_Ast *call)
     : Statement_Ast(_eval_scope), func_call(call)
 {
+    // Such calls can only be to void functions
+    if (func_call->func_sig->return_type != Type::VOID)
+    {
+        throw_SemanticError("You've gots to receive the return value of a call to a non-void function");
+    }
 }
 
 Code *Call_Stmt_Ast::codegen()
@@ -745,7 +759,7 @@ std::string Call_Stmt_Ast::to_string() const
 }
 
 Function_Ast::Function_Ast(Func_Signature *_func_sig)
-    : Statement_Ast(), func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr)
+    : Statement_Ast(), func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr), has_return(false)
 {
     Type return_type = func_sig->return_type;
     if (return_type != Type::VOID)
@@ -762,11 +776,40 @@ void Function_Ast::set_scope(Scope *_eval_scope)
 
 void Function_Ast::add_stmt(Statement_Ast *stmt)
 {
+    // // Return statement must have a type consistent with the return type of the function
+    // if (auto s = dynamic_cast<Return_Stmt_Ast *>(stmt))
+    // {
+    //     has_return = true;
+
+    //     if (func_sig->return_type == Type::VOID)
+    //     {
+    //         throw_SemanticError("No return statement allowed for VOID functions");
+    //     }
+    //     else if (func_sig->return_type != s->expression->type)
+    //     {
+    //         throw_SemanticError("Expected return value to have the correct return type");
+    //     }
+    // }
+    // // Calls to non-void functions must receive the returned value
+    // else if (auto s = dynamic_cast<Call_Stmt_Ast *>(stmt))
+    // {
+    //     if (s->func_call->func_sig->return_type != Type::VOID)
+    //     {
+    //         throw_SemanticError("Expected a receiver for a call to a non-void function");
+    //     }
+    // }
+
     body.push_back(stmt);
 }
 
 Code *Function_Ast::codegen()
 {
+    if (func_sig->return_type != Type::VOID && !has_return)
+    {
+        throw_SemanticError("Expected a return statement of type " + type_to_string(func_sig->return_type));
+        return nullptr;
+    }
+
     Code *code = new Code();
     for (auto stmt : body)
     {
