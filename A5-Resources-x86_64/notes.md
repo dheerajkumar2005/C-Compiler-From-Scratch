@@ -26,8 +26,7 @@
 - Label allocation order is messed up. First, allocate the return label for all the functions. Then, allocate internal labels per function. 
 - Return label allocation is in the order of DECLARATION of functions.
 - All other labels are allocated in ALPHABETICAL order of function names.
-- `stemp0` is NOT special.
-- their implemenation supports const float (.3) need not be 0.3, might need to change scanner  
+- `stemp0` is NOT special.  
 - Internally we have to store function name with _ included for sorting
 
 # To-Do

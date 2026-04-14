@@ -12,6 +12,7 @@
 extern std::ostream *astout;
 extern std::ostream *tacout;
 extern std::ostream *rtlout;
+extern std::ostream *asmout;
 
 class Ast
 {

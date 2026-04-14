@@ -20,6 +20,10 @@ int show_rtl;
 std::ostream *rtlout = nullptr;
 std::ofstream rtlfile;
 
+int show_asm;
+std::ostream *asmout = nullptr;
+std::ofstream asmfile;
+
 extern "C"
 {
     int yyparse();
@@ -71,7 +75,7 @@ int main(int argc, char *argv[])
     show_tac = 0;
     show_rtl = 0;
     int show_symtab = 0;
-    int show_asm = 0;
+    int show_asm = 1;
 
     int gen_temp_symb_table = 0;
     int single_stmt_bb = 0;
@@ -204,15 +208,21 @@ int main(int argc, char *argv[])
         show_ast = 0;
         show_tac = 0;
         show_rtl = 0;
+        show_asm = 0;
     }
     else if (sa_ast)
     {
         show_tac = 0;
         show_rtl = 0;
+        show_asm = 0;
     }
     else if (sa_tac)
     {
         show_rtl = 0;
+        show_asm = 0;
+    }
+    else if (sa_rtl){
+        show_asm = 0;
     }
 
     if (show_tokens)
@@ -267,6 +277,19 @@ int main(int argc, char *argv[])
             std::string outfilename = filename + ".rtl";
             rtlfile.open(outfilename);
             rtlout = &rtlfile;
+        }
+    }
+
+    if(show_asm){
+        if(demo){
+            std::cout << "in demo\n";
+            asmout = &std::cout;
+        }
+        else{
+            std::cout << "This is called\n";
+            std::string outfilename = filename + ".spim";
+            asmfile.open(outfilename);
+            asmout = &asmfile;
         }
     }
 

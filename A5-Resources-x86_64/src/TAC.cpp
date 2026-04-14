@@ -30,11 +30,23 @@ std::string Float_Const_TAC_Operand::to_string() const
 	out << std::fixed << std::setprecision(2) << fval;
 	return out.str();
 }
+int String_Const_TAC_Operand::string_count = 0;
+std::unordered_map<std::string, int> String_Const_TAC_Operand::s_map;
 
 String_Const_TAC_Operand::String_Const_TAC_Operand(char *_sval)
-	: TAC_Operand(Type::STR), sval(_sval) {}
+	: TAC_Operand(Type::STR), sval(_sval) 
+	{
+		if (s_map.find(sval) == s_map.end()){
+			string_label = string_count++;
+			s_map[sval] = string_label;
+			// std::cerr << sval << " got " << s_map[sval] << std::endl;
+		}
+		else{
+			string_label = s_map[sval];
+		}
+	}
 std::string String_Const_TAC_Operand::to_string() const
-{
+{	
 	return sval;
 }
 
@@ -320,7 +332,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if(auto o = dynamic_cast<String_Const_TAC_Operand *>(opd1))
 			{
-				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval);
+				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval,o->string_label);
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd1) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1))
 			{
@@ -356,7 +368,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if(auto o = dynamic_cast<String_Const_TAC_Operand *>(opd2))
 			{
-				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval);
+				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval,o->string_label);
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd2) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2))
 			{
@@ -553,7 +565,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			rtl_code->append_statement(fload_stmt);
 		}
 		else if( auto o = dynamic_cast<String_Const_TAC_Operand* >(opd)){
-			Load_String_RTL_Statement *sload_stmt = new Load_String_RTL_Statement(reg2, o->sval);
+			Load_String_RTL_Statement *sload_stmt = new Load_String_RTL_Statement(reg2, o->sval, o->string_label);
 			rtl_code->append_statement(sload_stmt);
 		}
 		else if (dynamic_cast<Variable_TAC_Operand *>(opd) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd))
@@ -680,7 +692,7 @@ RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		else if (auto o = dynamic_cast<String_Const_TAC_Operand *>(opd))
 		{
 			reg = reg_tracker->get_int_register();
-			arg_rtl_code->append_statement(new Load_String_RTL_Statement(reg, o->sval));
+			arg_rtl_code->append_statement(new Load_String_RTL_Statement(reg, o->sval,o->string_label));
 		}
 		else if (dynamic_cast<Temporary_TAC_Operand *>(opd))
 		{

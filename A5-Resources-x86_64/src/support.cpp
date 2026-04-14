@@ -383,5 +383,9 @@ void print_func_def_list()
                 *rtlout << "**END: RTL Statements\n";
             }
         }
+        if(show_asm)
+        {
+            *asmout << "HI\n";
+        }
     }
 }

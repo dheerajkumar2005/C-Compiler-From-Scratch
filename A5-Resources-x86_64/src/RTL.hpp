@@ -63,11 +63,9 @@ class Load_String_RTL_Statement : public RTL_Statement
 {
 public:
     RTL_Register *reg;
-    static int string_count;
-    static std::unordered_map<std::string, int> s_map;
     int string_label;
     std::string sval;
-    Load_String_RTL_Statement(RTL_Register *reg, std::string sval);
+    Load_String_RTL_Statement(RTL_Register *reg, std::string sval, int string_label);
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;
 };
@@ -244,7 +242,8 @@ class Load_String_ASM_Statement : public ASM_Statement
 public:
     RTL_Register *reg;
     std::string sval;
-    Load_String_ASM_Statement(RTL_Register *reg, std::string sval);
+    int string_label;
+    Load_String_ASM_Statement(RTL_Register *reg, std::string sval, int string_label);
     virtual std::string to_string() const override final;
 };
 

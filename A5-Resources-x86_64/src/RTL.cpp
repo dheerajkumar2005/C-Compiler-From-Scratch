@@ -60,22 +60,10 @@ ASM_Code *Load_Float_RTL_Statement::to_asm() const
     return asm_code;
 }
 
-int Load_String_RTL_Statement::string_count = 0;
-std::unordered_map<std::string, int> Load_String_RTL_Statement::s_map;
 
-Load_String_RTL_Statement::Load_String_RTL_Statement(RTL_Register *reg, std::string sval)
-    : RTL_Statement(false), reg(reg), sval(sval)
+Load_String_RTL_Statement::Load_String_RTL_Statement(RTL_Register *reg, std::string sval, int string_label)
+    : RTL_Statement(false), reg(reg), sval(sval), string_label(string_label)
 {
-    if (s_map.find(sval) == s_map.end())
-    {
-        string_label = string_count++;
-        s_map[sval] = string_label;
-        std::cerr << sval << " got " << s_map[sval] << std::endl;
-    }
-    else
-    {
-        string_label = s_map[sval];
-    }
 }
 
 std::string Load_String_RTL_Statement::to_string() const
@@ -88,7 +76,7 @@ std::string Load_String_RTL_Statement::to_string() const
 ASM_Code *Load_String_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    ASM_Statement *sload_stmt = new Load_String_ASM_Statement(reg, sval);
+    ASM_Statement *sload_stmt = new Load_String_ASM_Statement(reg, sval,string_label);
     asm_code->append_statement(sload_stmt);
     return asm_code;
 }
@@ -484,12 +472,12 @@ std::string Load_Float_ASM_Statement::to_string() const
     return result;
 }
 
-Load_String_ASM_Statement::Load_String_ASM_Statement(RTL_Register *reg, std::string sval)
-    : ASM_Statement(false), reg(reg), sval(sval) {}
+Load_String_ASM_Statement::Load_String_ASM_Statement(RTL_Register *reg, std::string sval, int string_label)
+    : ASM_Statement(false), reg(reg), sval(sval), string_label(string_label) {}
 
 std::string Load_String_ASM_Statement::to_string() const
 {
-    int s_label = Load_String_RTL_Statement::s_map[sval];
+    int s_label = string_label;
     std::string result = "la $" + register_to_string(reg) + ", " + "_str_" + std::to_string(s_label);
     return result;
 }
