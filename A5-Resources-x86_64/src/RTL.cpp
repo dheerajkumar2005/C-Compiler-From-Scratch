@@ -70,7 +70,7 @@ Load_String_RTL_Statement::Load_String_RTL_Statement(RTL_Register *reg, std::str
     {
         string_label = string_count++;
         s_map[sval] = string_label;
-        std::cerr << sval << " got " << s_map[sval] << std::endl;
+        // std::cerr << sval << " got " << s_map[sval] << std::endl;
     }
     else
     {

@@ -722,6 +722,8 @@ Return_Stmt_Ast::Return_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_expression
     {
         throw_SemanticError("Return statement has a type different than the return type of the function");
     }
+    eval_scope->func_sig->has_return = true;
+    // std::cerr << eval_scope->func_sig->name << " has a return statement of type " << declared_return_type << std::endl;
 }
 
 Code *Return_Stmt_Ast::codegen()
@@ -758,10 +760,9 @@ std::string Call_Stmt_Ast::to_string() const
     return func_call->to_string();
 }
 
-Function_Ast::Function_Ast(Func_Signature *_func_sig)
-    : Statement_Ast(), func_sig(_func_sig), body(), return_label(nullptr), return_stemp(nullptr), has_return(false)
+Function_Ast::Function_Ast(Type return_type)
+    : Statement_Ast(), body(), return_label(nullptr), return_stemp(nullptr)
 {
-    Type return_type = func_sig->return_type;
     if (return_type != Type::VOID)
     {
         return_label = new TAC_Label();
@@ -776,46 +777,31 @@ void Function_Ast::set_scope(Scope *_eval_scope)
 
 void Function_Ast::add_stmt(Statement_Ast *stmt)
 {
-    // // Return statement must have a type consistent with the return type of the function
-    // if (auto s = dynamic_cast<Return_Stmt_Ast *>(stmt))
-    // {
-    //     has_return = true;
-
-    //     if (func_sig->return_type == Type::VOID)
-    //     {
-    //         throw_SemanticError("No return statement allowed for VOID functions");
-    //     }
-    //     else if (func_sig->return_type != s->expression->type)
-    //     {
-    //         throw_SemanticError("Expected return value to have the correct return type");
-    //     }
-    // }
-    // // Calls to non-void functions must receive the returned value
-    // else if (auto s = dynamic_cast<Call_Stmt_Ast *>(stmt))
-    // {
-    //     if (s->func_call->func_sig->return_type != Type::VOID)
-    //     {
-    //         throw_SemanticError("Expected a receiver for a call to a non-void function");
-    //     }
-    // }
-
     body.push_back(stmt);
+}
+
+void Function_Ast::check_correctness() const
+{
+    if (!eval_scope)
+    {
+        throw_SemanticError("Why is eval_scope not yet set???");
+    }
+    if (eval_scope->func_sig->return_type != Type::VOID && !eval_scope->func_sig->has_return)
+    {
+        throw_SemanticError("Expected a return statement homie buddy");
+    }
 }
 
 Code *Function_Ast::codegen()
 {
-    if (func_sig->return_type != Type::VOID && !has_return)
-    {
-        throw_SemanticError("Expected a return statement of type " + type_to_string(func_sig->return_type));
-        return nullptr;
-    }
+    check_correctness();
 
     Code *code = new Code();
     for (auto stmt : body)
     {
         code->append_list(stmt->get_code());
     }
-    if (func_sig->return_type != Type::VOID)
+    if (eval_scope->func_sig->return_type != Type::VOID)
     {
         code->append_statement(new Label_TAC_Statement(return_label));
         code->append_statement(new Return_TAC_Statement(eval_scope, return_stemp));
@@ -825,6 +811,10 @@ Code *Function_Ast::codegen()
 
 std::string Function_Ast::to_string() const
 {
+    check_correctness();
+
+    Func_Signature *func_sig = eval_scope->func_sig;
+
     std::string result;
     result += "**PROCEDURE: " + func_sig->name + "\n";
     result += "Return Type: <" + type_to_string(func_sig->return_type) + ">\n";
@@ -847,7 +837,7 @@ std::string Function_Ast::to_string() const
 }
 
 Function_Entry::Function_Entry(Type _return_type, Func_Signature *_func_sig)
-    : Symbol_Table_Entry(Entry_Kind::FUNCTION, _return_type), func_sig(_func_sig), definition(new Function_Ast(_func_sig))
+    : Symbol_Table_Entry(Entry_Kind::FUNCTION, _return_type), func_sig(_func_sig), definition(new Function_Ast(_return_type))
 {
     if (!func_sig || _return_type != func_sig->return_type)
     {
