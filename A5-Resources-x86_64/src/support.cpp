@@ -355,7 +355,8 @@ void print_func_def_list()
     bool any_global_data = false;
     std::string data_section;
     data_section += ".data\n";
-    for (const auto &[var_name, symtab_entry] : sym_tab){
+    for (const auto &[var_name, symtab_entry] : curr_scope->sym_vec)
+    {
         if(symtab_entry->kind != Entry_Kind::VARIABLE){
             continue;
         }
@@ -371,9 +372,14 @@ void print_func_def_list()
         }
     }
 
+    std::map<int, std::string> temp_map;
     for (const auto &[sval, label] : String_Const_TAC_Operand::s_map){
+        temp_map[label] = sval;
+    }
+    for (const auto &[label, sval] : temp_map)
+    {
         any_global_data = true;
-        data_section += "_str_" + std::to_string(label) + ": .asciiz " + "\"" + sval + "\"\n";
+        data_section += "_str_" + std::to_string(label) + ": .asciiz " + sval + "\n";
     }
     if(!any_global_data){
         data_section = "";

@@ -98,6 +98,7 @@ void Scope::add_local(Type local_type, const std::string &local_name)
 
     local_offset -= local_size;
     sym_tab[local_name] = new Data_Entry(Entry_Kind::VARIABLE, local_type, local_size, local_offset);
+    sym_vec.emplace_back(local_name, sym_tab[local_name]);
 }
 
 void Scope::add_stemp(Type stemp_type, int stemp_id)
