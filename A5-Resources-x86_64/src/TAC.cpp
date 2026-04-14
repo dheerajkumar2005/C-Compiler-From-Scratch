@@ -748,7 +748,7 @@ RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		rtl_code->append_statement(new Call_RTL_Statement(func_name));
 	}
 
-	for (int i = num_args - 1; i >= 0; i--)
+	for (int i = 0; i < num_args; i++)
 	{
 		rtl_code->append_statement(new Pop_RTL_Statement(args[i]->type == Type::FLOAT));
 	}
