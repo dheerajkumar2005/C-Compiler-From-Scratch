@@ -14,6 +14,7 @@ extern int sa_parse;
 extern int show_ast;
 extern int show_tac;
 extern int show_rtl;
+extern int show_asm;
 
 extern TAC_Label *return_label;
 extern Shared_Temporary_TAC_Operand *return_stemp;

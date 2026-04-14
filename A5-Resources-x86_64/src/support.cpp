@@ -387,5 +387,9 @@ void print_func_def_list()
             *rtlout << rtl_code->to_string() << "\n";
             *rtlout << "**END: RTL Statements\n";
         }
+        if(show_asm)
+        {
+            *asmout << "HI\n";
+        }
     }
 }
