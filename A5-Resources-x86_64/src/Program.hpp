@@ -74,6 +74,7 @@ public:
     Scope *parent_scope;
 
     std::map<std::string, Symbol_Table_Entry *> sym_tab; // Ordered in alphabetical order of identifier
+    std::vector<std::pair<std::string, Symbol_Table_Entry *>> sym_vec;
     Func_Signature *func_sig; // nullptr for non-functions
 
     Scope(Scope_Kind kind, Scope *parent_scope = nullptr, Func_Signature *func_sig = nullptr);

@@ -1,19 +1,13 @@
-bool bb;
-
-float foo()
+float foo(float f)
 {
-
-    return 10.;
-    // return y ? 10. : 20.;
-    // return bb ? 10. : z * 4.;
-    // return (bb && (x > 1)) ? 10. : z * 4.;
-    // return (y && bb) || (x > 1 && z < 10.) ? 10. : z * 4.;
+    return 20.;
 }
 
-void main()
+float main()
 {
     float f;
-    int x;
+    // int x;
 
-    f = foo();
+    f = foo(f);
+    return 10.;
 }

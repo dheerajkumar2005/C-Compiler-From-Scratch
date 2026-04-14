@@ -55,7 +55,7 @@ std::string Load_Float_RTL_Statement::to_string() const
 ASM_Code *Load_Float_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-    ASM_Statement *fload_stmt = new Load_Float_ASM_Statement(reg, fval);
+    Load_Float_ASM_Statement *fload_stmt = new Load_Float_ASM_Statement(reg, fval);
     asm_code->append_statement(fload_stmt);
     return asm_code;
 }
@@ -124,9 +124,10 @@ ASM_Code *Load_RTL_Statement::to_asm() const
     }
     else
     {
-        if (local_sym_tab.find(var_name) != local_sym_tab.end())
+        std::string temp_var_name = var_name.substr(0, var_name.size() - 1);
+        if (local_sym_tab.find(temp_var_name) != local_sym_tab.end())
         {
-            auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
+            auto de = dynamic_cast<Data_Entry *>(local_sym_tab[temp_var_name]);
             if (!de)
             {
                 throw_SemanticError("Expected it to be a data entry");
@@ -184,9 +185,10 @@ ASM_Code *Store_RTL_Statement::to_asm() const
     }
     else
     {
-        if (local_sym_tab.find(var_name) != local_sym_tab.end())
+        std::string temp_var_name = var_name.substr(0, var_name.size() - 1);
+        if (local_sym_tab.find(temp_var_name) != local_sym_tab.end())
         {
-            auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
+            auto de = dynamic_cast<Data_Entry *>(local_sym_tab[temp_var_name]);
             if (!de)
             {
                 throw_SemanticError("Expected it to be a data entry");
@@ -500,7 +502,7 @@ std::string Load_Int_ASM_Statement::to_string() const
     return result;
 }
 
-Load_Float_ASM_Statement::Load_Float_ASM_Statement(RTL_Register *reg, float ival)
+Load_Float_ASM_Statement::Load_Float_ASM_Statement(RTL_Register *reg, float fval)
     : ASM_Statement(true), reg(reg), fval(fval) {}
 
 std::string Load_Float_ASM_Statement::to_string() const
