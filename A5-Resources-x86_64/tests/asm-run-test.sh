@@ -1,8 +1,8 @@
 cd ../src
 make
 cd ../tests
-../src/sclp --show-asm "$1"
+../src/sclp "$1" --sa-parse
 mv "$1".spim output.spim
-../reference-implementations/A5-sclp --show-asm -s "$1"
+../reference-implementations/A5-sclp -s "$1" --sa-parse
 mv "$1".spim expected.spim
 diff -Bw output.spim expected.spim
