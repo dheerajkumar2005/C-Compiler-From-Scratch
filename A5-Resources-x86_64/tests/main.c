@@ -2,6 +2,7 @@
 //     return 3;
 // }
 int x;
+int foo();
 // float y;
 // bool z;
 // string s;
