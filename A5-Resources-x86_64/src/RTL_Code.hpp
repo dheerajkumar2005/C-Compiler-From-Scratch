@@ -15,7 +15,7 @@ public:
     void append_statement(RTL_Statement *rtl_statement);
     void append_list(RTL_Code *rtl_code);
     bool is_empty() const;
-
+    ASM_Code* get_asm() ;
     std::string to_string() const;
 };
 

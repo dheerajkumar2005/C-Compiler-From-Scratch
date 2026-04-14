@@ -57,7 +57,7 @@ class String_Const_TAC_Operand : public TAC_Operand
 public:
 	std::string sval;
 	static int string_count;
-    static std::unordered_map<std::string, int> s_map;
+    static std::map<std::string, int> s_map;
     int string_label;
 	String_Const_TAC_Operand(char *_sval);
 	virtual std::string to_string() const override final;

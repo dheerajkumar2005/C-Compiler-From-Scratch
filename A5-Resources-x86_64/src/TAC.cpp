@@ -31,7 +31,7 @@ std::string Float_Const_TAC_Operand::to_string() const
 	return out.str();
 }
 int String_Const_TAC_Operand::string_count = 0;
-std::unordered_map<std::string, int> String_Const_TAC_Operand::s_map;
+std::map<std::string, int> String_Const_TAC_Operand::s_map;
 
 String_Const_TAC_Operand::String_Const_TAC_Operand(char *_sval)
 	: TAC_Operand(Type::STR), sval(_sval) 

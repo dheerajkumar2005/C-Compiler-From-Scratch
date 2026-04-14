@@ -444,10 +444,14 @@ void ASM_Code::append_list(ASM_Code *asm_code)
     }
 }
 
+bool ASM_Code::is_empty(){
+    return stmt_list->size() == 0;
+}
 ASM_Statement::ASM_Statement(bool is_float)
     : is_float(is_float)
 {
 }
+
 
 Load_Int_ASM_Statement::Load_Int_ASM_Statement(RTL_Register *reg, int ival)
     : ASM_Statement(false), reg(reg), ival(ival) {}

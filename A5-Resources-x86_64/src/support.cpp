@@ -352,6 +352,36 @@ void print_func_def_list()
     {
         throw_SemanticError("What you doin' without a main function buddy?");
     }
+    bool any_global_data = false;
+    std::string data_section;
+    data_section += ".data\n";
+    for (const auto &[var_name, symtab_entry] : sym_tab){
+        if(symtab_entry->kind != Entry_Kind::VARIABLE){
+            continue;
+        }
+        any_global_data = true;
+        if(symtab_entry->type == Type::VOID){
+            SemanticError("Global variables can't be void so we messed up somewhere");
+        }
+        else if(symtab_entry->type == Type::FLOAT){
+            data_section += var_name + "_: .double 0.0\n";
+        }
+        else{
+            data_section += var_name + "_: .word 0\n";
+        }
+    }
+
+    for (const auto &[sval, label] : String_Const_TAC_Operand::s_map){
+        any_global_data = true;
+        data_section += "_str_" + std::to_string(label) + ": .asciiz " + "\"" + sval + "\"\n";
+    }
+    if(!any_global_data){
+        data_section = "";
+    }
+
+    if(show_asm){
+        *asmout << data_section;
+    }
 
     for (const auto &[func_name, symtab_entry] : sym_tab)
     {
@@ -368,6 +398,7 @@ void print_func_def_list()
         Function_Ast *def = func_entry->definition;
         Code *code = def->get_code();
         RTL_Code *rtl_code = def->get_rtl(new RegisterTracker());
+        ASM_Code *asm_code = rtl_code->get_asm();
 
         if (show_ast)
         {
@@ -387,9 +418,33 @@ void print_func_def_list()
             *rtlout << rtl_code->to_string() << "\n";
             *rtlout << "**END: RTL Statements\n";
         }
-        if(show_asm)
+        if(show_asm && !asm_code->is_empty())
         {
-            *asmout << "HI\n";
+            std::string result;
+            std::string header = ".text\n";
+            header += ".globl " + func_name + "\n";
+            header += func_name + ":\n";
+
+            std::string prologue;
+            // int locals_size = func_entry->definition->eval_scope->get_local_size();
+            int locals_size = 4;
+            prologue += "sw $ra, 0($sp)\n";
+            prologue += "sw $fp, -4($sp)\n";
+            prologue += "sub $fp, $sp, 4\n";
+            prologue += "sub $sp, $sp, " + std::to_string(8+locals_size) + "\n";
+
+            std::string actual_code;
+            actual_code = asm_code->to_string();
+
+            std::string epilogue;
+            epilogue += "epilogue_" + func_name + ":\n";
+            epilogue += "add $sp, $sp, " + std::to_string(8+locals_size) + "\n";
+            epilogue += "lw $fp, -4($sp)\n";
+            epilogue += "lw $ra, 0($sp)\n";
+            epilogue += "jr $ra";
+
+            result = header + prologue + actual_code + epilogue;
+            *asmout << result;
         }
     }
 }

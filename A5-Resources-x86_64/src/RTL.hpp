@@ -394,6 +394,7 @@ public:
     void append_statement(ASM_Statement *asm_statement);
     void append_list(ASM_Code *asm_code);
     std::string to_string() const;
+    bool is_empty();
 };
 
 #endif

@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     show_tac = 0;
     show_rtl = 0;
     int show_symtab = 0;
-    int show_asm = 1;
+    show_asm = 1;
 
     int gen_temp_symb_table = 0;
     int single_stmt_bb = 0;
@@ -282,11 +282,9 @@ int main(int argc, char *argv[])
 
     if(show_asm){
         if(demo){
-            std::cout << "in demo\n";
             asmout = &std::cout;
         }
         else{
-            std::cout << "This is called\n";
             std::string outfilename = filename + ".spim";
             asmfile.open(outfilename);
             asmout = &asmfile;

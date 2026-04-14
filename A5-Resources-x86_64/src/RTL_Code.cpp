@@ -40,3 +40,11 @@ std::string RTL_Code::to_string() const
     }
     return result;
 }
+
+ASM_Code* RTL_Code::get_asm() {
+    ASM_Code* asm_code = new ASM_Code();
+    for (RTL_Statement* stmt : *stmt_list){
+        asm_code->append_list(stmt->to_asm());
+    }
+    return asm_code;
+}
