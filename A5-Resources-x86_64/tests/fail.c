@@ -1,20 +1,16 @@
-void f(int a, int b)
-{
-    int c;
-    c = 5;
+// Checks assignment statement with braces
 
-    print a + b + c;
-}
-
-int g(int x, int y)
+int main()
 {
-    int z;
-    z = x + y;
-    return z;
-}
-
-void main()
-{
-    // f(g(10, 20), 10);
-    g(10, 20);
+    int ans, a, b, c, d, e, f, g, h;
+    read a;
+    read b;
+    read c;
+    read d;
+    read e;
+    read f;
+    read g;
+    read h;
+    ans = (((a + b) * (c - d)) / (-((e + f) * (g - h))));
+    print ans;
 }

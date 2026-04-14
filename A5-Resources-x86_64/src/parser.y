@@ -16,7 +16,6 @@
     extern TAC_Label *return_label;
     extern Shared_Temporary_TAC_Operand *return_stemp;
     extern Scope* curr_scope;
-    extern bool non_void_func_exists;
 %}
 
 %union {

@@ -36,6 +36,8 @@
 - Enforce that the main function must be defined.
 - NOTE that empty functions have to be handled at the AST/TAC/RTL/ASM levels.
 - stemps are being reset after every function, but should be updated before codegen.
+- AM NOT ABLE TO RESOLVE superstringycall.c. Something about string number allocation order!!!
+- TODO: Semantic checks. Return statement's existence and type. Existence of main function. Storage of return value of a call. No returns in a void function.
 
 # Gameplan
 - Before we even think about function calls, we need to firm up single function, basically return types and return statements.

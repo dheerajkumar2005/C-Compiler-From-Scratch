@@ -2,8 +2,7 @@
 
 TAC_Label *return_label = nullptr;
 Shared_Temporary_TAC_Operand *return_stemp = nullptr;
-Scope* curr_scope = new Scope(Scope_Kind::GLOBAL);
-bool non_void_func_exists = false;
+Scope *curr_scope = new Scope(Scope_Kind::GLOBAL);
 
 IdentifierList *accumulate_var_decl_item_list(std::string *identifier)
 {
@@ -188,8 +187,6 @@ void process_func_decl(FuncHeader *func_header, FormalParamList *formal_param_li
         // Add it to the symbol table
         // This will immediately allocate a return label and stemp for non-void functions
         sym_tab[func_name] = new Function_Entry(return_type, func_sig);
-
-        non_void_func_exists = non_void_func_exists || return_type != Type::VOID;
     }
 }
 
@@ -357,7 +354,8 @@ void print_func_def_list()
         }
 
         Temporary_TAC_Operand::reset_temp_count();
-        Shared_Temporary_TAC_Operand::reset_stemp_count(non_void_func_exists);
+        // If this is a non-void function, reset to 1. Else, reset to 0.
+        Shared_Temporary_TAC_Operand::reset_stemp_count(func_entry->type != Type::VOID);
 
         if (show_ast)
         {
@@ -377,13 +375,13 @@ void print_func_def_list()
         if (show_rtl)
         {
             RTL_Code *rtl_code = func_entry->definition->get_rtl(new RegisterTracker());
-            // if (!rtl_code->is_empty())
-            // {
-            // }
-            *rtlout << "**PROCEDURE: " + func_name + "\n";
-            *rtlout << "**BEGIN: RTL Statements\n";
-            *rtlout << rtl_code->to_string() << "\n";
-            *rtlout << "**END: RTL Statements\n";
+            if (!rtl_code->is_empty())
+            {
+                *rtlout << "**PROCEDURE: " + func_name + "\n";
+                *rtlout << "**BEGIN: RTL Statements\n";
+                *rtlout << rtl_code->to_string() << "\n";
+                *rtlout << "**END: RTL Statements\n";
+            }
         }
     }
 }

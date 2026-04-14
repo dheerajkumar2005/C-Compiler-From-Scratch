@@ -411,8 +411,8 @@ RTL_Code *Goto_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	return rtl_code;
 }
 
-If_Goto_TAC_Statement::If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_label)
-	: TAC_Statement(), condition(_cond), label(_label)
+If_Goto_TAC_Statement::If_Goto_TAC_Statement(Scope *_eval_scope, TAC_Operand *_cond, TAC_Label *_label)
+	: TAC_Statement(_eval_scope), condition(_cond), label(_label)
 {
 }
 
@@ -443,8 +443,8 @@ std::string If_Goto_TAC_Statement::to_string() const
 	return "if(" + condition->to_string() + ") goto " + label->to_string();
 }
 
-IO_TAC_Statement::IO_TAC_Statement(IO_Kind _kind, TAC_Operand *_opd)
-	: TAC_Statement(), kind(_kind), opd(_opd)
+IO_TAC_Statement::IO_TAC_Statement(Scope *_eval_scope, IO_Kind _kind, TAC_Operand *_opd)
+	: TAC_Statement(_eval_scope), kind(_kind), opd(_opd)
 {
 }
 
@@ -622,8 +622,8 @@ RTL_Code *Return_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	return rtl_code;
 }
 
-Call_TAC_Statement::Call_TAC_Statement(const std::string &name, const std::vector<TAC_Operand *> &args, TAC_Operand *lhs)
-	: TAC_Statement(), func_name(name), args(args), lhs(lhs)
+Call_TAC_Statement::Call_TAC_Statement(Scope *_eval_scope, const std::string &name, const std::vector<TAC_Operand *> &args, TAC_Operand *lhs)
+	: TAC_Statement(_eval_scope), func_name(name), args(args), lhs(lhs)
 {
 }
 
@@ -652,15 +652,59 @@ RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	RTL_Code *rtl_code = new RTL_Code();
 
 	// Args go on the stack in reverse order
+	// But we will generate the code in order
+	// Look at simple-call.c for why this has to be done
 	const int num_args = args.size();
-	for (int i = num_args - 1; i >= 0; i--)
+	std::vector<RTL_Code *> arg_rtl_codes(num_args);
+
+	for (int i = 0; i < num_args; i++)
 	{
+		RTL_Code *arg_rtl_code = new RTL_Code();
+
 		TAC_Operand *opd = args[i];
 		bool is_float = opd->type == Type::FLOAT;
-		RTL_Register *reg = reg_tracker->get_register(opd);
-		rtl_code->append_statement(new Push_RTL_Statement(is_float, reg));
+		RTL_Register *reg;
+
+		// For temps, can directly push
+		// For literals/variables, need to iload/load and then push
+		if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd))
+		{
+			reg = reg_tracker->get_int_register();
+			arg_rtl_code->append_statement(new Load_Int_RTL_Statement(reg, o->ival));
+		}
+		else if (auto o = dynamic_cast<Float_Const_TAC_Operand *>(opd))
+		{
+			reg = reg_tracker->get_float_register();
+			arg_rtl_code->append_statement(new Load_Float_RTL_Statement(reg, o->fval));
+		}
+		else if (auto o = dynamic_cast<String_Const_TAC_Operand *>(opd))
+		{
+			reg = reg_tracker->get_int_register();
+			arg_rtl_code->append_statement(new Load_String_RTL_Statement(reg, o->sval));
+		}
+		else if (dynamic_cast<Temporary_TAC_Operand *>(opd))
+		{
+			reg = reg_tracker->get_register(opd);
+		}
+		else
+		{
+			reg = is_float ? reg_tracker->get_float_register() : reg_tracker->get_int_register();
+			arg_rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg, opd->to_string(), is_float));
+		}
+
+		arg_rtl_code->append_statement(new Push_RTL_Statement(is_float, reg));
+		reg_tracker->free_register(opd, reg);
+
+		arg_rtl_codes[i] = arg_rtl_code;
 	}
+
+	for (int i = num_args - 1; i >= 0; i--)
+	{
+		rtl_code->append_list(arg_rtl_codes[i]);
+	}
+
 	rtl_code->append_statement(new Call_RTL_Statement(func_name, reg_tracker->get_register(lhs)));
+
 	for (int i = num_args - 1; i >= 0; i--)
 	{
 		rtl_code->append_statement(new Pop_RTL_Statement(args[i]->type == Type::FLOAT));

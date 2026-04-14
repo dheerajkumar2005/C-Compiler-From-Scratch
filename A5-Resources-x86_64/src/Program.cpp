@@ -90,6 +90,12 @@ void Scope::add_local(Type local_type, const std::string &local_name)
         return;
     }
 
+    // NEW: No global functions with the same name
+    if (parent_scope && parent_scope->sym_tab.find(local_name + "_") != parent_scope->sym_tab.end())
+    {
+        throw_SemanticError("I don't know why this is supposed to be an error but sure");
+    }
+
     local_offset -= local_size;
     sym_tab[local_name] = new Data_Entry(Entry_Kind::VARIABLE, local_type, local_size, local_offset);
 }

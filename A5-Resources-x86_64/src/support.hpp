@@ -18,7 +18,6 @@ extern int show_rtl;
 extern TAC_Label *return_label;
 extern Shared_Temporary_TAC_Operand *return_stemp;
 extern Scope* curr_scope;
-extern bool non_void_func_exists;
 
 using IdentifierList = std::vector<std::string *>;
 using DeclStmt = std::pair<Type, IdentifierList *>;

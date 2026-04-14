@@ -141,7 +141,7 @@ class If_Goto_TAC_Statement : public TAC_Statement
 	TAC_Label *label;
 
 public:
-	If_Goto_TAC_Statement(TAC_Operand *_cond, TAC_Label *_label);
+	If_Goto_TAC_Statement(Scope *_eval_scope, TAC_Operand *_cond, TAC_Label *_label);
 
 	virtual std::string to_string() const override final;
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
@@ -153,7 +153,7 @@ class IO_TAC_Statement : public TAC_Statement
 	TAC_Operand *opd;
 
 public:
-	IO_TAC_Statement(IO_Kind _kind, TAC_Operand *_opd);
+	IO_TAC_Statement(Scope *_eval_scope, IO_Kind _kind, TAC_Operand *_opd);
 
 	virtual std::string to_string() const override final;
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;
@@ -188,7 +188,7 @@ public:
 	std::vector<TAC_Operand *> args;
 	TAC_Operand *lhs;
 
-	Call_TAC_Statement(const std::string &name, const std::vector<TAC_Operand *> &args, TAC_Operand *lhs = nullptr);
+	Call_TAC_Statement(Scope *_eval_scope, const std::string &name, const std::vector<TAC_Operand *> &args, TAC_Operand *lhs = nullptr);
 
 	virtual std::string to_string() const override final;
 	virtual RTL_Code *to_rtl(RegisterTracker *reg_tracker) const override final;

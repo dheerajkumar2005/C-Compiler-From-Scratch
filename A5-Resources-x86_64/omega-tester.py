@@ -19,13 +19,14 @@ RESET = "\033[0m"
 
 SA_FLAGS = [
     # "--sa-scan", 
-    "--sa-parse", 
-    "--sa-ast", 
-    "--sa-tac",
+    # "--sa-parse", 
+    # "--sa-ast", 
+    # "--sa-tac",
+    "--sa-rtl",
 ]
 
 SHOW_FLAGS = [
-    "--show-tokens", 
+    # "--show-tokens", 
     "--show-ast", 
     "--show-tac", 
     "--show-rtl",
