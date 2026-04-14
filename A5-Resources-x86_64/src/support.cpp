@@ -345,7 +345,15 @@ Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call)
 
 void print_func_def_list()
 {
-    for (const auto &[func_name, symtab_entry] : curr_scope->sym_tab)
+    auto &sym_tab = curr_scope->sym_tab;
+
+    // main function needs to be defined
+    if (sym_tab.find("main") == sym_tab.end() || sym_tab["main"]->kind != Entry_Kind::FUNCTION)
+    {
+        throw_SemanticError("What you doin' without a main function buddy?");
+    }
+
+    for (const auto &[func_name, symtab_entry] : sym_tab)
     {
         auto func_entry = dynamic_cast<Function_Entry *>(symtab_entry);
         if (!func_entry)
@@ -357,31 +365,27 @@ void print_func_def_list()
         // If this is a non-void function, reset to 1. Else, reset to 0.
         Shared_Temporary_TAC_Operand::reset_stemp_count(func_entry->type != Type::VOID);
 
+        Function_Ast *def = func_entry->definition;
+        Code *code = def->get_code();
+        RTL_Code *rtl_code = def->get_rtl(new RegisterTracker());
+
         if (show_ast)
         {
-            *astout << func_entry->definition->to_string() << "\n";
+            *astout << def->to_string() << "\n";
         }
-        if (show_tac)
+        if (show_tac && !code->is_empty())
         {
-            Code *code = func_entry->definition->get_code();
-            if (!code->is_empty())
-            {
-                *tacout << "**PROCEDURE: " + func_name + "\n";
-                *tacout << "**BEGIN: Three Address Code Statements\n";
-                *tacout << code->to_string() << "\n";
-                *tacout << "**END: Three Address Code Statements\n";
-            }
+            *tacout << "**PROCEDURE: " + func_name + "\n";
+            *tacout << "**BEGIN: Three Address Code Statements\n";
+            *tacout << code->to_string() << "\n";
+            *tacout << "**END: Three Address Code Statements\n";
         }
-        if (show_rtl)
+        if (show_rtl && !rtl_code->is_empty())
         {
-            RTL_Code *rtl_code = func_entry->definition->get_rtl(new RegisterTracker());
-            if (!rtl_code->is_empty())
-            {
-                *rtlout << "**PROCEDURE: " + func_name + "\n";
-                *rtlout << "**BEGIN: RTL Statements\n";
-                *rtlout << rtl_code->to_string() << "\n";
-                *rtlout << "**END: RTL Statements\n";
-            }
+            *rtlout << "**PROCEDURE: " + func_name + "\n";
+            *rtlout << "**BEGIN: RTL Statements\n";
+            *rtlout << rtl_code->to_string() << "\n";
+            *rtlout << "**END: RTL Statements\n";
         }
         if(show_asm)
         {

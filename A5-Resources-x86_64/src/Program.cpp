@@ -101,7 +101,7 @@ void Scope::add_local(Type local_type, const std::string &local_name)
 }
 
 Func_Signature::Func_Signature(const std::string &name, Type return_type)
-    : name(name), return_type(return_type), param_types(), param_names()
+    : name(name), return_type(return_type), param_types(), param_names(), has_return(false)
 {
 }
 

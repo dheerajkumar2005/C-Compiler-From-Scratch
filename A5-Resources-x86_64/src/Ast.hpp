@@ -366,15 +366,18 @@ public:
 class Function_Ast : public Statement_Ast
 {
 public:
-    Func_Signature *func_sig;
+    // Func_Signature *func_sig;
     std::vector<Statement_Ast *> body;
     TAC_Label *return_label;
     Shared_Temporary_TAC_Operand *return_stemp;
 
-    Function_Ast(Func_Signature *_func_sig);
+    Function_Ast(Type return_type);
 
     void set_scope(Scope *_eval_scope);
     void add_stmt(Statement_Ast *stmt);
+
+    void check_correctness() const;
+
     Code *codegen();
     std::string to_string() const;
 };

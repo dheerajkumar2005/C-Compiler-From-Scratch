@@ -35,6 +35,8 @@ struct Func_Signature
 
     std::vector<std::string> param_names;
 
+    bool has_return;
+
     Func_Signature(const std::string &name, Type return_type);
 
     void add_param(const std::string &param_name, Type type);
