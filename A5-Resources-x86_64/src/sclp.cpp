@@ -221,7 +221,8 @@ int main(int argc, char *argv[])
         show_rtl = 0;
         show_asm = 0;
     }
-    else if (sa_rtl){
+    else if (sa_rtl)
+    {
         show_asm = 0;
     }
 

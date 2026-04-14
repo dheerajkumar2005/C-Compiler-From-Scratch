@@ -80,9 +80,9 @@ struct Shared_Temporary_TAC_Operand : public TAC_Operand
 {
 private:
 	static int tac_stemp_count;
-	int stemp_number;
 
 public:
+	int stemp_number;
 	static void reset_stemp_count(int cnt = 0);
 
 	Shared_Temporary_TAC_Operand(Type type);

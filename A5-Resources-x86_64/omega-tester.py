@@ -29,7 +29,8 @@ SHOW_FLAGS = [
     "--show-tokens", 
     "--show-ast", 
     "--show-tac", 
-    # "--show-rtl",
+    "--show-rtl",
+    # "--show-asm",
 ]
 
 SHOW_SUBSETS = [

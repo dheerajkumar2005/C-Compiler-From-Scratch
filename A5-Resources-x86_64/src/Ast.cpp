@@ -397,8 +397,9 @@ Code *Conditional_Expr_Ast::codegen()
 {
     Code *predicate_expr = opd1->get_code();
 
-    place = new Shared_Temporary_TAC_Operand(opd2->type);
-    eval_scope->add_local(place->type, place->to_string());
+    Shared_Temporary_TAC_Operand *stemp = new Shared_Temporary_TAC_Operand(opd2->type);
+    eval_scope->add_stemp(stemp->type, stemp->stemp_number);
+    place = stemp;
 
     TAC_Label *l1 = new TAC_Label();
     TAC_Label *l2 = new TAC_Label();
@@ -440,9 +441,12 @@ Statement_Ast::~Statement_Ast()
 RTL_Code *Statement_Ast::rtlgen(RegisterTracker *register_tracker)
 {
     RTL_Code *rtl_code = new RTL_Code();
-    for (auto tac_stmt_ptr : *(get_code()->stmt_list))
+    Code *code = get_code();
+    std::string debughelper;
+    for (auto tac_stmt_ptr : *(code->stmt_list))
     {
         rtl_code->append_list(tac_stmt_ptr->to_rtl(register_tracker));
+        debughelper += tac_stmt_ptr->to_string();
     }
 
     return rtl_code;
@@ -723,7 +727,6 @@ Return_Stmt_Ast::Return_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_expression
         throw_SemanticError("Return statement has a type different than the return type of the function");
     }
     eval_scope->func_sig->has_return = true;
-    // std::cerr << eval_scope->func_sig->name << " has a return statement of type " << declared_return_type << std::endl;
 }
 
 Code *Return_Stmt_Ast::codegen()
@@ -767,6 +770,7 @@ Function_Ast::Function_Ast(Type return_type)
     {
         return_label = new TAC_Label();
         return_stemp = new Shared_Temporary_TAC_Operand(return_type);
+        eval_scope->add_stemp(return_stemp->type, return_stemp->stemp_number);
     }
 }
 

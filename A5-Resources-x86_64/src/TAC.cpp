@@ -30,23 +30,25 @@ std::string Float_Const_TAC_Operand::to_string() const
 	out << std::fixed << std::setprecision(2) << fval;
 	return out.str();
 }
+
 int String_Const_TAC_Operand::string_count = 0;
 std::map<std::string, int> String_Const_TAC_Operand::s_map;
 
 String_Const_TAC_Operand::String_Const_TAC_Operand(char *_sval)
-	: TAC_Operand(Type::STR), sval(_sval) 
+	: TAC_Operand(Type::STR), sval(_sval)
+{
+	if (s_map.find(sval) == s_map.end())
 	{
-		if (s_map.find(sval) == s_map.end()){
-			string_label = string_count++;
-			s_map[sval] = string_label;
-			// std::cerr << sval << " got " << s_map[sval] << std::endl;
-		}
-		else{
-			string_label = s_map[sval];
-		}
+		string_label = string_count++;
+		s_map[sval] = string_label;
 	}
+	else
+	{
+		string_label = s_map[sval];
+	}
+}
 std::string String_Const_TAC_Operand::to_string() const
-{	
+{
 	return sval;
 }
 
@@ -139,6 +141,9 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
 	RTL_Code *rtl_code = new RTL_Code();
 
+	// Register transfer after a call
+
+	// Arithmetic operation over floats
 	if (lhs->type == Type::FLOAT && opd1->type == Type::FLOAT)
 	{
 		// Operand 1
@@ -159,7 +164,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else
 			{
-				throw_SemanticError("Load operation failed");
+				// throw_SemanticError("Load operation failed");
 			}
 
 			rtl_code->append_statement(load_stmt);
@@ -216,6 +221,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		return rtl_code;
 	}
+	// Relational operation over floats
 	else if (lhs->type == Type::BOOL && opd1->type == Type::FLOAT)
 	{
 		// Operand 1
@@ -316,6 +322,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		return rtl_code;
 	}
+	// Arithmetic/relational/logical operation over ints/bools
 	else
 	{
 		// Operand 1
@@ -325,25 +332,22 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		{
 			reg_opd1 = reg_tracker->get_int_register();
 
-			RTL_Statement *load_stmt;
 			if (auto o = dynamic_cast<Int_Const_TAC_Operand *>(opd1))
 			{
-				load_stmt = new Load_Int_RTL_Statement(reg_opd1, o->ival);
+				rtl_code->append_statement(new Load_Int_RTL_Statement(reg_opd1, o->ival));
 			}
-			else if(auto o = dynamic_cast<String_Const_TAC_Operand *>(opd1))
+			else if (auto o = dynamic_cast<String_Const_TAC_Operand *>(opd1))
 			{
-				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval,o->string_label);
+				rtl_code->append_statement(new Load_String_RTL_Statement(reg_opd1, o->sval, o->string_label));
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd1) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1))
 			{
-				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string());
+				rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string()));
 			}
 			else
 			{
-				throw_SemanticError("Load operation failed");
+				// throw_SemanticError("Load operation failed");
 			}
-
-			rtl_code->append_statement(load_stmt);
 		}
 
 		// LHS
@@ -366,9 +370,9 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			{
 				load_stmt = new Load_Int_RTL_Statement(reg_opd2, o->ival);
 			}
-			else if(auto o = dynamic_cast<String_Const_TAC_Operand *>(opd2))
+			else if (auto o = dynamic_cast<String_Const_TAC_Operand *>(opd2))
 			{
-				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval,o->string_label);
+				load_stmt = new Load_String_RTL_Statement(reg_opd1, o->sval, o->string_label);
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd2) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2))
 			{
@@ -564,7 +568,8 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			Load_Float_RTL_Statement *fload_stmt = new Load_Float_RTL_Statement(reg2, o->fval);
 			rtl_code->append_statement(fload_stmt);
 		}
-		else if( auto o = dynamic_cast<String_Const_TAC_Operand* >(opd)){
+		else if (auto o = dynamic_cast<String_Const_TAC_Operand *>(opd))
+		{
 			Load_String_RTL_Statement *sload_stmt = new Load_String_RTL_Statement(reg2, o->sval, o->string_label);
 			rtl_code->append_statement(sload_stmt);
 		}
@@ -692,7 +697,7 @@ RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		else if (auto o = dynamic_cast<String_Const_TAC_Operand *>(opd))
 		{
 			reg = reg_tracker->get_int_register();
-			arg_rtl_code->append_statement(new Load_String_RTL_Statement(reg, o->sval,o->string_label));
+			arg_rtl_code->append_statement(new Load_String_RTL_Statement(reg, o->sval, o->string_label));
 		}
 		else if (dynamic_cast<Temporary_TAC_Operand *>(opd))
 		{
@@ -715,12 +720,30 @@ RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		rtl_code->append_list(arg_rtl_codes[i]);
 	}
 
-	rtl_code->append_statement(new Call_RTL_Statement(func_name, reg_tracker->get_register(lhs)));
+	Move_RTL_Statement *mov;
+	if (lhs)
+	{
+		bool is_float = lhs->type == Type::FLOAT;
+		RTL_Register *res_reg = reg_tracker->get_register(is_float ? PRIORITY_F0 : PRIORITY_V1);
+		RTL_Register *reg = is_float ? reg_tracker->get_float_register() : reg_tracker->get_int_register();
+		reg_tracker->mark(lhs, reg);
+
+		rtl_code->append_statement(new Call_RTL_Statement(func_name, res_reg));
+		mov = new Move_RTL_Statement(reg, res_reg, false, false, is_float);
+	}
+	else
+	{
+		rtl_code->append_statement(new Call_RTL_Statement(func_name));
+	}
 
 	for (int i = num_args - 1; i >= 0; i--)
 	{
 		rtl_code->append_statement(new Pop_RTL_Statement(args[i]->type == Type::FLOAT));
 	}
 
+	if (lhs)
+	{
+		rtl_code->append_statement(mov);
+	}
 	return rtl_code;
 }
