@@ -426,8 +426,8 @@ void print_func_def_list()
             header += func_name + ":\n";
 
             std::string prologue;
-            // int locals_size = func_entry->definition->eval_scope->get_local_size();
-            int locals_size = 4;
+            int locals_size = func_entry->definition->eval_scope->get_size_of_locals();
+            // int locals_size = 4;
             prologue += "sw $ra, 0($sp)\n";
             prologue += "sw $fp, -4($sp)\n";
             prologue += "sub $fp, $sp, 4\n";
