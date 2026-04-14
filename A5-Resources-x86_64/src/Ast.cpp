@@ -770,13 +770,16 @@ Function_Ast::Function_Ast(Type return_type)
     {
         return_label = new TAC_Label();
         return_stemp = new Shared_Temporary_TAC_Operand(return_type);
-        eval_scope->add_stemp(return_stemp->type, return_stemp->stemp_number);
     }
 }
 
 void Function_Ast::set_scope(Scope *_eval_scope)
 {
     eval_scope = _eval_scope;
+    if (return_stemp)
+    {
+        eval_scope->add_stemp(return_stemp->type, return_stemp->stemp_number);
+    }
 }
 
 void Function_Ast::add_stmt(Statement_Ast *stmt)

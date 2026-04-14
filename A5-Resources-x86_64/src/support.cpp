@@ -441,7 +441,7 @@ void print_func_def_list()
             epilogue += "add $sp, $sp, " + std::to_string(8+locals_size) + "\n";
             epilogue += "lw $fp, -4($sp)\n";
             epilogue += "lw $ra, 0($sp)\n";
-            epilogue += "jr $ra";
+            epilogue += "jr $ra\n";
 
             result = header + prologue + actual_code + epilogue;
             *asmout << result;
