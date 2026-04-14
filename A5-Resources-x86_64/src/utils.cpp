@@ -658,9 +658,17 @@ std::string rtl_priority_to_register(int priority)
     {
         return "v1";
     }
+    else if (priority == PRIORITY_FP)
+    {
+        return "fp";
+    }
+    else if (priority == PRIORITY_SP)
+    {
+        return "sp";
+    }
     else
     {
-        throw_SemanticError("This register doesn't exist currently, I have no clue why is it used\n");
+        throw_SemanticError("This register doesn't exist currently, I have no clue why is it used (priority " + std::to_string(priority) + ")\n");
         return "";
     }
 }

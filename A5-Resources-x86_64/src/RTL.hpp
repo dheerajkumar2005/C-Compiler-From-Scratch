@@ -75,8 +75,9 @@ class Load_RTL_Statement : public RTL_Statement
 public:
     RTL_Register *reg;
     std::string var_name;
+    bool is_stemp;
 
-    Load_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float = false);
+    Load_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_stemp, bool is_float = false);
     virtual std::string to_string() const override final;
     virtual ASM_Code *to_asm() const override final;
 };
@@ -86,8 +87,9 @@ class Store_RTL_Statement : public RTL_Statement
 public:
     RTL_Register *reg;
     std::string var_name;
+    bool is_stemp;
 
-    Store_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float = false);
+    Store_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_stemp, bool is_float = false);
     ~Store_RTL_Statement() = default;
 
     virtual std::string to_string() const override final;

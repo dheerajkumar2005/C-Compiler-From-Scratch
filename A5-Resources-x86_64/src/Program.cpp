@@ -105,7 +105,7 @@ void Scope::add_stemp(Type stemp_type, int stemp_id)
     int stemp_size = get_size(stemp_type);
     local_offset -= stemp_size;
 
-    std::string stemp_name = "$stemp" + stemp_id;
+    std::string stemp_name = "$stemp" + std::to_string(stemp_id);
     sym_tab[stemp_name] = new Data_Entry(Entry_Kind::STEMP, stemp_type, stemp_size, local_offset);
 }
 

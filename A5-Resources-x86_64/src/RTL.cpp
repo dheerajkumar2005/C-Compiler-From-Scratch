@@ -81,8 +81,8 @@ ASM_Code *Load_String_RTL_Statement::to_asm() const
     return asm_code;
 }
 
-Load_RTL_Statement::Load_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float)
-    : RTL_Statement(is_float, _eval_scope), reg(reg), var_name(var_name)
+Load_RTL_Statement::Load_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool _is_stemp, bool is_float)
+    : RTL_Statement(is_float, _eval_scope), reg(reg), var_name(var_name), is_stemp(_is_stemp)
 {
     if (!eval_scope || !eval_scope->parent_scope)
     {
@@ -105,29 +105,47 @@ std::string Load_RTL_Statement::to_string() const
 ASM_Code *Load_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-
     auto &local_sym_tab = eval_scope->sym_tab;
-    if (local_sym_tab.find(var_name) != local_sym_tab.end())
+
+    if (is_stemp)
     {
-        auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
-        if (!de)
+        std::string stemp_name = "$" + var_name;
+        if (local_sym_tab.find(stemp_name) == local_sym_tab.end())
         {
-            throw_SemanticError("Expected it to be a data entry");
+            throw_SemanticError("Bro stemps have gots to be in the local symtab only...");
         }
 
+        auto de = dynamic_cast<Data_Entry *>(local_sym_tab[stemp_name]);
+        if (!de)
+        {
+            throw_SemanticError("Has to be a data entry homie!");
+        }
         asm_code->append_statement(new Load_Local_ASM_Statement(reg, de->offset, fp, is_float));
     }
     else
     {
-        // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
-        asm_code->append_statement(new Load_Global_ASM_Statement(reg, var_name, is_float));
+        if (local_sym_tab.find(var_name) != local_sym_tab.end())
+        {
+            auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
+            if (!de)
+            {
+                throw_SemanticError("Expected it to be a data entry");
+            }
+
+            asm_code->append_statement(new Load_Local_ASM_Statement(reg, de->offset, fp, is_float));
+        }
+        else
+        {
+            // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
+            asm_code->append_statement(new Load_Global_ASM_Statement(reg, var_name, is_float));
+        }
     }
 
     return asm_code;
 }
 
-Store_RTL_Statement::Store_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool is_float)
-    : RTL_Statement(is_float, _eval_scope), reg(reg), var_name(var_name)
+Store_RTL_Statement::Store_RTL_Statement(Scope *_eval_scope, RTL_Register *reg, std::string var_name, bool _is_stemp, bool is_float)
+    : RTL_Statement(is_float, _eval_scope), reg(reg), var_name(var_name), is_stemp(_is_stemp)
 {
 }
 
@@ -146,22 +164,41 @@ std::string Store_RTL_Statement::to_string() const
 ASM_Code *Store_RTL_Statement::to_asm() const
 {
     ASM_Code *asm_code = new ASM_Code();
-
     auto &local_sym_tab = eval_scope->sym_tab;
-    if (local_sym_tab.find(var_name) != local_sym_tab.end())
+
+    if (is_stemp)
     {
-        auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
+        std::string stemp_name = "$" + var_name;
+        if (local_sym_tab.find(stemp_name) == local_sym_tab.end())
+        {
+            throw_SemanticError("For store also, stemps have to be in the local symtab only...");
+        }
+
+        auto de = dynamic_cast<Data_Entry *>(local_sym_tab[stemp_name]);
         if (!de)
         {
-            throw_SemanticError("Expected it to be a data entry");
+            throw_SemanticError("Expected a data entry homie buddy");
         }
 
         asm_code->append_statement(new Store_Local_ASM_Statement(reg, de->offset, fp, is_float));
     }
     else
     {
-        // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
-        asm_code->append_statement(new Store_Global_ASM_Statement(reg, var_name, is_float));
+        if (local_sym_tab.find(var_name) != local_sym_tab.end())
+        {
+            auto de = dynamic_cast<Data_Entry *>(local_sym_tab[var_name]);
+            if (!de)
+            {
+                throw_SemanticError("Expected it to be a data entry");
+            }
+
+            asm_code->append_statement(new Store_Local_ASM_Statement(reg, de->offset, fp, is_float));
+        }
+        else
+        {
+            // I am assuming if the var is not in local scope then its in global scope and also there is a local and global scope, nothing else
+            asm_code->append_statement(new Store_Global_ASM_Statement(reg, var_name, is_float));
+        }
     }
 
     return asm_code;

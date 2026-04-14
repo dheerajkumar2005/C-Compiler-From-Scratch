@@ -160,7 +160,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd1) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1))
 			{
-				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string(), true);
+				bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1);
+				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string(), is_stemp, true);
 			}
 			else
 			{
@@ -192,7 +193,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd2) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2))
 			{
-				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd2, opd2->to_string(), true);
+				bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2);
+				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd2, opd2->to_string(), is_stemp, true);
 			}
 			else
 			{
@@ -211,7 +213,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		// Store the lhs if it is a variable or a shared temporary
 		if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
 		{
-			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg_opd1, lhs->to_string(), true); // changed from your code
+			bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs);
+			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg_opd1, lhs->to_string(), is_stemp, true); // changed from your code
 			rtl_code->append_statement(store_stmt);
 		}
 
@@ -238,7 +241,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd1) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1))
 			{
-				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string(), true);
+				bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1);
+				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string(), is_stemp, true);
 			}
 			else
 			{
@@ -265,7 +269,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd2) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2))
 			{
-				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd2, opd2->to_string(), true);
+				bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2);
+				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd2, opd2->to_string(), is_stemp, true);
 			}
 			else
 			{
@@ -312,7 +317,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		// Store the lhs if it is a variable or a shared temporary
 		if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
 		{
-			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg_opd1, lhs->to_string()); // changed from your code
+			bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs);
+			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg_opd1, lhs->to_string(), is_stemp); // changed from your code
 			rtl_code->append_statement(store_stmt);
 		}
 
@@ -342,7 +348,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd1) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1))
 			{
-				rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string()));
+				bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd1);
+				rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg_opd1, opd1->to_string(), is_stemp));
 			}
 			else
 			{
@@ -376,7 +383,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			}
 			else if (dynamic_cast<Variable_TAC_Operand *>(opd2) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2))
 			{
-				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd2, opd2->to_string());
+				bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd2);
+				load_stmt = new Load_RTL_Statement(eval_scope, reg_opd2, opd2->to_string(), is_stemp);
 			}
 			else
 			{
@@ -395,7 +403,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		// Store the lhs if it is a variable or a shared temporary
 		if (dynamic_cast<Variable_TAC_Operand *>(lhs) || dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs))
 		{
-			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg_opd1, lhs->to_string()); // changed from your code
+			bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(lhs);
+			Store_RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg_opd1, lhs->to_string(), is_stemp); // changed from your code
 			rtl_code->append_statement(store_stmt);
 		}
 
@@ -441,7 +450,8 @@ RTL_Code *If_Goto_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	{
 		// This can happen for do-while
 		reg_condition = reg_tracker->get_int_register();
-		RTL_Statement *load_stmt = new Load_RTL_Statement(eval_scope, reg_condition, condition->to_string());
+		bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(condition);
+		RTL_Statement *load_stmt = new Load_RTL_Statement(eval_scope, reg_condition, condition->to_string(), is_stemp);
 		rtl_code->append_statement(load_stmt);
 	}
 
@@ -513,7 +523,7 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 			reg = reg_tracker->get_register(PRIORITY_F0);
 		}
 
-		RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg, opd->to_string(), is_float);
+		RTL_Statement *store_stmt = new Store_RTL_Statement(eval_scope, reg, opd->to_string(), false, is_float);
 		rtl_code->append_statement(store_stmt);
 		reg_tracker->free_register(nullptr, reg); // cleanup
 
@@ -575,7 +585,8 @@ RTL_Code *IO_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		}
 		else if (dynamic_cast<Variable_TAC_Operand *>(opd) || dynamic_cast<Shared_Temporary_TAC_Operand *>(opd))
 		{
-			Load_RTL_Statement *load_stmt = new Load_RTL_Statement(eval_scope, reg2, opd->to_string(), is_float);
+			bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd);
+			Load_RTL_Statement *load_stmt = new Load_RTL_Statement(eval_scope, reg2, opd->to_string(), is_stemp, is_float);
 			rtl_code->append_statement(load_stmt);
 		}
 		else
@@ -634,7 +645,7 @@ RTL_Code *Return_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 	RTL_Register *reg = reg_tracker->get_register(is_float ? PRIORITY_F0 : PRIORITY_V1);
 
 	RTL_Code *rtl_code = new RTL_Code();
-	rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg, return_stemp->to_string(), is_float));
+	rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg, return_stemp->to_string(), true, is_float));
 	rtl_code->append_statement(new Return_RTL_Statement(reg, eval_scope->func_sig->name, is_float));
 	return rtl_code;
 }
@@ -706,7 +717,8 @@ RTL_Code *Call_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 		else
 		{
 			reg = is_float ? reg_tracker->get_float_register() : reg_tracker->get_int_register();
-			arg_rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg, opd->to_string(), is_float));
+			bool is_stemp = dynamic_cast<Shared_Temporary_TAC_Operand *>(opd);
+			arg_rtl_code->append_statement(new Load_RTL_Statement(eval_scope, reg, opd->to_string(), is_stemp, is_float));
 		}
 
 		arg_rtl_code->append_statement(new Push_RTL_Statement(is_float, reg));
