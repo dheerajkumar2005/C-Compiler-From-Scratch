@@ -440,9 +440,12 @@ Statement_Ast::~Statement_Ast()
 RTL_Code *Statement_Ast::rtlgen(RegisterTracker *register_tracker)
 {
     RTL_Code *rtl_code = new RTL_Code();
-    for (auto tac_stmt_ptr : *(get_code()->stmt_list))
+    Code *code = get_code();
+    std::string debughelper;
+    for (auto tac_stmt_ptr : *(code->stmt_list))
     {
         rtl_code->append_list(tac_stmt_ptr->to_rtl(register_tracker));
+        debughelper += tac_stmt_ptr->to_string();
     }
 
     return rtl_code;
@@ -723,7 +726,6 @@ Return_Stmt_Ast::Return_Stmt_Ast(Scope *_eval_scope, Expression_Ast *_expression
         throw_SemanticError("Return statement has a type different than the return type of the function");
     }
     eval_scope->func_sig->has_return = true;
-    // std::cerr << eval_scope->func_sig->name << " has a return statement of type " << declared_return_type << std::endl;
 }
 
 Code *Return_Stmt_Ast::codegen()

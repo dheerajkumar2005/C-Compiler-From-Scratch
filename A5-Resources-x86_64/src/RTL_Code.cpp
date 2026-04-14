@@ -35,7 +35,9 @@ std::string RTL_Code::to_string() const
     {
         if (*it)
         {
-            result += (*it)->to_string() + "\n";
+            std::string temp = (*it)->to_string();
+            result += temp + "\n";
+            // result += (*it)->to_string() + "\n";
         }
     }
     return result;

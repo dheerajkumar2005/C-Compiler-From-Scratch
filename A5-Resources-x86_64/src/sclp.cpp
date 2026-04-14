@@ -221,7 +221,8 @@ int main(int argc, char *argv[])
         show_rtl = 0;
         show_asm = 0;
     }
-    else if (sa_rtl){
+    else if (sa_rtl)
+    {
         show_asm = 0;
     }
 
@@ -280,13 +281,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(show_asm){
-        if(demo){
-            std::cout << "in demo\n";
+    if (show_asm)
+    {
+        if (demo)
+        {
             asmout = &std::cout;
         }
-        else{
-            std::cout << "This is called\n";
+        else
+        {
             std::string outfilename = filename + ".spim";
             asmfile.open(outfilename);
             asmout = &asmfile;

@@ -26,10 +26,11 @@ SA_FLAGS = [
 ]
 
 SHOW_FLAGS = [
-    # "--show-tokens", 
-    # "--show-ast", 
-    # "--show-tac", 
+    "--show-tokens", 
+    "--show-ast", 
+    "--show-tac", 
     "--show-rtl",
+    # "--show-asm",
 ]
 
 SHOW_SUBSETS = [
