@@ -397,8 +397,9 @@ Code *Conditional_Expr_Ast::codegen()
 {
     Code *predicate_expr = opd1->get_code();
 
-    place = new Shared_Temporary_TAC_Operand(opd2->type);
-    eval_scope->add_local(place->type, place->to_string());
+    Shared_Temporary_TAC_Operand *stemp = new Shared_Temporary_TAC_Operand(opd2->type);
+    eval_scope->add_stemp(stemp->type, stemp->stemp_number);
+    place = stemp;
 
     TAC_Label *l1 = new TAC_Label();
     TAC_Label *l2 = new TAC_Label();
@@ -769,6 +770,7 @@ Function_Ast::Function_Ast(Type return_type)
     {
         return_label = new TAC_Label();
         return_stemp = new Shared_Temporary_TAC_Operand(return_type);
+        eval_scope->add_stemp(return_stemp->type, return_stemp->stemp_number);
     }
 }
 

@@ -14,6 +14,7 @@ enum class Entry_Kind
     VARIABLE,
     FUNCTION,
     PARAMETER,
+    STEMP, // Shared Temporary
 };
 
 // std::ostream &operator<<(std::ostream &os, const Entry_Kind &ek);
@@ -79,6 +80,9 @@ public:
 
     void add_param(Type param_type, const std::string &param_name);
     void add_local(Type local_type, const std::string &local_name);
+    void add_stemp(Type stemp_type, int stemp_id);
+
+    int get_size_of_locals() const;
 };
 
 #endif

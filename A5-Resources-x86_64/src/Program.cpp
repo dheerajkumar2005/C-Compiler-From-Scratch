@@ -100,6 +100,28 @@ void Scope::add_local(Type local_type, const std::string &local_name)
     sym_tab[local_name] = new Data_Entry(Entry_Kind::VARIABLE, local_type, local_size, local_offset);
 }
 
+void Scope::add_stemp(Type stemp_type, int stemp_id)
+{
+    int stemp_size = get_size(stemp_type);
+    local_offset -= stemp_size;
+
+    std::string stemp_name = "$stemp" + stemp_id;
+    sym_tab[stemp_name] = new Data_Entry(Entry_Kind::STEMP, stemp_type, stemp_size, local_offset);
+}
+
+int Scope::get_size_of_locals() const
+{
+    int result = 0;
+    for (const auto &[name, ste] : sym_tab)
+    {
+        if (ste->kind == Entry_Kind::STEMP || ste->kind == Entry_Kind::VARIABLE)
+        {
+            result += get_size(ste->type);
+        }
+    }
+    return result;
+}
+
 Func_Signature::Func_Signature(const std::string &name, Type return_type)
     : name(name), return_type(return_type), param_types(), param_names(), has_return(false)
 {
