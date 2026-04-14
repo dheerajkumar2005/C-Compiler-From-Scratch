@@ -127,6 +127,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 {
 	RTL_Code *rtl_code = new RTL_Code();
 
+	// Arithmetic operation over floats
 	if (lhs->type == Type::FLOAT && opd1->type == Type::FLOAT)
 	{
 		// Operand 1
@@ -204,6 +205,7 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		return rtl_code;
 	}
+	// Relational operation over floats
 	else if (lhs->type == Type::BOOL && opd1->type == Type::FLOAT)
 	{
 		// Operand 1
@@ -304,6 +306,8 @@ RTL_Code *Assignment_TAC_Statement::to_rtl(RegisterTracker *reg_tracker) const
 
 		return rtl_code;
 	}
+	// TODO: Add support for call statements (probably at the very beginning, no?)
+	// Arithmetic/relational/logical operation over ints/bools
 	else
 	{
 		// Operand 1

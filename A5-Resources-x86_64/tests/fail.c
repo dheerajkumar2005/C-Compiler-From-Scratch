@@ -1,16 +1,12 @@
-// Checks assignment statement with braces
+int foo()
+{
+    return 1;
+}
 
 int main()
 {
-    int ans, a, b, c, d, e, f, g, h;
-    read a;
-    read b;
-    read c;
-    read d;
-    read e;
-    read f;
-    read g;
-    read h;
-    ans = (((a + b) * (c - d)) / (-((e + f) * (g - h))));
-    print ans;
+    int a, b, c, k;
+    // a = b + c;
+    k = foo();
+    return 0;
 }
