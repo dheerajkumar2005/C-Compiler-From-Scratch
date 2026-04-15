@@ -145,13 +145,17 @@ Code *Function_Call_Ast::codegen()
 
 std::string Function_Call_Ast::to_string() const
 {
-    std::string result = "\nFN CALL: " + func_name + "(\n";
-    for (int i = 0; i < (*args).size() - 1; i++)
-    // for (Expression_Ast *arg : *args)
+    std::string result = "\nFN CALL: " + func_name + "(";
+    if (args && !args->empty())
     {
-        result += (*args)[i]->to_string() + "\n";
+        result += "\n";
+        for (int i = 0; i < (*args).size() - 1; i++)
+        {
+            result += (*args)[i]->to_string() + "\n";
+        }
+        result += args->back()->to_string();
     }
-    result += args->back()->to_string() + ")";
+    result += ")";
     return result;
 }
 

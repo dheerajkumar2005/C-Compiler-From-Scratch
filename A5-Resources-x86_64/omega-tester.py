@@ -18,11 +18,11 @@ BOLD = "\033[1m"
 RESET = "\033[0m"
 
 SA_FLAGS = [
-    "--sa-scan", 
-    # "--sa-parse", 
-    "--sa-ast", 
-    "--sa-tac",
-    "--sa-rtl",
+    # "--sa-scan", 
+    "--sa-parse", 
+    # "--sa-ast", 
+    # "--sa-tac",
+    # "--sa-rtl",
 ]
 
 SHOW_FLAGS = [
