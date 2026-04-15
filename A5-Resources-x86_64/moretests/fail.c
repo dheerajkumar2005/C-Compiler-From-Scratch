@@ -1,8 +1,9 @@
-//Local and global variable declaration
+int main();
 
-int a;
-bool b;
-float c;
-string s;
+void foo(int x, int y);
 
-void main(){}
+int main()
+{
+    foo(10, 20);
+    return 10;
+}

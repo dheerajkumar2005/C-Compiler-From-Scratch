@@ -1,18 +1,9 @@
-// Non-void function with parameters
+int main();
 
-int mul(int m, int n);
+void foo();
 
-int mul(int m, int n){
-    int multiplication;
-
-    multiplication = m * n;
-
-    return multiplication;
-}
-
-void main(int z){
-    int multiplication;
-
-    multiplication = mul(z,45);
-    print multiplication;
+int main()
+{
+    foo();
+    return 10;
 }

@@ -273,7 +273,7 @@ actual_arg
 ;
 
 return_statement
-    : RETURN expression SEMICOLON { $$ = new Return_Stmt_Ast(curr_scope, $2, return_label, return_stemp); }
+    : RETURN expression SEMICOLON { $$ = sa_parse ? nullptr : new Return_Stmt_Ast(curr_scope, $2, return_label, return_stemp); }
 ;
 
 optional_local_var_decl_stmt_list

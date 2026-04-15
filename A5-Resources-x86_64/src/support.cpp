@@ -101,13 +101,17 @@ FormalParamList *accumulate_formal_param_list(FormalParamList *formal_param_list
 
 ActualParamList *accumulate_actual_param_list(ActualParam *arg)
 {
-    return new std::vector<ActualParam *>{arg};
+    return sa_parse ? nullptr : new std::vector<ActualParam *>{arg};
 }
 
 ActualParamList *accumulate_actual_param_list(ActualParamList *args, ActualParam *arg)
 {
-    args->push_back(arg);
-    return args;
+    if (!sa_parse)
+    {
+        args->push_back(arg);
+        return args;
+    }
+    return nullptr;
 }
 
 Scope *make_func_scope(Func_Signature *func_sig)
@@ -340,7 +344,7 @@ Function_Call_Ast *process_func_call(std::string *name_ptr, ActualParamList *arg
 
 Call_Stmt_Ast *process_call_stmt(Function_Call_Ast *call)
 {
-    return new Call_Stmt_Ast(curr_scope, call);
+    return sa_parse ? nullptr : new Call_Stmt_Ast(curr_scope, call);
 }
 
 void print_func_def_list()
