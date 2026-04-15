@@ -631,17 +631,17 @@ std::string If_Stmt_Ast::to_string() const
 {
     std::string result = "If:\nCondition (" + predicate->to_string() +  ")\n";
     if(if_clause->to_string() == ""){
-        result += "Then ()\n";
+        result += "Then ()";
     }
     else{
-        result += "Then (\n" + if_clause->to_string() + ")\n";
+        result += "Then (\n" + if_clause->to_string() + ")";
     }
     if (else_clause){
         if(else_clause->to_string() == ""){
-            result += "Else()\n";
+            result += "\nElse()";
         }
         else{
-            result += "Else (\n" + else_clause->to_string() + ")\n";
+            result += "\nElse (\n" + else_clause->to_string() + ")";
         }
     }
     return result;
