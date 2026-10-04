@@ -2,7 +2,7 @@
 
 [![C++17](https://img.shields.io/badge/Language-C%2B%2B17-blue.svg)](https://isocpp.org/)
 [![Flex & Bison](https://img.shields.io/badge/Tools-Flex%20%7C%20Bison%20LALR(1)-green.svg)]()
-[![Target Architecture](https://img.shields.io/badge/Target-MIPS%20R2000%20%7C%20SPIM-orange.svg)]()
+[![Target Architecture](https://img.shields.io/badge/Target-MIPS%20%7C%20SPIM-orange.svg)]()
 
 
 ---
@@ -11,22 +11,11 @@
 
 This repository contains the complete implementation and technical report for **`sclp` (Simple C-Like Program)**, a multi-stage optimizing compiler built from scratch in C++. 
 
-Targeting the **MIPS R2000/R3000** architecture simulated via SPIM, the compiler translates statically typed imperative source programs featuring integers, single-precision floats, strings, complex control flow structures (`if-else`, `while`, `do-while`), and multi-parameter functions into executable MIPS assembly.
+Targeting the **MIPS ** architecture simulated via SPIM, the compiler translates statically typed imperative source programs featuring integers, single-precision floats, strings, complex control flow structures (`if-else`, `while`, `do-while`), and multi-parameter functions into executable MIPS assembly.
 
 ---
 
-## 🏗️ Compiler Architecture & Lowering Pipeline
-
-```mermaid
-flowchart LR
-    Source["C-like Source (.c)"] --> Lexer["Lexical Analysis<br/>(Flex / scanner.l)"]
-    Lexer --> Parser["LALR(1) Parsing<br/>(Bison / parser.y)"]
-    Parser --> AST["Abstract Syntax Tree<br/>(Static Semantics & Types)"]
-    AST --> TAC["Three-Address Code (TAC)<br/>Linear IR Quadruples"]
-    TAC --> RTL["Register Transfer Language (RTL)<br/>Register Tracking & Allocation"]
-    RTL --> Emit["Code Generator<br/>Activation Records & Prologue/Epilogue"]
-    Emit --> MIPS["Executable MIPS Assembly (.spim)"]
-```
+ 
 
 ### Core Pipeline Stages:
 1. **Lexical & Syntactic Analysis (`scanner.l`, `parser.y`)**:
