@@ -3,11 +3,7 @@
 [![C++17](https://img.shields.io/badge/Language-C%2B%2B17-blue.svg)](https://isocpp.org/)
 [![Flex & Bison](https://img.shields.io/badge/Tools-Flex%20%7C%20Bison%20LALR(1)-green.svg)]()
 [![Target Architecture](https://img.shields.io/badge/Target-MIPS%20R2000%20%7C%20SPIM-orange.svg)]()
-[![IIT Bombay](https://img.shields.io/badge/IIT%20Bombay-CS306%20Compilers-red.svg)](https://www.cse.iitb.ac.in/)
 
-> **Academic Affiliation**: Course Project for **CS 306: Implementation of Programming Languages**, IIT Bombay  
-> **Instructor**: **Prof. Uday Khedkar**  
-> **Authors**: **Dheeraj Kumar Maradana** ([@dheerajkumar2005](https://github.com/dheerajkumar2005)) & Group 10
 
 ---
 
