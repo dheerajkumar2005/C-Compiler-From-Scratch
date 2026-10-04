@@ -1,0 +1,148 @@
+\documentclass[10pt,twocolumn,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.65in,top=0.7in,bottom=0.7in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+
+% Document Styling & Colors
+\definecolor{codebg}{rgb}{0.96,0.96,0.96}
+\definecolor{codekw}{rgb}{0.13,0.13,0.7}
+\definecolor{codestr}{rgb}{0.65,0.16,0.16}
+\definecolor{primary}{rgb}{0.0,0.2,0.4}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    citecolor=primary,
+    urlcolor=primary
+}
+
+\setlist{itemsep=1.5pt, topsep=2pt, parsep=0pt, leftmargin=12pt}
+\titlespacing*{\section}{0pt}{6pt plus 1pt minus 1pt}{3pt plus 1pt minus 1pt}
+\titlespacing*{\subsection}{0pt}{4pt plus 1pt minus 1pt}{2pt plus 1pt minus 1pt}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{codekw}\bfseries,
+    stringstyle=\color{codestr},
+    breaklines=true,
+    frame=single,
+    tabsize=2,
+    showstringspaces=false
+}
+
+\title{\vspace{-1.5em}\textbf{\Large Design and Implementation of the \texttt{sclp} Optimizing Compiler}\\[0.2em]
+\large CS 306: Compilers Lab --- End-to-End Compiler Project Report}
+\author{\textbf{Group 10 (JAN2026\_group\_10)} \\ Department of Computer Science and Engineering, IIT Bombay}
+\date{\vspace{-0.8em}\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This report presents the architecture, intermediate representations, and target code generation pipeline of the \texttt{sclp} (Simple C-Like Program) compiler. Built iteratively across assignments A0 to A5, the compiler translates statically typed imperative source programs with integers, single-precision floats, strings, complex control structures, and multi-parameter functions into executable MIPS/SPIM assembly. We detail our modular compilation pipeline: Flex-based lexical analysis, LALR(1) Bison parsing, Abstract Syntax Tree (AST) construction with static semantic validation, Three-Address Code (TAC) lowering, Register Transfer Language (RTL) generation with linear register tracking, Activation Record (AR) layout management, and final target assembly emission.
+\end{abstract}
+
+\section{Introduction \& System Overview}
+The \texttt{sclp} compiler is a full multi-stage translation system targeting the MIPS R2000/R3000 architecture simulated via SPIM. The system enforces C-style static scoping, strong type checking, short-circuit boolean evaluation, dynamic register allocation, and standard calling conventions.
+
+\begin{center}
+\fbox{\footnotesize Source $\xrightarrow{\text{Flex}}$ Tokens $\xrightarrow{\text{Bison}}$ AST $\xrightarrow{\text{Lower}}$ TAC $\xrightarrow{\text{Alloc}}$ RTL $\xrightarrow{\text{Emit}}$ MIPS/SPIM}
+\end{center}
+
+\section{Compiler Architecture \& Pipeline}
+
+\subsection{Lexical \& Syntactic Analysis}
+\begin{itemize}
+    \item \textbf{Lexer (\texttt{scanner.l})}: Recognizes multi-character operators (\texttt{<=}, \texttt{>=}, \texttt{==}, \texttt{!=}, \texttt{\&\&}, \texttt{||}), integer/float literals, identifiers, string constants, and block comments, tracking source line numbers for diagnostic reporting.
+    \item \textbf{Parser (\texttt{parser.y})}: Built on a non-ambiguous LALR(1) grammar resolving shift-reduce conflicts in dangling-\texttt{else} and arithmetic precedence. It supports global variable declarations, function prototypes, local scopes, iterative (\texttt{while}, \texttt{do-while}) and selection (\texttt{if-else}) constructs.
+\end{itemize}
+
+\subsection{Symbol Table \& Scope Resolution}
+Scoped symbol resolution is governed by hierarchical tables (\texttt{Program.hpp}):
+\begin{itemize}
+    \item \textbf{Scope Hierarchy}: Scopes are structured as parent-linked trees differentiating \texttt{GLOBAL} and \texttt{FUNCTION} lexical tiers.
+    \item \textbf{Shadowing \& Resolution}: Local identifiers legally shadow global symbols. Redeclarations within the same scope are flagged as compile-time semantic errors.
+    \item \textbf{Function Signatures}: Validates arity, parameter types, matching return types across all branching control paths, and forbids function overloading.
+\end{itemize}
+
+\subsection{AST \& Semantic Analysis}
+The AST (\texttt{Ast.hpp}, \texttt{Ast.cpp}) represents the parsed program as an object hierarchy rooted at \texttt{Program\_AST}:
+\begin{itemize}
+    \item \textbf{Type System}: Validates compatibility for \texttt{int}, \texttt{float}, \texttt{string}, and \texttt{void}. Automatic type coercion nodes (\texttt{Type\_Cast\_AST}) are synthesized when promoting integers to floats in mixed-mode expressions.
+    \item \textbf{Control-Flow Checks}: Non-void functions must include explicit return statements returning compatible types; void functions are strictly barred from returning values.
+\end{itemize}
+
+\subsection{Intermediate Representations: TAC \& RTL}
+The compiler employs a two-tier Intermediate Representation:
+\begin{enumerate}
+    \item \textbf{Three-Address Code (TAC)}: Decomposes complex expression trees into linearized quadruples. Generates shared temporaries (\texttt{stemp$N$}) and conditional jump labels (\texttt{goto}, \texttt{if...goto}) implementing short-circuit boolean semantics.
+    \item \textbf{Register Transfer Language (RTL)}: Bridges machine-independent TAC and target MIPS instructions. Represents explicit register movements, address loads (\texttt{lw}, \texttt{l.s}), stores (\texttt{sw}, \texttt{s.s}), floating-point coprocessor conversions (\texttt{mtc1}, \texttt{cvt.s.w}), and conditional branch comparisons.
+\end{enumerate}
+
+\section{Memory Layout \& Runtime Environment}
+
+\subsection{Activation Record (Stack Frame) Architecture}
+Each function call creates a stack frame organized around the Frame Pointer (\texttt{\$fp}) and Stack Pointer (\texttt{\$sp}) as follows:
+
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Offset / Location} & \textbf{Contents} \\
+\hline
+Higher Addresses & Function Parameters (pushed in reverse) \\
+\texttt{0(\$fp)} & Saved Return Address (\texttt{\$ra}) \\
+\texttt{-4(\$fp)} & Saved Previous Frame Pointer (PFP) \\
+\texttt{-8(\$fp)} downwards & Local Variables (order of declaration) \\
+Below Locals & Shared Temporaries (\texttt{stemp}$_k$) \\
+\texttt{0(\$sp)} & Dynamic Frame Bottom (grows down) \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Function Calling Sequence (ABI)}
+\begin{itemize}
+    \item \textbf{Caller Prologue}: Evaluates actual parameters and pushes them onto the stack in reverse order of the formal parameter list.
+    \item \textbf{Callee Prologue}: Allocates stack space by adjusting \texttt{\$sp}, saves caller's \texttt{\$ra} and \texttt{\$fp}, and initializes the new frame pointer:
+\begin{lstlisting}[language={[x86masm]Assembler}]
+subu $sp, $sp, 8        # Space for RA and PFP
+sw $ra, 4($sp)          # Save RA
+sw $fp, 0($sp)          # Save Old FP
+add $fp, $sp, 8         # Set New FP
+subu $sp, $sp, <frame>  # Allocate locals & stemps
+\end{lstlisting}
+    \item \textbf{Callee Epilogue}: Restores return value into \texttt{\$v0} (integer) or \texttt{\$f0} (float), resets \texttt{\$sp}, restores \texttt{\$fp} and \texttt{\$ra}, and executes \texttt{jr \$ra}.
+    \item \textbf{Caller Cleanup}: Pops parameters off the stack and reads function return values from accumulator registers.
+\end{itemize}
+
+\subsection{Register Allocation \& Tracking}
+The \texttt{RegisterTracker} module manages physical MIPS integer registers (\texttt{\$t0}--\texttt{\$t9}, \texttt{\$s0}--\texttt{\$s7}, \texttt{\$v0}, \texttt{\$a0}--\texttt{\$a3}) and single-precision floating-point registers (\texttt{\$f0}--\texttt{\$f30}). Registers are allocated on-demand with priority heuristics, spilling shared temporaries to dedicated offsets within the activation record when register pressure spikes.
+
+\section{Key Implementation Highlights}
+\begin{itemize}
+    \item \textbf{Mangled Function Naming}: Internal non-main functions are decorated with a trailing underscore (\texttt{fn\_}) to avoid collisions with standard SPIM syscall labels and runtime primitives.
+    \item \textbf{Deterministic Global \& String Emission}: Global variables are mapped directly into the \texttt{.data} segment in declaration order. All distinct string literals are assigned global labels (\texttt{str\_$N$}) and emitted sequentially before code generation.
+    \item \textbf{Alphabetical Function Processing}: AST, TAC, RTL, and assembly routines are processed and emitted in deterministic alphabetical order to ensure verifiable intermediate representations.
+    \item \textbf{Short-Circuit Logic}: Relational and boolean operators (\texttt{\&\&}, \texttt{||}, \texttt{!}) are lowered into control-flow jumps using specialized short-circuit labels without redundant arithmetic evaluations.
+\end{itemize}
+
+\section{Verification, Testing \& Results}
+The compiler implementation was extensively validated through an automated testing harness (\texttt{omega-tester.py}):
+\begin{itemize}
+    \item \textbf{Level-by-Level Testcases}: Tested from basic arithmetic expressions (L1/L2) to control-flow structures (L3/L4) and recursive multi-function calls with mutual recursion (L5).
+    \item \textbf{Negative Semantic Test Suite}: Validated that illegal operations (type mismatches, improper returns, uninitialized symbols, illegal casts, argument arity mismatches) are trapped with informative diagnostics and non-zero exit codes.
+    \item \textbf{SPIM Runtime Verification}: Output assembly was compiled and executed under SPIM, matching standard execution traces and reference outputs with 100\% test suite compliance.
+\end{itemize}
+
+\section{Conclusion}
+The \texttt{sclp} compiler project provides a robust, fully featured implementation of an optimizing ahead-of-time compiler for a C-like language. The modular separation between AST, TAC, RTL, and MIPS code emission ensures high maintainability, precise semantic validation, and efficient target code generation.
+
+\end{document}
